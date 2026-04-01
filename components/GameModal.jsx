@@ -38,7 +38,7 @@ function getSmartPlaceholder(col) {
     'visitante': 'Ex: Palmeiras',
     'estadio': 'Ex: Maracanã',
     'cidade': 'Ex: Rio de Janeiro',
-    'eu': '1',
+    'rodada': '1',
     'rod': '1',
     'banda': 'Ex: 18 MHz',
     'sr': 'Ex: 27500',
