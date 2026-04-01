@@ -28,13 +28,13 @@ function computeStickyOffsets(columns) {
 // SHARED OPTION LISTS (from real spreadsheet data)
 // ============================================================
 const ESTADIOS_BR = [
-  'Maracanã', 'Nilton Santos', 'São Januário', 'Beira Rio',
-  'Neo Química Arena', 'Arena da Baixada', 'Couto Pereira',
-  'Mineirão', 'Arena Condá', 'Campos Maia', 'Allianz Parque',
-  'Arena MRV', 'Castelão', 'Ligga Arena', 'Mané Garrincha',
+  'Mineirão', 'Neoquimica Arena', 'São Januário', 'Castelão',
+  'Maracanã', 'Nilton Santos', 'Campos Maia',
+  'Beira Rio', 'Ilha do Retiro', 'Alfredo Jaconi', 'Parque do Sabiá',
+  'Arena Pernambuco', 'Arena da Baixada', 'Couto Pereira', 'Mané Garrincha','Arena Condá'
 ]
 
-const PADROES = ['B1', 'B2']
+const PADROES = ['B1', 'B2','B1+']
 
 const DETENTORES = ['CazeTV/Record', 'AmazonPrime', 'Globo', 'SporTV', 'Band', 'DAZN']
 
@@ -43,15 +43,17 @@ const UMS = ['Multvideo', 'PW Video', 'CromaMix', 'TVClube', 'Kapta Filmes', 'Co
 const SNG_OPTIONS = ['Conecta', 'Cromamix', 'Mineiro', 'PW', 'LocLine', 'No Break', 'Kiyoshi', 'Estrutura Globo']
 
 const SUPERVISORES = [
-  'Rafael Gusmão / 21 98038-6887',
-  'Anderson Fernandes / 71 8805-2446',
-  'Julio Fornazari / 11 98433-9323',
-  'Alexandre Dumas / 11 94166-8766',
-  'Paulo Brito Jr / 11 94041-2580',
   'Lucas Rodrigues',
   'Flavio Brandão',
-  'Ricardo Milsoni',
+  'Anderson Fernandes',
+  'Rafael Gusmão',
+  'Alexandre Dumas',
+  'Julio Fornazari',
   'Paulo Brito',
+  'Flavio Barbosa',
+  'Sérgio Stamm',
+  'Paulo Brito Jr',
+  'Flavio melo',
 ]
 
 const DTV_OPTIONS = ['Marquinhos', 'Carlão', 'Verdes Mares']
