@@ -679,6 +679,197 @@ body {
 .btn-confirm-delete:hover { opacity: 0.85; }
 
 /* ============================================================
+   Stats Grid 2 columns
+   ============================================================ */
+.stats-grid-2 { grid-template-columns: repeat(2, 1fr) !important; }
+
+/* ============================================================
+   Select with Add (dynamic options)
+   ============================================================ */
+.select-with-add {
+  display: flex; align-items: center; gap: 6px;
+}
+.select-with-add .form-select { flex: 1; }
+
+.btn-new-option {
+  width: 32px; height: 32px; border-radius: 6px;
+  background: var(--bg-surface); border: 1px dashed var(--border-gray);
+  color: var(--text-muted); font-size: 16px; font-weight: 700;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s; flex-shrink: 0;
+}
+.btn-new-option:hover { color: var(--text); border-color: var(--text-muted); background: var(--bg-hover); }
+
+.add-option-row {
+  display: flex; gap: 4px; align-items: center;
+}
+.add-option-input { width: 140px !important; padding: 6px 8px !important; font-size: 12px !important; }
+
+.btn-add-option {
+  width: 28px; height: 28px; border-radius: 6px;
+  border: none; color: #000; font-size: 14px; font-weight: 800;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.btn-cancel-option {
+  width: 28px; height: 28px; border-radius: 6px;
+  background: var(--bg-surface); border: 1px solid var(--border);
+  color: var(--text-muted); font-size: 12px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.btn-cancel-option:hover { color: var(--text); }
+
+/* ============================================================
+   Filter Select
+   ============================================================ */
+.filter-select {
+  background: var(--bg-input); border: 1px solid var(--border);
+  color: var(--text); padding: 6px 10px;
+  border-radius: var(--radius-sm); font-size: 12px;
+  outline: none; font-family: inherit; cursor: pointer;
+  min-width: 100px;
+}
+.filter-select option { background: var(--bg-input); color: var(--text); }
+
+/* ============================================================
+   Dashboard
+   ============================================================ */
+.dashboard { display: flex; flex-direction: column; gap: 20px; }
+
+.dash-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 20px 24px;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.dash-title {
+  font-size: 22px; font-weight: 900;
+  letter-spacing: -0.5px;
+}
+
+.dash-summary { display: flex; gap: 32px; }
+
+.dash-summary-item { display: flex; flex-direction: column; align-items: center; }
+
+.dash-summary-value {
+  font-size: 36px; font-weight: 900; line-height: 1;
+  letter-spacing: -1px; color: var(--text);
+}
+
+.dash-summary-label {
+  font-size: 10px; font-weight: 700; color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: 1px; margin-top: 4px;
+}
+
+.dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+.dash-card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 20px;
+}
+
+.dash-card-title {
+  font-size: 12px; font-weight: 800;
+  color: var(--text-muted); text-transform: uppercase;
+  letter-spacing: 1px; margin-bottom: 16px;
+  padding-bottom: 8px; border-bottom: 1px solid var(--border);
+}
+
+.dash-bars { display: flex; flex-direction: column; gap: 10px; }
+
+.dash-bar-row { display: flex; align-items: center; gap: 10px; }
+
+.dash-bar-label {
+  width: 120px; font-size: 12px; font-weight: 600;
+  color: var(--text); white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis; flex-shrink: 0;
+}
+
+.dash-bar-track {
+  flex: 1; height: 22px; background: var(--bg-surface);
+  border-radius: 4px; overflow: hidden;
+}
+
+.dash-bar-fill {
+  height: 100%; border-radius: 4px;
+  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  min-width: 4px;
+}
+
+.dash-bar-value {
+  width: 36px; text-align: right;
+  font-size: 13px; font-weight: 800; color: var(--text);
+  flex-shrink: 0;
+}
+
+/* Rodada Timeline */
+.dash-rodada-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 10px;
+}
+
+.dash-rodada-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px; background: var(--bg-surface);
+  border-radius: 8px;
+}
+
+.dash-rodada-number {
+  width: 36px; height: 36px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 900; color: var(--text);
+  border: 2px solid var(--border-gray); border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.dash-rodada-info { flex: 1; display: flex; flex-direction: column; gap: 3px; }
+
+.dash-rodada-total { font-size: 12px; font-weight: 700; color: var(--text); }
+
+.dash-rodada-bar-track {
+  height: 4px; background: var(--border); border-radius: 2px; overflow: hidden;
+}
+
+.dash-rodada-bar-fill {
+  height: 100%; border-radius: 2px;
+  transition: width 0.4s ease;
+}
+
+.dash-rodada-pct { font-size: 10px; color: var(--text-muted); }
+
+/* Next Games */
+.dash-games-list { display: flex; flex-direction: column; gap: 8px; }
+
+.dash-game-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 14px; background: var(--bg-surface);
+  border-radius: 8px; border-left: 3px solid var(--border-gray);
+  transition: background 0.15s;
+}
+.dash-game-item:hover { background: var(--bg-hover); }
+
+.dash-game-teams { display: flex; align-items: center; gap: 8px; flex: 1; }
+.dash-game-home, .dash-game-away { font-size: 13px; font-weight: 700; color: var(--text); }
+.dash-game-vs { font-size: 10px; color: var(--text-dim); font-weight: 600; }
+
+.dash-game-meta {
+  display: flex; gap: 12px; font-size: 11px; color: var(--text-muted);
+}
+
+.dash-game-status {
+  font-size: 10px; font-weight: 700; padding: 2px 8px;
+  border-radius: 12px; white-space: nowrap;
+}
+.dash-status-confirmado { background: #1a2e0f; color: #86e050; }
+.dash-status-pendente { background: #2e1f08; color: #fbbf24; }
+.dash-status-cancelado { background: #2e1010; color: #f87171; }
+
+/* Sub tab dashboard indicator */
+.sub-tab-dash { font-style: normal; }
+
+/* ============================================================
    Responsive
    ============================================================ */
 @media (max-width: 768px) {
@@ -687,10 +878,16 @@ body {
   .nav-tabs { gap: 4px; }
   .main-content { padding: 14px; padding-top: calc(64px + 46px + 14px); }
   .modal-hint-bar span:last-child { display: none; }
+  .dash-grid { grid-template-columns: 1fr; }
+  .dash-header { flex-direction: column; gap: 16px; align-items: flex-start; }
+  .dash-summary { gap: 20px; }
+  .filters-bar { gap: 8px; }
 }
 
 @media (max-width: 480px) {
-  .stats-grid { grid-template-columns: 1fr 1fr; }
+  .stats-grid { grid-template-columns: 1fr; }
+  .stats-grid-2 { grid-template-columns: 1fr 1fr !important; }
   .form-section-body { grid-template-columns: 1fr !important; }
   .stat-value { font-size: 30px; }
+  .dash-rodada-grid { grid-template-columns: 1fr 1fr; }
 }

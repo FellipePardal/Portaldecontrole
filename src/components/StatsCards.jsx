@@ -5,12 +5,10 @@ export default function StatsCards({ data, config }) {
 
   if (hasStatus) {
     const confirmados = data.filter(r => r.status === 'Confirmado').length
-    const pendentes = data.filter(r => r.status === 'Pendente').length
-    const cancelados = data.filter(r => r.status === 'Cancelado' || r.status === 'Em andamento' || r.status === 'Aguardando').length
     const pct = (n) => total > 0 ? Math.round((n / total) * 100) : 0
 
     return (
-      <div className="stats-grid">
+      <div className="stats-grid stats-grid-2">
         <div className="stat-card stat-card-total">
           <div className="stat-icon-wrap">📅</div>
           <div className="stat-value" style={{ color: accent }}>{total}</div>
@@ -28,24 +26,6 @@ export default function StatsCards({ data, config }) {
             <div className="stat-progress-bar" style={{ width: pct(confirmados) + '%' }} />
           </div>
         </div>
-
-        <div className="stat-card stat-card-pending">
-          <div className="stat-icon-wrap">⏳</div>
-          <div className="stat-value">{pendentes}</div>
-          <div className="stat-label">Pendentes</div>
-          <div className="stat-progress">
-            <div className="stat-progress-bar" style={{ width: pct(pendentes) + '%' }} />
-          </div>
-        </div>
-
-        <div className="stat-card stat-card-cancel">
-          <div className="stat-icon-wrap">⚠️</div>
-          <div className="stat-value">{cancelados}</div>
-          <div className="stat-label">Cancelados / Outros</div>
-          <div className="stat-progress">
-            <div className="stat-progress-bar" style={{ width: pct(cancelados) + '%' }} />
-          </div>
-        </div>
       </div>
     )
   }
@@ -57,7 +37,7 @@ export default function StatsCards({ data, config }) {
   const pct = (n) => total > 0 ? Math.round((n / total) * 100) : 0
 
   return (
-    <div className="stats-grid">
+    <div className="stats-grid stats-grid-2">
       <div className="stat-card stat-card-total">
         <div className="stat-icon-wrap">📅</div>
         <div className="stat-value" style={{ color: accent }}>{total}</div>
@@ -73,24 +53,6 @@ export default function StatsCards({ data, config }) {
         <div className="stat-label">Com Drone</div>
         <div className="stat-progress">
           <div className="stat-progress-bar" style={{ width: pct(comDrone) + '%' }} />
-        </div>
-      </div>
-
-      <div className="stat-card stat-card-dslr">
-        <div className="stat-icon-wrap">📷</div>
-        <div className="stat-value">{comDslr}</div>
-        <div className="stat-label">Com DSLR</div>
-        <div className="stat-progress">
-          <div className="stat-progress-bar" style={{ width: pct(comDslr) + '%' }} />
-        </div>
-      </div>
-
-      <div className="stat-card stat-card-grua">
-        <div className="stat-icon-wrap">🏗️</div>
-        <div className="stat-value">{comGrua}</div>
-        <div className="stat-label">Com Grua</div>
-        <div className="stat-progress">
-          <div className="stat-progress-bar" style={{ width: pct(comGrua) + '%' }} />
         </div>
       </div>
     </div>

@@ -6,7 +6,7 @@ import DataTable from './DataTable'
 import GameModal from './GameModal'
 import ConfirmDialog from './ConfirmDialog'
 
-const DEFAULT_FILTERS = { search: '', status: '', dateFrom: '', dateTo: '', rodada: '' }
+const DEFAULT_FILTERS = { search: '', status: '', dateFrom: '', dateTo: '', rodada: '', detentor: '', estadio: '', um: '' }
 
 export default function TablePage({ config }) {
   const { data, loading, error, addRow, updateRow, deleteRow } = useTableData(config.tableName)
@@ -36,6 +36,18 @@ export default function TablePage({ config }) {
 
     if (filters.status) {
       result = result.filter(r => r.status === filters.status)
+    }
+
+    if (filters.detentor) {
+      result = result.filter(r => r.detentor === filters.detentor)
+    }
+
+    if (filters.estadio) {
+      result = result.filter(r => r.estadio === filters.estadio)
+    }
+
+    if (filters.um) {
+      result = result.filter(r => r.um === filters.um)
     }
 
     if (filters.dateFrom) {
@@ -91,12 +103,12 @@ export default function TablePage({ config }) {
     : ''
 
   if (error) {
-    const isConfig = error.includes('Supabase não configurado')
+    const isConfig = error.includes('Supabase nao configurado') || error.includes('Supabase não configurado')
     return (
       <div style={{ padding: 60, textAlign: 'center' }}>
         <div style={{ fontSize: 48, marginBottom: 16 }}>{isConfig ? '⚙️' : '⚠️'}</div>
         <p style={{ fontSize: 18, fontWeight: 700, color: 'var(--text)', marginBottom: 8 }}>
-          {isConfig ? 'Banco de dados não configurado' : 'Erro ao carregar dados'}
+          {isConfig ? 'Banco de dados nao configurado' : 'Erro ao carregar dados'}
         </p>
         <p style={{ fontSize: 14, color: 'var(--text-muted)', maxWidth: 480, margin: '0 auto 16px' }}>
           {isConfig
@@ -126,6 +138,7 @@ VITE_SUPABASE_ANON_KEY=eyJ...`}
         onChange={setFilters}
         config={config}
         onAdd={openAddModal}
+        data={data}
       />
 
       <DataTable

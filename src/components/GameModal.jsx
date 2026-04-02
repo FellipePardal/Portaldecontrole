@@ -1,17 +1,18 @@
 import { useState, useEffect, useRef } from 'react'
 import { getStatusClass, STATUS_OPTIONS } from '../config/tables'
+import { getCustomOptions, addCustomOption } from '../hooks/useCustomOptions'
 
 const EXCLUDED = new Set(['id', 'created_at', 'updated_at'])
 
 const SECTION_META = {
   'Jogo':           { icon: '⚽', color: '#3b82f6', defaultOpen: true },
-  'Equipe Técnica': { icon: '👥', color: '#22c55e', defaultOpen: false },
+  'Equipe Tecnica': { icon: '👥', color: '#22c55e', defaultOpen: false },
   'Equipamentos':   { icon: '📷', color: '#22c55e', defaultOpen: false },
   'Credenciamento': { icon: '🪪', color: '#f97316', defaultOpen: false },
-  'Transmissão':    { icon: '📡', color: '#f59e0b', defaultOpen: false },
+  'Transmissao':    { icon: '📡', color: '#f59e0b', defaultOpen: false },
   'Globo':          { icon: '🌐', color: '#ec4899', defaultOpen: false },
-  'Técnico':        { icon: '⚙️', color: '#a78bfa', defaultOpen: false },
-  'Horários':       { icon: '🕐', color: '#06b6d4', defaultOpen: false },
+  'Tecnico':        { icon: '⚙️', color: '#a78bfa', defaultOpen: false },
+  'Horarios':       { icon: '🕐', color: '#06b6d4', defaultOpen: false },
 }
 const DEFAULT_COLOR = '#6a85a0'
 
@@ -36,7 +37,7 @@ function getSmartPlaceholder(col) {
     'hora_brt': '16:00',
     'mandante': 'Ex: Flamengo',
     'visitante': 'Ex: Palmeiras',
-    'estadio': 'Ex: Maracanã',
+    'estadio': 'Ex: Maracana',
     'cidade': 'Ex: Rio de Janeiro',
     'eu': '1',
     'rod': '1',
@@ -57,8 +58,72 @@ function getSmartPlaceholder(col) {
   return hints[col.key] || ''
 }
 
+function SelectWithAdd({ col, value, onSet, accentColor }) {
+  const [adding, setAdding] = useState(false)
+  const [newValue, setNewValue] = useState('')
+  const [customOpts, setCustomOpts] = useState(() => getCustomOptions(col.key))
+  const inputRef = useRef(null)
+
+  const allOptions = [...(col.options || []), ...customOpts.filter(o => !(col.options || []).includes(o))]
+
+  function handleAdd() {
+    const trimmed = newValue.trim()
+    if (trimmed && !allOptions.includes(trimmed)) {
+      addCustomOption(col.key, trimmed)
+      setCustomOpts(prev => [...prev, trimmed])
+      onSet(col.key, trimmed)
+    }
+    setNewValue('')
+    setAdding(false)
+  }
+
+  useEffect(() => {
+    if (adding && inputRef.current) inputRef.current.focus()
+  }, [adding])
+
+  return (
+    <div className="select-with-add">
+      <select className="form-select" value={value}
+        onChange={e => onSet(col.key, e.target.value)}
+        onFocus={e => e.target.style.borderColor = accentColor}
+        onBlur={e => e.target.style.borderColor = ''}>
+        <option value="">-- Selecione --</option>
+        {allOptions.map(opt => (
+          <option key={opt} value={opt}>{opt}</option>
+        ))}
+      </select>
+      {adding ? (
+        <div className="add-option-row">
+          <input
+            ref={inputRef}
+            className="form-input add-option-input"
+            type="text"
+            placeholder="Novo valor..."
+            value={newValue}
+            onChange={e => setNewValue(e.target.value)}
+            onKeyDown={e => {
+              if (e.key === 'Enter') handleAdd()
+              if (e.key === 'Escape') { setAdding(false); setNewValue('') }
+            }}
+          />
+          <button type="button" className="btn-add-option" style={{ background: accentColor }} onClick={handleAdd}>+</button>
+          <button type="button" className="btn-cancel-option" onClick={() => { setAdding(false); setNewValue('') }}>x</button>
+        </div>
+      ) : (
+        <button type="button" className="btn-new-option" onClick={() => setAdding(true)} title="Cadastrar nova opcao">
+          +
+        </button>
+      )}
+    </div>
+  )
+}
+
 function FormSection({ group, cols, formData, onSet, accentColor }) {
-  const meta = SECTION_META[group] || { icon: '📋', color: DEFAULT_COLOR, defaultOpen: false }
+  const metaKey = Object.keys(SECTION_META).find(k =>
+    k.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') ===
+    group.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+  )
+  const meta = (metaKey && SECTION_META[metaKey]) || { icon: '📋', color: DEFAULT_COLOR, defaultOpen: false }
   const [open, setOpen] = useState(meta.defaultOpen)
   const filled = countFilled(cols, formData)
 
@@ -97,20 +162,12 @@ function FormSection({ group, cols, formData, onSet, accentColor }) {
                         className={`status-picker-btn status-badge ${getStatusClass(opt)}${value === opt ? ' selected' : ''}`}
                         onClick={() => onSet(col.key, opt)}
                       >
-                        {value === opt ? '✓ ' : ''}{opt}
+                        {value === opt ? '+ ' : ''}{opt}
                       </button>
                     ))}
                   </div>
                 ) : col.type === 'select' ? (
-                  <select className="form-select" value={value}
-                    onChange={e => onSet(col.key, e.target.value)}
-                    onFocus={e => e.target.style.borderColor = accentColor}
-                    onBlur={e => e.target.style.borderColor = ''}>
-                    <option value="">— Selecione —</option>
-                    {(col.options || []).map(opt => (
-                      <option key={opt} value={opt}>{opt}</option>
-                    ))}
-                  </select>
+                  <SelectWithAdd col={col} value={value} onSet={onSet} accentColor={accentColor} />
                 ) : col.type === 'url' ? (
                   <input className="form-input" type="url" value={value}
                     placeholder="https://"
@@ -143,7 +200,6 @@ export default function GameModal({ mode, row, config, onClose, onSave, accentCo
   const [formData, setFormData] = useState({})
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState('')
-  const firstInputRef = useRef(null)
 
   useEffect(() => {
     setFormData(mode === 'edit' && row ? { ...row } : {})
@@ -161,7 +217,6 @@ export default function GameModal({ mode, row, config, onClose, onSave, accentCo
     finally { setSaving(false) }
   }
 
-  // Total filled across all fields
   const allCols = config.columns.filter(c => !EXCLUDED.has(c.key))
   const totalFilled = countFilled(allCols, formData)
   const fillPct = allCols.length > 0 ? Math.round((totalFilled / allCols.length) * 100) : 0
@@ -170,7 +225,6 @@ export default function GameModal({ mode, row, config, onClose, onSave, accentCo
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-panel" onClick={e => e.stopPropagation()}>
 
-        {/* Header */}
         <div className="modal-header">
           <div className="modal-header-left">
             <div className="modal-header-accent" style={{ background: accentColor }} />
@@ -180,14 +234,13 @@ export default function GameModal({ mode, row, config, onClose, onSave, accentCo
             </div>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
-            <button className="modal-close" onClick={onClose}>✕</button>
+            <button className="modal-close" onClick={onClose}>x</button>
             <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>
-              {totalFilled}/{allCols.length} campos — {fillPct}%
+              {totalFilled}/{allCols.length} campos -- {fillPct}%
             </span>
           </div>
         </div>
 
-        {/* Fill progress bar */}
         <div style={{ height: 3, background: 'var(--border)' }}>
           <div style={{
             height: '100%', background: accentColor, borderRadius: 0,
@@ -195,13 +248,11 @@ export default function GameModal({ mode, row, config, onClose, onSave, accentCo
           }} />
         </div>
 
-        {/* Hint bar */}
         <div className="modal-hint-bar">
-          <span>💡 Clique em cada seção para expandir e preencher os campos</span>
-          <span style={{ color: 'var(--text-dim)' }}>Tab para avançar entre campos • Enter para salvar</span>
+          <span>Clique em cada secao para expandir e preencher os campos</span>
+          <span style={{ color: 'var(--text-dim)' }}>Tab para avancar entre campos | Ctrl+Enter para salvar</span>
         </div>
 
-        {/* Body */}
         <div className="modal-body" onKeyDown={e => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) handleSave() }}>
           {groups.map(group => {
             const cols = config.columns.filter(c => c.group === group && !EXCLUDED.has(c.key))
@@ -221,13 +272,12 @@ export default function GameModal({ mode, row, config, onClose, onSave, accentCo
           {saveError && <div className="save-error">{saveError}</div>}
         </div>
 
-        {/* Footer */}
         <div className="modal-footer">
           <span className="modal-save-hint">Ctrl+Enter para salvar rapidamente</span>
           <button className="btn-cancel" onClick={onClose}>Cancelar</button>
           <button className="btn-save" style={{ backgroundColor: accentColor }}
             onClick={handleSave} disabled={saving}>
-            {saving ? 'Salvando...' : '💾 Salvar'}
+            {saving ? 'Salvando...' : 'Salvar'}
           </button>
         </div>
       </div>
