@@ -6,6 +6,7 @@ import {
   PERIFERICO_BR_CONFIG,
   PAULISTAO_FEM_CONFIG,
   PERIFERICO_PF_CONFIG,
+  NBA_CONFIG,
 } from './config/tables'
 
 const COMPETITIONS = [
@@ -25,6 +26,14 @@ const COMPETITIONS = [
     sections: [
       { id: 'pf-controle', label: 'Controle', config: PAULISTAO_FEM_CONFIG },
       { id: 'pf-periferico', label: 'Periférico', config: PERIFERICO_PF_CONFIG },
+    ],
+  },
+  {
+    id: 'nba',
+    label: 'NBA Prime Video',
+    accentColor: '#e8620a',
+    sections: [
+      { id: 'nba-controle', label: 'Controle', config: NBA_CONFIG },
     ],
   },
 ]

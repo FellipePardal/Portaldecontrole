@@ -203,3 +203,58 @@ CREATE TABLE IF NOT EXISTS perifericos_paulistao (
 ALTER TABLE perifericos_paulistao DISABLE ROW LEVEL SECURITY;
 ALTER TABLE perifericos_paulistao REPLICA IDENTITY FULL;
 ALTER PUBLICATION supabase_realtime ADD TABLE perifericos_paulistao;
+
+-- ============================================================
+-- Table 5: nba_prime_video
+-- ============================================================
+CREATE TABLE IF NOT EXISTS nba_prime_video (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  jogo TEXT,
+  data TEXT,
+  dia TEXT,
+  hora_brt TEXT,
+  visitante TEXT,
+  mandante TEXT,
+  coordenador_lm TEXT,
+  teleporto TEXT DEFAULT 'Almirante',
+  detentor TEXT DEFAULT 'Prime Video',
+  status TEXT DEFAULT 'Pendente',
+  total_horas TEXT,
+  abertura_brt TEXT,
+  start_gmt TEXT,
+  fechamento_brt TEXT,
+  end_gmt TEXT,
+  fibra TEXT DEFAULT 'Aldea',
+  reserva TEXT,
+  source_nba TEXT,
+  destination_sao TEXT,
+  source_sao TEXT,
+  destination_lax TEXT,
+  satelite TEXT,
+  banda TEXT,
+  reserva2 TEXT,
+  custo TEXT,
+  transponder TEXT,
+  uplink TEXT,
+  downlink TEXT,
+  aspecto TEXT DEFAULT '16:9',
+  compressao TEXT DEFAULT 'Mpeg-4',
+  transmissao TEXT DEFAULT 'DVB-S2',
+  modulacao TEXT DEFAULT 'DVB-S2/ 8PSK',
+  symbol_rate TEXT DEFAULT '7500',
+  fec TEXT DEFAULT '2/3',
+  nimbra TEXT DEFAULT 'TRUE',
+  srt_rtmp TEXT DEFAULT 'TRUE',
+  url_rtmp TEXT DEFAULT 'rtmp://a.rtmp.youtube.com/live2',
+  rtmp_key TEXT,
+  audio_1_2 TEXT DEFAULT 'Full mix Eng',
+  audio_3_4 TEXT DEFAULT 'BG',
+  audio_5_6 TEXT DEFAULT 'None/Ads',
+  observacao TEXT DEFAULT 'Ok',
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE nba_prime_video DISABLE ROW LEVEL SECURITY;
+ALTER TABLE nba_prime_video REPLICA IDENTITY FULL;
+ALTER PUBLICATION supabase_realtime ADD TABLE nba_prime_video;

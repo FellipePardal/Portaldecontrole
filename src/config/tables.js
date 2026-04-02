@@ -266,6 +266,76 @@ export const PERIFERICO_PF_CONFIG = {
 }
 
 // ============================================================
+// NBA PRIME VIDEO CONFIG
+// ============================================================
+const COORDENADORES_NBA = ['Lucas', 'Flávio', 'Bruno', 'Giuliano', 'Vitor / Giuliano']
+const TELEPORTOS_NBA = ['Almirante']
+const SATELITES_NBA = ['IS-11', 'SES-6', 'Star One C2', 'Intelsat']
+
+const nbaRawColumns = [
+  // Group: Jogo
+  { key: 'jogo', label: 'Jogo', type: 'text', width: 70, sticky: true, group: 'Jogo' },
+  { key: 'data', label: 'Data', type: 'text', width: 90, sticky: true, group: 'Jogo' },
+  { key: 'dia', label: 'Dia', type: 'select', options: ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'], width: 100, group: 'Jogo' },
+  { key: 'hora_brt', label: 'Hora (BRT)', type: 'text', width: 95, group: 'Jogo' },
+  { key: 'visitante', label: 'Visitante', type: 'text', width: 150, group: 'Jogo' },
+  { key: 'mandante', label: 'Mandante', type: 'text', width: 150, group: 'Jogo' },
+
+  // Group: Operação
+  { key: 'coordenador_lm', label: 'Coordenador LM', type: 'select', options: COORDENADORES_NBA, width: 170, group: 'Operação' },
+  { key: 'teleporto', label: 'Teleporto', type: 'select', options: TELEPORTOS_NBA, width: 130, group: 'Operação' },
+  { key: 'detentor', label: 'Detentor', type: 'text', width: 130, group: 'Operação' },
+  { key: 'status', label: 'Status', type: 'select', options: STATUS_OPTIONS, width: 135, statusColor: true, group: 'Operação' },
+  { key: 'total_horas', label: 'Total de Horas', type: 'text', width: 130, group: 'Operação' },
+  { key: 'abertura_brt', label: 'Abertura (BRT)', type: 'text', width: 130, group: 'Operação' },
+  { key: 'start_gmt', label: 'Start (GMT)', type: 'text', width: 110, group: 'Operação' },
+  { key: 'fechamento_brt', label: 'Fechamento (BRT)', type: 'text', width: 145, group: 'Operação' },
+  { key: 'end_gmt', label: 'End (GMT)', type: 'text', width: 110, group: 'Operação' },
+
+  // Group: Roteamento
+  { key: 'fibra', label: 'Fibra', type: 'text', width: 100, group: 'Roteamento' },
+  { key: 'reserva', label: 'Reserva', type: 'text', width: 170, group: 'Roteamento' },
+  { key: 'source_nba', label: 'Source NBA', type: 'text', width: 180, group: 'Roteamento' },
+  { key: 'destination_sao', label: 'Destination SAO', type: 'text', width: 230, group: 'Roteamento' },
+  { key: 'source_sao', label: 'Source SAO', type: 'text', width: 200, group: 'Roteamento' },
+  { key: 'destination_lax', label: 'Destination LAX', type: 'text', width: 220, group: 'Roteamento' },
+
+  // Group: Satélite
+  { key: 'satelite', label: 'Satélite', type: 'select', options: SATELITES_NBA, width: 130, group: 'Satélite' },
+  { key: 'banda', label: 'Banda', type: 'text', width: 90, group: 'Satélite' },
+  { key: 'reserva2', label: 'Reserva', type: 'text', width: 160, group: 'Satélite' },
+  { key: 'custo', label: 'Custo', type: 'text', width: 130, group: 'Satélite' },
+  { key: 'transponder', label: 'Transponder', type: 'text', width: 130, group: 'Satélite' },
+  { key: 'uplink', label: 'Uplink', type: 'text', width: 130, group: 'Satélite' },
+  { key: 'downlink', label: 'Downlink', type: 'text', width: 130, group: 'Satélite' },
+
+  // Group: Técnico
+  { key: 'aspecto', label: 'Aspecto', type: 'text', width: 90, group: 'Técnico' },
+  { key: 'compressao', label: 'Compressão', type: 'text', width: 110, group: 'Técnico' },
+  { key: 'transmissao', label: 'Transmissão', type: 'text', width: 110, group: 'Técnico' },
+  { key: 'modulacao', label: 'Modulação', type: 'text', width: 150, group: 'Técnico' },
+  { key: 'symbol_rate', label: 'Symbol Rate', type: 'text', width: 110, group: 'Técnico' },
+  { key: 'fec', label: 'FEC', type: 'text', width: 80, group: 'Técnico' },
+  { key: 'nimbra', label: 'Nimbra (Switch)', type: 'text', width: 140, group: 'Técnico' },
+  { key: 'srt_rtmp', label: 'SRT/RTMP Mon.', type: 'text', width: 130, group: 'Técnico' },
+  { key: 'url_rtmp', label: 'URL RTMP', type: 'url', width: 220, group: 'Técnico' },
+  { key: 'rtmp_key', label: 'RTMP Key', type: 'text', width: 200, group: 'Técnico' },
+  { key: 'audio_1_2', label: 'Audio 1/2', type: 'text', width: 130, group: 'Técnico' },
+  { key: 'audio_3_4', label: 'Audio 3/4', type: 'text', width: 100, group: 'Técnico' },
+  { key: 'audio_5_6', label: 'Audio 5/6', type: 'text', width: 110, group: 'Técnico' },
+  { key: 'observacao', label: 'Observação', type: 'text', width: 120, group: 'Técnico' },
+]
+
+export const NBA_CONFIG = {
+  id: 'nba',
+  tableName: 'nba_prime_video',
+  label: 'NBA Prime Video',
+  accentColor: '#e8620a',
+  accentBg: '#1a0d02',
+  columns: computeStickyOffsets(nbaRawColumns),
+}
+
+// ============================================================
 // SECTIONS
 // ============================================================
 export const SECTIONS = [
@@ -273,4 +343,5 @@ export const SECTIONS = [
   PERIFERICO_BR_CONFIG,
   PAULISTAO_FEM_CONFIG,
   PERIFERICO_PF_CONFIG,
+  NBA_CONFIG,
 ]
