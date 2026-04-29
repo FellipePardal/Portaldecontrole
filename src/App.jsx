@@ -30,7 +30,6 @@ export default function App() {
   const [activeSection, setActiveSection] = useState(null)
   const [showNewDialog, setShowNewDialog] = useState(false)
 
-  // Sincroniza seleção quando a lista chega
   useEffect(() => {
     if (competitions.length === 0) return
     const stillExists = competitions.find(c => c.id === activeComp)
@@ -55,35 +54,42 @@ export default function App() {
 
   if (compsLoading && competitions.length === 0) {
     return (
-      <div style={{ padding: 60, textAlign: 'center' }}>
-        <div className="skeleton-cell" style={{ width: 240, height: 20, margin: '0 auto 16px' }} />
-        <div className="skeleton-cell" style={{ width: 320, height: 14, margin: '0 auto' }} />
+      <div className="bootstrap-loader">
+        <div className="skeleton-cell" style={{ width: 200, height: 14 }} />
       </div>
     )
   }
 
   if (compsError) {
     return (
-      <div style={{ padding: 60, textAlign: 'center' }}>
-        <div style={{ fontSize: 48, marginBottom: 16 }}>⚠️</div>
-        <p style={{ fontSize: 18, fontWeight: 700, color: 'var(--text)', marginBottom: 8 }}>
-          Erro ao carregar campeonatos
-        </p>
-        <p style={{ fontSize: 14, color: 'var(--text-muted)' }}>{compsError}</p>
+      <div className="bootstrap-error">
+        <div className="bootstrap-error-title">Erro ao carregar campeonatos</div>
+        <div className="bootstrap-error-desc">{compsError}</div>
       </div>
     )
   }
 
   if (!competition || !section) {
     return (
-      <div style={{ padding: 60, textAlign: 'center' }}>
-        <div style={{ fontSize: 48, marginBottom: 16 }}>📋</div>
-        <p style={{ fontSize: 18, fontWeight: 700, color: 'var(--text)', marginBottom: 8 }}>
-          Nenhum campeonato cadastrado
-        </p>
-        <button className="btn-primary" onClick={() => setShowNewDialog(true)}>
-          + Novo campeonato
-        </button>
+      <div className="app">
+        <Header
+          competitions={competitions}
+          activeComp={null}
+          onCompSelect={() => {}}
+          onNewCompetition={() => setShowNewDialog(true)}
+        />
+        <main className="main-content" style={{ paddingTop: 84 }}>
+          <div className="empty-state-pro">
+            <div className="empty-state-pro-icon">·</div>
+            <div className="empty-state-pro-title">Nenhum campeonato cadastrado</div>
+            <div className="empty-state-pro-desc">
+              Crie o primeiro campeonato para começar.
+            </div>
+            <button className="btn-primary" style={{ marginTop: 12 }} onClick={() => setShowNewDialog(true)}>
+              Novo campeonato
+            </button>
+          </div>
+        </main>
         {showNewDialog && (
           <NewCompetitionDialog onClose={() => setShowNewDialog(false)} />
         )}
@@ -100,20 +106,16 @@ export default function App() {
         onNewCompetition={() => setShowNewDialog(true)}
       />
 
-      <div className="sub-tabs-bar" style={{ borderBottomColor: competition.accentColor + '55' }}>
+      <div className="sub-tabs-bar">
         {competition.sections.map(s => {
           const isActive = s.id === activeSection
           return (
             <button
               key={s.id}
-              className={`sub-tab${isActive ? ' active' : ''}${s.isDashboard ? ' sub-tab-dash' : ''}`}
+              className={`sub-tab${isActive ? ' active' : ''}`}
               onClick={() => setActiveSection(s.id)}
-              style={isActive ? {
-                color: competition.accentColor,
-                borderBottomColor: competition.accentColor,
-              } : {}}
             >
-              {s.isDashboard && '📊 '}{s.label}
+              {s.label}
             </button>
           )
         })}

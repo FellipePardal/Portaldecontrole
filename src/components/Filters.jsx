@@ -46,8 +46,6 @@ export default function Filters({ filters, onChange, config, onAdd, data }) {
           value={filters.search}
           onChange={e => set('search', e.target.value)}
           style={{ width: 200 }}
-          onFocus={e => e.target.style.borderColor = accent}
-          onBlur={e => e.target.style.borderColor = ''}
         />
       </div>
 
@@ -107,13 +105,11 @@ export default function Filters({ filters, onChange, config, onAdd, data }) {
         <input className="filter-input" type="text" placeholder="dd/mm/aaaa"
           value={filters.dateFrom} onChange={e => set('dateFrom', e.target.value)}
           style={{ width: 105 }}
-          onFocus={e => e.target.style.borderColor = accent}
           onBlur={e => e.target.style.borderColor = ''} />
         <span className="filter-label">Ate:</span>
         <input className="filter-input" type="text" placeholder="dd/mm/aaaa"
           value={filters.dateTo} onChange={e => set('dateTo', e.target.value)}
           style={{ width: 105 }}
-          onFocus={e => e.target.style.borderColor = accent}
           onBlur={e => e.target.style.borderColor = ''} />
       </div>
 
@@ -122,7 +118,6 @@ export default function Filters({ filters, onChange, config, onAdd, data }) {
         <input className="filter-input" type="text" placeholder="ex: 01"
           value={filters.rodada} onChange={e => set('rodada', e.target.value)}
           style={{ width: 72 }}
-          onFocus={e => e.target.style.borderColor = accent}
           onBlur={e => e.target.style.borderColor = ''} />
       </div>
 
@@ -130,8 +125,8 @@ export default function Filters({ filters, onChange, config, onAdd, data }) {
         <button className="btn-clear" onClick={clear}>x Limpar</button>
       )}
 
-      <button className="btn-add" style={{ backgroundColor: accent }} onClick={onAdd}>
-        + Novo Jogo
+      <button className="btn-add" onClick={onAdd}>
+        + Novo jogo
       </button>
     </div>
   )

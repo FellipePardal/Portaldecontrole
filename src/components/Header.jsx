@@ -24,7 +24,7 @@ export default function Header({ competitions, activeComp, onCompSelect, onNewCo
                 boxShadow: `0 0 14px ${comp.accentColor}33`,
               } : {}}
             >
-              ⚽ {comp.label}
+              {comp.label}
             </button>
           )
         })}

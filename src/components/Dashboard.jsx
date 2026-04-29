@@ -133,39 +133,64 @@ export default function Dashboard({ data, config }) {
   const umData = useMemo(() => hasUM ? countBy(data, 'um') : [], [data, hasUM])
   const sateliteData = useMemo(() => hasSatelite ? countBy(data, 'satelite') : [], [data, hasSatelite])
 
+  const taxa = total > 0 ? Math.round((confirmados / total) * 100) : 0
+  const pendentes = data.filter(r => !r.status || r.status === 'Pendente').length
+
   return (
     <div className="dashboard">
-      <div className="dash-header">
-        <h2 className="dash-title" style={{ color: accent }}>Dashboard - {config.label}</h2>
-        <div className="dash-summary">
-          <div className="dash-summary-item">
-            <span className="dash-summary-value" style={{ color: accent }}>{total}</span>
-            <span className="dash-summary-label">Total</span>
-          </div>
-          <div className="dash-summary-item">
-            <span className="dash-summary-value" style={{ color: '#86e050' }}>{confirmados}</span>
-            <span className="dash-summary-label">Confirmados</span>
-          </div>
-          <div className="dash-summary-item">
-            <span className="dash-summary-value">
-              {total > 0 ? Math.round((confirmados / total) * 100) : 0}%
-            </span>
-            <span className="dash-summary-label">Taxa</span>
+      <div className="page-header">
+        <div>
+          <h1 className="page-title">{config.label}</h1>
+          <p className="page-subtitle">Visão geral dos jogos e status de transmissão</p>
+        </div>
+      </div>
+
+      <div className="kpi-grid">
+        <div className="kpi-card">
+          <span className="kpi-label">Total de jogos</span>
+          <span className="kpi-value">{total}</span>
+        </div>
+        <div className="kpi-card">
+          <span className="kpi-label">Confirmados</span>
+          <span className="kpi-value">{confirmados}</span>
+          <span className="kpi-meta">{taxa}% do total</span>
+        </div>
+        <div className="kpi-card">
+          <span className="kpi-label">Pendentes</span>
+          <span className="kpi-value">{pendentes}</span>
+        </div>
+        <div className="kpi-card">
+          <span className="kpi-label">Taxa de confirmação</span>
+          <span className="kpi-value">{taxa}<span className="kpi-unit">%</span></span>
+          <div className="kpi-progress">
+            <div className="kpi-progress-bar" style={{ width: taxa + '%' }} />
           </div>
         </div>
       </div>
 
-      <div className="dash-grid">
-        {hasDetentor && <BarChart entries={detentorData} total={total} accentColor={accent} label="Por Detentor" />}
-        {hasEstadio && <BarChart entries={estadioData.slice(0, 10)} total={total} accentColor="#3b82f6" label="Por Estadio (Top 10)" />}
-        {hasUM && <BarChart entries={umData} total={total} accentColor="#f59e0b" label="Por UM" />}
-        {hasSatelite && <BarChart entries={sateliteData} total={total} accentColor="#a78bfa" label="Por Satelite" />}
-      </div>
+      {total === 0 ? (
+        <div className="empty-state-pro">
+          <div className="empty-state-pro-icon">·</div>
+          <div className="empty-state-pro-title">Nenhum jogo cadastrado</div>
+          <div className="empty-state-pro-desc">
+            Os dados aparecem aqui assim que você adicionar o primeiro jogo na aba <b>Controle</b>.
+          </div>
+        </div>
+      ) : (
+        <>
+          <div className="dash-grid">
+            {hasDetentor && <BarChart entries={detentorData} total={total} accentColor={accent} label="Por detentor" />}
+            {hasEstadio && <BarChart entries={estadioData.slice(0, 10)} total={total} accentColor={accent} label="Top 10 estádios" />}
+            {hasUM && <BarChart entries={umData} total={total} accentColor={accent} label="Por UM" />}
+            {hasSatelite && <BarChart entries={sateliteData} total={total} accentColor={accent} label="Por satélite" />}
+          </div>
 
-      <div className="dash-grid">
-        <RodadaTimeline data={data} accentColor={accent} />
-        <NextGames data={data} accentColor={accent} />
-      </div>
+          <div className="dash-grid">
+            <RodadaTimeline data={data} accentColor={accent} />
+            <NextGames data={data} accentColor={accent} />
+          </div>
+        </>
+      )}
     </div>
   )
 }

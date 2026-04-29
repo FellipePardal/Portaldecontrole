@@ -5,16 +5,16 @@ import { getCustomOptions, addCustomOption } from '../hooks/useCustomOptions'
 const EXCLUDED = new Set(['id', 'created_at', 'updated_at'])
 
 const SECTION_META = {
-  'Jogo':           { icon: '⚽', color: '#3b82f6', defaultOpen: true },
-  'Equipe Tecnica': { icon: '👥', color: '#22c55e', defaultOpen: false },
-  'Equipamentos':   { icon: '📷', color: '#22c55e', defaultOpen: false },
-  'Credenciamento': { icon: '🪪', color: '#f97316', defaultOpen: false },
-  'Transmissao':    { icon: '📡', color: '#f59e0b', defaultOpen: false },
-  'Globo':          { icon: '🌐', color: '#ec4899', defaultOpen: false },
-  'Tecnico':        { icon: '⚙️', color: '#a78bfa', defaultOpen: false },
-  'Horarios':       { icon: '🕐', color: '#06b6d4', defaultOpen: false },
+  'Jogo':           { icon: '01', color: '#5e85d6', defaultOpen: true },
+  'Equipe Tecnica': { icon: '02', color: '#65B32E', defaultOpen: false },
+  'Equipamentos':   { icon: '02', color: '#65B32E', defaultOpen: false },
+  'Credenciamento': { icon: '03', color: '#d97a3a', defaultOpen: false },
+  'Transmissao':    { icon: '04', color: '#d49a3a', defaultOpen: false },
+  'Globo':          { icon: '05', color: '#9a8ad6', defaultOpen: false },
+  'Tecnico':        { icon: '06', color: '#9a8ad6', defaultOpen: false },
+  'Horarios':       { icon: '07', color: '#4fa3b8', defaultOpen: false },
 }
-const DEFAULT_COLOR = '#6a85a0'
+const DEFAULT_COLOR = '#5e6373'
 
 function getUniqueGroups(columns) {
   const seen = new Set(); const groups = []
@@ -123,7 +123,7 @@ function FormSection({ group, cols, formData, onSet, accentColor }) {
     k.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') ===
     group.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
   )
-  const meta = (metaKey && SECTION_META[metaKey]) || { icon: '📋', color: DEFAULT_COLOR, defaultOpen: false }
+  const meta = (metaKey && SECTION_META[metaKey]) || { icon: '·', color: DEFAULT_COLOR, defaultOpen: false }
   const [open, setOpen] = useState(meta.defaultOpen)
   const filled = countFilled(cols, formData)
 
