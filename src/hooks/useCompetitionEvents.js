@@ -1,0 +1,105 @@
+import { useState, useEffect, useCallback } from 'react'
+import { supabase, isConfigured } from '../lib/supabase'
+
+const RESERVED_TOP_LEVEL = new Set(['id', 'created_at', 'updated_at', 'competition_id', 'data', 'status'])
+
+// Achata { id, status, created_at, updated_at, ...data } -> { id, status, created_at, updated_at, ...campos }
+// para que TablePage/DataTable consigam ler `row.mandante`, `row.detentor` etc. sem mudar.
+function flattenRow(row) {
+  const data = row.data || {}
+  return {
+    ...data,
+    id: row.id,
+    status: row.status ?? data.status ?? '',
+    created_at: row.created_at,
+    updated_at: row.updated_at,
+  }
+}
+
+// Inverso: pega o objeto que veio do GameModal (já achatado) e separa o que vai
+// no JSONB do que vai no nível superior.
+function splitForUpsert(rowData) {
+  const out = { data: {} }
+  for (const [k, v] of Object.entries(rowData || {})) {
+    if (RESERVED_TOP_LEVEL.has(k)) {
+      if (k === 'status') out.status = v
+      // ignora id/created_at/updated_at — definidos pelo banco / pelo caller
+      continue
+    }
+    out.data[k] = v
+  }
+  return out
+}
+
+export function useCompetitionEvents(competitionId) {
+  const [data, setData] = useState([])
+  const [loading, setLoading] = useState(!!competitionId && isConfigured)
+  const [error, setError] = useState(null)
+
+  const load = useCallback(async () => {
+    if (!competitionId || !isConfigured) {
+      setLoading(false)
+      return
+    }
+    setLoading(true)
+    const { data: rows, error: err } = await supabase
+      .from('competition_events')
+      .select('*')
+      .eq('competition_id', competitionId)
+      .order('created_at', { ascending: true })
+    if (err) {
+      setError(err.message)
+      setData([])
+    } else {
+      setData((rows || []).map(flattenRow))
+      setError(null)
+    }
+    setLoading(false)
+  }, [competitionId])
+
+  useEffect(() => {
+    if (!competitionId || !isConfigured) return
+    load()
+    const channel = supabase
+      .channel(`competition_events_${competitionId}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'competition_events', filter: `competition_id=eq.${competitionId}` },
+        load
+      )
+      .subscribe()
+    return () => { supabase.removeChannel(channel) }
+  }, [competitionId, load])
+
+  async function addRow(rowData) {
+    if (!competitionId) throw new Error('competitionId ausente')
+    const split = splitForUpsert(rowData)
+    const { error: err } = await supabase.from('competition_events').insert([{
+      competition_id: competitionId,
+      data: split.data,
+      status: split.status ?? 'Pendente',
+    }])
+    if (err) throw err
+  }
+
+  async function updateRow(id, rowData) {
+    const split = splitForUpsert(rowData)
+    const patch = { data: split.data, updated_at: new Date().toISOString() }
+    if (split.status !== undefined) patch.status = split.status
+    const { error: err } = await supabase
+      .from('competition_events')
+      .update(patch)
+      .eq('id', id)
+    if (err) throw err
+  }
+
+  async function deleteRow(id) {
+    const { error: err } = await supabase
+      .from('competition_events')
+      .delete()
+      .eq('id', id)
+    if (err) throw err
+  }
+
+  return { data, loading, error, addRow, updateRow, deleteRow, reload: load }
+}

@@ -4,11 +4,11 @@ import { MOCK_DATA } from '../data/mockData'
 
 export function useTableData(tableName) {
   const [data, setData] = useState(isConfigured ? [] : (MOCK_DATA[tableName] || []))
-  const [loading, setLoading] = useState(isConfigured)
+  const [loading, setLoading] = useState(isConfigured && !!tableName)
   const [error, setError] = useState(null)
 
   useEffect(() => {
-    if (!isConfigured) return
+    if (!isConfigured || !tableName) return
     loadData()
     const channel = supabase
       .channel(`${tableName}_realtime`)
@@ -18,6 +18,7 @@ export function useTableData(tableName) {
   }, [tableName])
 
   async function loadData() {
+    if (!tableName) { setLoading(false); return }
     setLoading(true)
     const { data: rows, error: err } = await supabase
       .from(tableName)

@@ -891,3 +891,34 @@ body {
   .stat-value { font-size: 30px; }
   .dash-rodada-grid { grid-template-columns: 1fr 1fr; }
 }
+
+/* ============================================================
+   Phase 1 — Novo campeonato
+   ============================================================ */
+.nav-tab-new {
+  border: 1px dashed var(--border-gray, #555) !important;
+  color: var(--text-muted) !important;
+  background: transparent;
+  letter-spacing: 0.5px;
+}
+.nav-tab-new:hover {
+  border-color: var(--lm-green, #65B32E) !important;
+  color: var(--lm-green, #65B32E) !important;
+  background: var(--bg-surface);
+}
+
+.btn-primary {
+  padding: 10px 22px;
+  background: var(--lm-green, #65B32E);
+  color: #fff;
+  border: 0;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 14px;
+  font-family: inherit;
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+.btn-primary:hover { opacity: 0.92; transform: translateY(-1px); }
+.btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+

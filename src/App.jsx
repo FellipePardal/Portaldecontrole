@@ -1,40 +1,16 @@
-import { useState } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import Header from './components/Header'
 import TablePage from './components/TablePage'
 import Dashboard from './components/Dashboard'
+import NewCompetitionDialog from './components/NewCompetitionDialog'
 import { useTableData } from './hooks/useTableData'
-import {
-  BRASILEIRAO_CONFIG,
-  PERIFERICO_BR_CONFIG,
-  PAULISTAO_FEM_CONFIG,
-  PERIFERICO_PF_CONFIG,
-} from './config/tables'
-
-const COMPETITIONS = [
-  {
-    id: 'brasileirao',
-    label: 'Brasileirao 26',
-    accentColor: '#22c55e',
-    sections: [
-      { id: 'br-dashboard', label: 'Dashboard', config: BRASILEIRAO_CONFIG, isDashboard: true },
-      { id: 'br-controle', label: 'Controle', config: BRASILEIRAO_CONFIG },
-      { id: 'br-periferico', label: 'Periferico', config: PERIFERICO_BR_CONFIG },
-    ],
-  },
-  {
-    id: 'paulistao-fem',
-    label: 'Paulistao Feminino 26',
-    accentColor: '#ec4899',
-    sections: [
-      { id: 'pf-dashboard', label: 'Dashboard', config: PAULISTAO_FEM_CONFIG, isDashboard: true },
-      { id: 'pf-controle', label: 'Controle', config: PAULISTAO_FEM_CONFIG },
-      { id: 'pf-periferico', label: 'Periferico', config: PERIFERICO_PF_CONFIG },
-    ],
-  },
-]
+import { useCompetitionEvents } from './hooks/useCompetitionEvents'
+import { useCompetitions } from './hooks/useCompetitions'
 
 function DashboardWrapper({ config }) {
-  const { data, loading } = useTableData(config.tableName)
+  const legacy = useTableData(config.isLegacy ? config.tableName : null)
+  const dynamic = useCompetitionEvents(config.isLegacy ? null : config.competitionId)
+  const { data, loading } = config.isLegacy ? legacy : dynamic
 
   if (loading) {
     return (
@@ -49,24 +25,79 @@ function DashboardWrapper({ config }) {
 }
 
 export default function App() {
-  const [activeComp, setActiveComp] = useState('brasileirao')
-  const [activeSection, setActiveSection] = useState('br-dashboard')
+  const { competitions, loading: compsLoading, error: compsError } = useCompetitions()
+  const [activeComp, setActiveComp] = useState(null)
+  const [activeSection, setActiveSection] = useState(null)
+  const [showNewDialog, setShowNewDialog] = useState(false)
 
-  const competition = COMPETITIONS.find(c => c.id === activeComp)
-  const section = competition.sections.find(s => s.id === activeSection)
+  // Sincroniza seleção quando a lista chega
+  useEffect(() => {
+    if (competitions.length === 0) return
+    const stillExists = competitions.find(c => c.id === activeComp)
+    if (!activeComp || !stillExists) {
+      const first = competitions[0]
+      setActiveComp(first.id)
+      setActiveSection(first.sections[0]?.id || null)
+    }
+  }, [competitions, activeComp])
+
+  const competition = useMemo(
+    () => competitions.find(c => c.id === activeComp),
+    [competitions, activeComp]
+  )
+  const section = competition?.sections.find(s => s.id === activeSection) || competition?.sections[0]
 
   function handleCompSelect(compId) {
     setActiveComp(compId)
-    const comp = COMPETITIONS.find(c => c.id === compId)
-    setActiveSection(comp.sections[0].id)
+    const comp = competitions.find(c => c.id === compId)
+    setActiveSection(comp?.sections[0]?.id || null)
+  }
+
+  if (compsLoading && competitions.length === 0) {
+    return (
+      <div style={{ padding: 60, textAlign: 'center' }}>
+        <div className="skeleton-cell" style={{ width: 240, height: 20, margin: '0 auto 16px' }} />
+        <div className="skeleton-cell" style={{ width: 320, height: 14, margin: '0 auto' }} />
+      </div>
+    )
+  }
+
+  if (compsError) {
+    return (
+      <div style={{ padding: 60, textAlign: 'center' }}>
+        <div style={{ fontSize: 48, marginBottom: 16 }}>⚠️</div>
+        <p style={{ fontSize: 18, fontWeight: 700, color: 'var(--text)', marginBottom: 8 }}>
+          Erro ao carregar campeonatos
+        </p>
+        <p style={{ fontSize: 14, color: 'var(--text-muted)' }}>{compsError}</p>
+      </div>
+    )
+  }
+
+  if (!competition || !section) {
+    return (
+      <div style={{ padding: 60, textAlign: 'center' }}>
+        <div style={{ fontSize: 48, marginBottom: 16 }}>📋</div>
+        <p style={{ fontSize: 18, fontWeight: 700, color: 'var(--text)', marginBottom: 8 }}>
+          Nenhum campeonato cadastrado
+        </p>
+        <button className="btn-primary" onClick={() => setShowNewDialog(true)}>
+          + Novo campeonato
+        </button>
+        {showNewDialog && (
+          <NewCompetitionDialog onClose={() => setShowNewDialog(false)} />
+        )}
+      </div>
+    )
   }
 
   return (
     <div className="app">
       <Header
-        competitions={COMPETITIONS}
+        competitions={competitions}
         activeComp={activeComp}
         onCompSelect={handleCompSelect}
+        onNewCompetition={() => setShowNewDialog(true)}
       />
 
       <div className="sub-tabs-bar" style={{ borderBottomColor: competition.accentColor + '55' }}>
@@ -95,6 +126,10 @@ export default function App() {
           <TablePage key={section.id} config={section.config} />
         )}
       </main>
+
+      {showNewDialog && (
+        <NewCompetitionDialog onClose={() => setShowNewDialog(false)} />
+      )}
     </div>
   )
 }

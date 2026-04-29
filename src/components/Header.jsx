@@ -1,4 +1,4 @@
-export default function Header({ competitions, activeComp, onCompSelect }) {
+export default function Header({ competitions, activeComp, onCompSelect, onNewCompetition }) {
   return (
     <header className="header">
       <div className="logo-area">
@@ -28,6 +28,16 @@ export default function Header({ competitions, activeComp, onCompSelect }) {
             </button>
           )
         })}
+
+        {onNewCompetition && (
+          <button
+            className="nav-tab nav-tab-new"
+            onClick={onNewCompetition}
+            title="Adicionar novo campeonato"
+          >
+            + Novo
+          </button>
+        )}
       </nav>
     </header>
   )

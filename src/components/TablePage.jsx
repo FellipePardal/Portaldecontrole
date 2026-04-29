@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react'
 import { useTableData } from '../hooks/useTableData'
+import { useCompetitionEvents } from '../hooks/useCompetitionEvents'
 import StatsCards from './StatsCards'
 import Filters from './Filters'
 import DataTable from './DataTable'
@@ -9,7 +10,9 @@ import ConfirmDialog from './ConfirmDialog'
 const DEFAULT_FILTERS = { search: '', status: '', dateFrom: '', dateTo: '', rodada: '', detentor: '', estadio: '', um: '' }
 
 export default function TablePage({ config }) {
-  const { data, loading, error, addRow, updateRow, deleteRow } = useTableData(config.tableName)
+  const legacy = useTableData(config.isLegacy ? config.tableName : null)
+  const dynamic = useCompetitionEvents(config.isLegacy ? null : config.competitionId)
+  const { data, loading, error, addRow, updateRow, deleteRow } = config.isLegacy ? legacy : dynamic
 
   async function handleStatusChange(id, field, value) {
     await updateRow(id, { [field]: value })
