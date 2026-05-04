@@ -183,21 +183,22 @@ export default function DataTable({ data, columns, loading, accentColor, onEdit,
                         <button
                           type="button"
                           className={`simnao-btn${isSim ? ' active sim' : ''}`}
+                          title="Sim"
                           onClick={() => onStatusChange?.(row.id, col.key, 'Sim')}
-                        >Sim</button>
+                        ><span className="simnao-icon">✓</span>Sim</button>
                         <button
                           type="button"
                           className={`simnao-btn${isNao ? ' active nao' : ''}`}
+                          title="Não"
                           onClick={() => onStatusChange?.(row.id, col.key, 'Não')}
-                        >Não</button>
+                        ><span className="simnao-icon">✕</span>Não</button>
                       </div>
                     )
                   } else if (col.linkedTo) {
-                    const parent = row[col.linkedTo]
-                    const enabled = parent === 'Sim'
+                    const enabled = row[col.linkedTo] === 'Sim'
                     content = enabled
                       ? (value || <span style={{ color: 'var(--text-dim)' }}>—</span>)
-                      : <span style={{ color: 'var(--text-dim)', fontStyle: 'italic' }}>—</span>
+                      : <span className="linked-disabled" title={`Habilitar ${col.linkedTo} para preencher`}>n/a</span>
                   } else {
                     content = value || <span style={{ color: 'var(--text-dim)' }}>—</span>
                   }

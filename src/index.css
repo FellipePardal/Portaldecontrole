@@ -827,19 +827,68 @@ body {
 .status-picker-btn:hover { opacity: 0.8; transform: translateY(-1px); }
 .status-picker-btn.selected { opacity: 1; box-shadow: 0 0 0 2px rgba(255,255,255,0.2); transform: translateY(-1px); }
 
-/* Sim/Nao toggles (cell + modal) */
-.simnao-cell, .simnao-picker { display: inline-flex; gap: 4px; }
-.simnao-btn {
-  padding: 3px 10px; min-width: 38px;
-  border-radius: 6px; border: 1px solid var(--border);
-  background: transparent; color: var(--text-dim);
-  font-family: inherit; font-size: 11px; font-weight: 600;
-  cursor: pointer; transition: all 0.15s;
+/* Sim/Nao segmented pill */
+.simnao-cell, .simnao-picker {
+  display: inline-flex;
+  background: rgba(120,130,140,0.08);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 2px;
+  gap: 0;
 }
-.simnao-btn:hover { border-color: var(--text-dim); color: var(--text); }
-.simnao-btn.active.sim { background: #16a34a; border-color: #16a34a; color: #fff; }
-.simnao-btn.active.nao { background: #dc2626; border-color: #dc2626; color: #fff; }
-.simnao-picker .simnao-btn { padding: 6px 16px; font-size: 12px; min-width: 56px; }
+.simnao-btn {
+  padding: 4px 12px;
+  border: none;
+  background: transparent;
+  border-radius: 999px;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: all 0.18s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.simnao-btn .simnao-icon {
+  font-size: 9px;
+  opacity: 0.6;
+  transition: opacity 0.18s ease;
+}
+.simnao-btn:hover { color: var(--text); }
+.simnao-btn:hover .simnao-icon { opacity: 1; }
+.simnao-btn.active {
+  color: #fff;
+  transform: scale(1.02);
+}
+.simnao-btn.active .simnao-icon { opacity: 1; }
+.simnao-btn.active.sim {
+  background: linear-gradient(135deg, #16a34a, #22c55e);
+  box-shadow: 0 2px 8px rgba(34,197,94,0.35);
+}
+.simnao-btn.active.nao {
+  background: linear-gradient(135deg, #dc2626, #ef4444);
+  box-shadow: 0 2px 8px rgba(239,68,68,0.35);
+}
+.simnao-picker { padding: 3px; }
+.simnao-picker .simnao-btn { padding: 8px 22px; font-size: 13px; }
+.simnao-picker .simnao-btn .simnao-icon { font-size: 11px; }
+
+/* Fornecedor desabilitado quando equipamento = Não */
+.linked-disabled {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: rgba(120,130,140,0.06);
+  color: var(--text-dim);
+  font-size: 11px;
+  font-style: italic;
+  opacity: 0.6;
+}
 
 .modal-footer {
   padding: 14px 24px; border-top: 1px solid var(--border);

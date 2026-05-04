@@ -172,12 +172,12 @@ function FormSection({ group, cols, formData, onSet, accentColor }) {
                       type="button"
                       className={`simnao-btn${value === 'Sim' ? ' active sim' : ''}`}
                       onClick={() => onSet(col.key, 'Sim')}
-                    >Sim</button>
+                    ><span className="simnao-icon">✓</span>Sim</button>
                     <button
                       type="button"
                       className={`simnao-btn${(value === 'Não' || value === 'Nao') ? ' active nao' : ''}`}
                       onClick={() => onSet(col.key, 'Não')}
-                    >Não</button>
+                    ><span className="simnao-icon">✕</span>Não</button>
                   </div>
                 ) : col.type === 'select' ? (
                   <SelectWithAdd col={col} value={value} onSet={onSet} accentColor={accentColor} />
