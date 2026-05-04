@@ -175,6 +175,29 @@ export default function DataTable({ data, columns, loading, accentColor, onEdit,
                         🔗 Abrir
                       </a>
                     )
+                  } else if (col.type === 'simnao') {
+                    const isSim = value === 'Sim'
+                    const isNao = value === 'Não' || value === 'Nao'
+                    content = (
+                      <div className="simnao-cell" onClick={e => e.stopPropagation()}>
+                        <button
+                          type="button"
+                          className={`simnao-btn${isSim ? ' active sim' : ''}`}
+                          onClick={() => onStatusChange?.(row.id, col.key, 'Sim')}
+                        >Sim</button>
+                        <button
+                          type="button"
+                          className={`simnao-btn${isNao ? ' active nao' : ''}`}
+                          onClick={() => onStatusChange?.(row.id, col.key, 'Não')}
+                        >Não</button>
+                      </div>
+                    )
+                  } else if (col.linkedTo) {
+                    const parent = row[col.linkedTo]
+                    const enabled = parent === 'Sim'
+                    content = enabled
+                      ? (value || <span style={{ color: 'var(--text-dim)' }}>—</span>)
+                      : <span style={{ color: 'var(--text-dim)', fontStyle: 'italic' }}>—</span>
                   } else {
                     content = value || <span style={{ color: 'var(--text-dim)' }}>—</span>
                   }

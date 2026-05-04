@@ -827,6 +827,20 @@ body {
 .status-picker-btn:hover { opacity: 0.8; transform: translateY(-1px); }
 .status-picker-btn.selected { opacity: 1; box-shadow: 0 0 0 2px rgba(255,255,255,0.2); transform: translateY(-1px); }
 
+/* Sim/Nao toggles (cell + modal) */
+.simnao-cell, .simnao-picker { display: inline-flex; gap: 4px; }
+.simnao-btn {
+  padding: 3px 10px; min-width: 38px;
+  border-radius: 6px; border: 1px solid var(--border);
+  background: transparent; color: var(--text-dim);
+  font-family: inherit; font-size: 11px; font-weight: 600;
+  cursor: pointer; transition: all 0.15s;
+}
+.simnao-btn:hover { border-color: var(--text-dim); color: var(--text); }
+.simnao-btn.active.sim { background: #16a34a; border-color: #16a34a; color: #fff; }
+.simnao-btn.active.nao { background: #dc2626; border-color: #dc2626; color: #fff; }
+.simnao-picker .simnao-btn { padding: 6px 16px; font-size: 12px; min-width: 56px; }
+
 .modal-footer {
   padding: 14px 24px; border-top: 1px solid var(--border);
   display: flex; justify-content: flex-end; align-items: center;

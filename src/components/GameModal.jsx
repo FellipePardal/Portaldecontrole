@@ -145,7 +145,7 @@ function FormSection({ group, cols, formData, onSet, accentColor }) {
 
       {open && (
         <div className="modal-form-grid form-section-body">
-          {cols.map(col => {
+          {cols.filter(col => !col.linkedTo || formData[col.linkedTo] === 'Sim').map(col => {
             const value = formData[col.key] ?? ''
             const isStatus = col.statusColor
 
@@ -165,6 +165,19 @@ function FormSection({ group, cols, formData, onSet, accentColor }) {
                         {value === opt ? '+ ' : ''}{opt}
                       </button>
                     ))}
+                  </div>
+                ) : col.type === 'simnao' ? (
+                  <div className="simnao-picker">
+                    <button
+                      type="button"
+                      className={`simnao-btn${value === 'Sim' ? ' active sim' : ''}`}
+                      onClick={() => onSet(col.key, 'Sim')}
+                    >Sim</button>
+                    <button
+                      type="button"
+                      className={`simnao-btn${(value === 'Não' || value === 'Nao') ? ' active nao' : ''}`}
+                      onClick={() => onSet(col.key, 'Não')}
+                    >Não</button>
                   </div>
                 ) : col.type === 'select' ? (
                   <SelectWithAdd col={col} value={value} onSet={onSet} accentColor={accentColor} />
