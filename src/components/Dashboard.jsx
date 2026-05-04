@@ -1,79 +1,123 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 
-function countBy(data, key) {
-  const map = {}
-  for (const row of data) {
-    const val = row[key] || 'N/A'
-    map[val] = (map[val] || 0) + 1
+const MESES = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro']
+const DIAS_SEMANA = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB']
+
+function parseDataMatch(str) {
+  if (!str || /^[aà] definir$/i.test(String(str).trim())) return null
+  const s = String(str).trim()
+  let m = s.match(/^(\d{4})-(\d{2})-(\d{2})/)
+  if (m) return { day: parseInt(m[3]), month: parseInt(m[2]) - 1, year: parseInt(m[1]) }
+  m = s.match(/^(\d{2})\/(\d{2})(?:\/(\d{2,4}))?/)
+  if (m) {
+    const day = parseInt(m[1])
+    const month = parseInt(m[2]) - 1
+    const yrRaw = m[3] ? parseInt(m[3]) : 2026
+    const year = yrRaw < 100 ? 2000 + yrRaw : yrRaw
+    return { day, month, year }
   }
-  return Object.entries(map).sort((a, b) => b[1] - a[1])
+  return null
 }
 
-function BarChart({ entries, total, accentColor, label }) {
-  if (!entries.length) return null
-  const max = entries[0][1]
-
-  return (
-    <div className="dash-card">
-      <div className="dash-card-title">{label}</div>
-      <div className="dash-bars">
-        {entries.map(([name, count]) => (
-          <div key={name} className="dash-bar-row">
-            <span className="dash-bar-label" title={name}>{name}</span>
-            <div className="dash-bar-track">
-              <div
-                className="dash-bar-fill"
-                style={{
-                  width: Math.max((count / max) * 100, 4) + '%',
-                  background: accentColor,
-                }}
-              />
-            </div>
-            <span className="dash-bar-value">{count}</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
-
-function RodadaTimeline({ data, accentColor }) {
-  const rodadas = useMemo(() => {
-    const map = {}
+function CalendarView({ data, accentColor }) {
+  const byDate = useMemo(() => {
+    const map = new Map()
     for (const row of data) {
-      const rod = row.eu || row.rod || 'N/A'
-      if (!map[rod]) map[rod] = { total: 0, confirmados: 0 }
-      map[rod].total++
-      if (row.status === 'Confirmado') map[rod].confirmados++
+      if (!row.mandante || !row.visitante) continue
+      const d = parseDataMatch(row.data)
+      if (!d) continue
+      const key = `${d.year}-${d.month}-${d.day}`
+      if (!map.has(key)) map.set(key, [])
+      map.get(key).push(row)
     }
-    return Object.entries(map).sort((a, b) => {
-      const na = parseInt(a[0]) || 0
-      const nb = parseInt(b[0]) || 0
-      return na - nb
-    })
+    return map
   }, [data])
 
-  if (!rodadas.length) return null
+  const initial = useMemo(() => {
+    let earliest = null
+    for (const row of data) {
+      const d = parseDataMatch(row.data)
+      if (!d) continue
+      if (!earliest || d.year < earliest.year || (d.year === earliest.year && d.month < earliest.month)) {
+        earliest = d
+      }
+    }
+    if (earliest) return { year: earliest.year, month: earliest.month }
+    const now = new Date()
+    return { year: now.getFullYear(), month: now.getMonth() }
+  }, [data])
+
+  const [view, setView] = useState(initial)
+
+  const cells = useMemo(() => {
+    const first = new Date(view.year, view.month, 1)
+    const startWeekDay = first.getDay()
+    const lastDay = new Date(view.year, view.month + 1, 0).getDate()
+    const prevMonthLast = new Date(view.year, view.month, 0).getDate()
+    const result = []
+    for (let i = 0; i < startWeekDay; i++) {
+      result.push({ day: prevMonthLast - startWeekDay + i + 1, otherMonth: true })
+    }
+    for (let d = 1; d <= lastDay; d++) {
+      const key = `${view.year}-${view.month}-${d}`
+      result.push({ day: d, current: true, matches: byDate.get(key) || [] })
+    }
+    let nextDay = 1
+    while (result.length % 7 !== 0) {
+      result.push({ day: nextDay++, otherMonth: true })
+    }
+    return result
+  }, [view, byDate])
+
+  function prev() {
+    setView(v => v.month === 0 ? { year: v.year - 1, month: 11 } : { year: v.year, month: v.month - 1 })
+  }
+  function next() {
+    setView(v => v.month === 11 ? { year: v.year + 1, month: 0 } : { year: v.year, month: v.month + 1 })
+  }
+
+  const monthMatchCount = cells.filter(c => c.current && c.matches?.length).reduce((s, c) => s + c.matches.length, 0)
 
   return (
-    <div className="dash-card">
-      <div className="dash-card-title">Jogos por Rodada</div>
-      <div className="dash-rodada-grid">
-        {rodadas.map(([rod, { total, confirmados }]) => {
-          const pct = total > 0 ? Math.round((confirmados / total) * 100) : 0
+    <div className="cal-view">
+      <div className="cal-toolbar">
+        <button className="cal-nav-btn" onClick={prev} title="Mês anterior">‹</button>
+        <div className="cal-title">
+          <h2 className="cal-month">{MESES[view.month]}</h2>
+          <span className="cal-year">{view.year}</span>
+        </div>
+        <button className="cal-nav-btn" onClick={next} title="Próximo mês">›</button>
+        <div className="cal-summary" style={{ borderColor: accentColor + '55' }}>
+          <span className="cal-summary-num" style={{ color: accentColor }}>{monthMatchCount}</span>
+          <span className="cal-summary-label">jogo{monthMatchCount === 1 ? '' : 's'} no mês</span>
+        </div>
+      </div>
+
+      <div className="cal-grid">
+        {DIAS_SEMANA.map(d => <div key={d} className="cal-day-name">{d}</div>)}
+        {cells.map((c, i) => {
+          const has = c.matches && c.matches.length > 0
           return (
-            <div key={rod} className="dash-rodada-item">
-              <div className="dash-rodada-number" style={{ borderColor: accentColor }}>{rod}</div>
-              <div className="dash-rodada-info">
-                <span className="dash-rodada-total">{total} jogos</span>
-                <div className="dash-rodada-bar-track">
-                  <div
-                    className="dash-rodada-bar-fill"
-                    style={{ width: pct + '%', background: accentColor }}
-                  />
+            <div
+              key={i}
+              className={`cal-cell${c.otherMonth ? ' other-month' : ''}${has ? ' has-match' : ''}`}
+              style={has ? { '--accent': accentColor } : {}}
+            >
+              <span className="cal-day-num">{c.day}</span>
+              {has && c.matches.map((m, idx) => (
+                <div key={idx} className="cal-match">
+                  {m.hora_brt && <div className="cal-match-time">{m.hora_brt}</div>}
+                  <div className="cal-match-teams">
+                    <div className="cal-match-team">{m.mandante}</div>
+                    <div className="cal-match-vs">×</div>
+                    <div className="cal-match-team">{m.visitante}</div>
+                  </div>
+                  <div className="cal-match-meta">
+                    {m.padrao && <span className="cal-match-tag">{m.padrao}</span>}
+                    {(m.eu || m.rod) && <span className="cal-match-rod">R{m.eu || m.rod}</span>}
+                  </div>
                 </div>
-                <span className="dash-rodada-pct">{pct}% confirmados</span>
-              </div>
+              ))}
             </div>
           )
         })}
@@ -82,89 +126,15 @@ function RodadaTimeline({ data, accentColor }) {
   )
 }
 
-function NextGames({ data, accentColor }) {
-  const upcoming = useMemo(() => {
-    return data
-      .filter(r => r.mandante && r.visitante)
-      .slice(0, 8)
-  }, [data])
-
-  if (!upcoming.length) return null
-
-  return (
-    <div className="dash-card">
-      <div className="dash-card-title">Proximos Jogos</div>
-      <div className="dash-games-list">
-        {upcoming.map((row, i) => (
-          <div key={row.id || i} className="dash-game-item">
-            <div className="dash-game-teams">
-              <span className="dash-game-home">{row.mandante}</span>
-              <span className="dash-game-vs">vs</span>
-              <span className="dash-game-away">{row.visitante}</span>
-            </div>
-            <div className="dash-game-meta">
-              {row.data && <span>{row.data}</span>}
-              {row.hora_brt && <span>{row.hora_brt}</span>}
-              {row.estadio && <span>{row.estadio}</span>}
-            </div>
-            {row.status && (
-              <span className={`dash-game-status dash-status-${(row.status || '').toLowerCase().replace(/\s/g, '-')}`}>
-                {row.status}
-              </span>
-            )}
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
-
 export default function Dashboard({ data, config }) {
-  const accent = config.accentColor
-  const total = data.length
-  const confirmados = data.filter(r => r.status === 'Confirmado').length
-  const hasDetentor = config.columns.some(c => c.key === 'detentor')
-  const hasEstadio = config.columns.some(c => c.key === 'estadio')
-  const hasUM = config.columns.some(c => c.key === 'um')
-  const hasSatelite = config.columns.some(c => c.key === 'satelite')
-
-  const detentorData = useMemo(() => hasDetentor ? countBy(data, 'detentor') : [], [data, hasDetentor])
-  const estadioData = useMemo(() => hasEstadio ? countBy(data, 'estadio') : [], [data, hasEstadio])
-  const umData = useMemo(() => hasUM ? countBy(data, 'um') : [], [data, hasUM])
-  const sateliteData = useMemo(() => hasSatelite ? countBy(data, 'satelite') : [], [data, hasSatelite])
-
-  const taxa = total > 0 ? Math.round((confirmados / total) * 100) : 0
-  const pendentes = data.filter(r => !r.status || r.status === 'Pendente').length
+  const total = data.filter(r => r.mandante && r.visitante).length
 
   return (
     <div className="dashboard">
       <div className="page-header">
         <div>
           <h1 className="page-title">{config.label}</h1>
-          <p className="page-subtitle">Visão geral dos jogos e status de transmissão</p>
-        </div>
-      </div>
-
-      <div className="kpi-grid">
-        <div className="kpi-card">
-          <span className="kpi-label">Total de jogos</span>
-          <span className="kpi-value">{total}</span>
-        </div>
-        <div className="kpi-card">
-          <span className="kpi-label">Confirmados</span>
-          <span className="kpi-value">{confirmados}</span>
-          <span className="kpi-meta">{taxa}% do total</span>
-        </div>
-        <div className="kpi-card">
-          <span className="kpi-label">Pendentes</span>
-          <span className="kpi-value">{pendentes}</span>
-        </div>
-        <div className="kpi-card">
-          <span className="kpi-label">Taxa de confirmação</span>
-          <span className="kpi-value">{taxa}<span className="kpi-unit">%</span></span>
-          <div className="kpi-progress">
-            <div className="kpi-progress-bar" style={{ width: taxa + '%' }} />
-          </div>
+          <p className="page-subtitle">{total} jogo{total === 1 ? '' : 's'} no campeonato</p>
         </div>
       </div>
 
@@ -177,19 +147,7 @@ export default function Dashboard({ data, config }) {
           </div>
         </div>
       ) : (
-        <>
-          <div className="dash-grid">
-            {hasDetentor && <BarChart entries={detentorData} total={total} accentColor={accent} label="Por detentor" />}
-            {hasEstadio && <BarChart entries={estadioData.slice(0, 10)} total={total} accentColor={accent} label="Top 10 estádios" />}
-            {hasUM && <BarChart entries={umData} total={total} accentColor={accent} label="Por UM" />}
-            {hasSatelite && <BarChart entries={sateliteData} total={total} accentColor={accent} label="Por satélite" />}
-          </div>
-
-          <div className="dash-grid">
-            <RodadaTimeline data={data} accentColor={accent} />
-            <NextGames data={data} accentColor={accent} />
-          </div>
-        </>
+        <CalendarView data={data} accentColor={config.accentColor} />
       )}
     </div>
   )
