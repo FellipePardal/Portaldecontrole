@@ -1172,7 +1172,71 @@ body {
   gap: 8px;
 }
 .pm-qtde { width: 80px; }
-.pm-forn { flex: 1; }
+.pm-forn { flex: 1; min-width: 0; }
+
+/* Fornecedor autocomplete dropdown */
+.fornecedor-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  margin-top: 4px;
+  max-height: 280px;
+  overflow-y: auto;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 12px 28px rgba(0,0,0,0.5);
+}
+.fornecedor-item {
+  padding: 8px 12px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--border);
+  border-left: 3px solid transparent;
+  transition: background 0.12s, border-color 0.12s;
+}
+.fornecedor-item:last-child { border-bottom: none; }
+.fornecedor-item:hover { background: var(--bg-hover); }
+.fornecedor-item.match { border-left-color: var(--accent, #65B32E); }
+.fornecedor-item-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+.fornecedor-apelido {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+.fornecedor-tipo {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  background: rgba(120,130,140,0.12);
+  padding: 2px 7px;
+  border-radius: 999px;
+}
+.fornecedor-meta {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 3px;
+}
+.fornecedor-razao { color: var(--text-dim); }
+.fornecedor-divider {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  padding: 8px 12px 4px;
+  background: rgba(120,130,140,0.05);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
 
 /* ───────── DASHBOARD CALENDAR ───────── */
 .cal-view { display: flex; flex-direction: column; gap: 18px; }

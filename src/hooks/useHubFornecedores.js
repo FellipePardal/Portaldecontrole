@@ -72,3 +72,8 @@ export function getApelidosForColumn(colKey, fornecedores) {
     .map(f => f.apelido)
     .sort((a, b) => a.localeCompare(b))
 }
+
+// Retorna o predicado de match para uma coluna (para usar com FornecedorAutocomplete).
+export function getColumnPredicate(colKey) {
+  return MATCH[colKey] || null
+}

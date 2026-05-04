@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { getEscudoUrl } from '../lib/escudos'
-import { useHubFornecedores, getApelidosForColumn } from '../hooks/useHubFornecedores'
+import { useHubFornecedores, getColumnPredicate } from '../hooks/useHubFornecedores'
+import FornecedorAutocomplete from './FornecedorAutocomplete'
 
 const EQUIPAMENTOS = [
   { key: 'drone',     label: 'Drone',     fornecedor: 'fornecedor_drone' },
@@ -134,19 +135,16 @@ export default function PerifericoModal({ row, mode, accentColor, onClose, onSav
                             placeholder="Qtde."
                           />
                         )}
-                        <input
-                          className="form-input pm-forn"
-                          type="text"
-                          list={`fornecedores-${eq.fornecedor}`}
-                          value={data[eq.fornecedor] || ''}
-                          onChange={e => set(eq.fornecedor, e.target.value)}
-                          placeholder="Fornecedor"
-                        />
-                        <datalist id={`fornecedores-${eq.fornecedor}`}>
-                          {getApelidosForColumn(eq.fornecedor, hubFornecedores).map(a => (
-                            <option key={a} value={a} />
-                          ))}
-                        </datalist>
+                        <div className="pm-forn">
+                          <FornecedorAutocomplete
+                            value={data[eq.fornecedor] || ''}
+                            onChange={v => set(eq.fornecedor, v)}
+                            fornecedores={hubFornecedores}
+                            filterPred={getColumnPredicate(eq.fornecedor)}
+                            placeholder="Fornecedor"
+                            accentColor={accentColor}
+                          />
+                        </div>
                       </div>
                     )}
                   </div>
