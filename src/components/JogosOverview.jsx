@@ -29,11 +29,10 @@ function fieldDisplay(col, value) {
 
 function GameCard({ row, config, onEdit, accentColor, defaultOpen }) {
   const [open, setOpen] = useState(!!defaultOpen)
-  const [openGroups, setOpenGroups] = useState(() => new Set())
+  const [hiddenGroups, setHiddenGroups] = useState(() => new Set())
 
   const groups = useMemo(() => uniqueGroups(config.columns), [config.columns])
 
-  // count filled in non-Hub fields per group
   const fillByGroup = useMemo(() => {
     const map = {}
     for (const c of config.columns) {
@@ -53,7 +52,7 @@ function GameCard({ row, config, onEdit, accentColor, defaultOpen }) {
   const statusClass = row.status ? getStatusClass(row.status) : 'status-default'
 
   function toggleGroup(g) {
-    setOpenGroups(prev => {
+    setHiddenGroups(prev => {
       const next = new Set(prev)
       if (next.has(g)) next.delete(g); else next.add(g)
       return next
@@ -99,39 +98,56 @@ function GameCard({ row, config, onEdit, accentColor, defaultOpen }) {
       </button>
 
       {open && (
-        <div className="overview-body">
-          {groups.map(group => {
-            const cols = config.columns.filter(c => c.group === group && !HUB_FIELDS.has(c.key))
-            if (!cols.length) return null
-            const isOpen = openGroups.has(group)
-            const fill = fillByGroup[group] || { total: 0, filled: 0 }
-            return (
-              <div key={group} className={`overview-group${isOpen ? ' open' : ''}`}>
+        <>
+          <div className="overview-group-tabs" onClick={e => e.stopPropagation()}>
+            {groups.map(group => {
+              const cols = config.columns.filter(c => c.group === group && !HUB_FIELDS.has(c.key))
+              if (!cols.length) return null
+              const isHidden = hiddenGroups.has(group)
+              const fill = fillByGroup[group] || { total: 0, filled: 0 }
+              return (
                 <button
+                  key={group}
                   type="button"
-                  className="overview-group-head"
+                  className={`overview-tab-toggle${isHidden ? ' hidden' : ' active'}`}
                   onClick={() => toggleGroup(group)}
+                  title={isHidden ? 'Mostrar' : 'Esconder'}
+                  style={!isHidden ? { borderColor: accentColor, color: accentColor } : {}}
                 >
-                  <span className="overview-group-label">{group}</span>
-                  <span className="overview-group-count">
-                    <span className="filled" style={{ color: fill.filled > 0 ? accentColor : undefined }}>{fill.filled}</span>
-                    <span className="sep">/</span>
-                    <span>{fill.total}</span>
+                  <span>{group}</span>
+                  <span className="tab-toggle-count">
+                    <span className="filled">{fill.filled}</span>/<span>{fill.total}</span>
                   </span>
-                  <span className="overview-group-arrow">{isOpen ? '−' : '+'}</span>
                 </button>
-                {isOpen && (
-                  <div className="overview-group-body">
+              )
+            })}
+          </div>
+
+          <div className="overview-body" onClick={e => e.stopPropagation()}>
+            {groups.map(group => {
+              const cols = config.columns.filter(c => c.group === group && !HUB_FIELDS.has(c.key))
+              if (!cols.length) return null
+              if (hiddenGroups.has(group)) return null
+              const fill = fillByGroup[group] || { total: 0, filled: 0 }
+              return (
+                <div key={group} className="overview-col">
+                  <div className="overview-col-head">
+                    <span className="overview-col-label">{group}</span>
+                    <span className="overview-col-count" style={{ color: fill.filled > 0 ? accentColor : undefined }}>
+                      {fill.filled}/{fill.total}
+                    </span>
+                  </div>
+                  <div className="overview-col-body">
                     {cols.map(col => {
                       const display = fieldDisplay(col, row[col.key])
                       const empty = !display
                       return (
-                        <div key={col.key} className={`overview-field${empty ? ' empty' : ''}`}>
-                          <span className="overview-field-label">{col.label}</span>
-                          <span className="overview-field-value">
+                        <div key={col.key} className={`overview-row${empty ? ' empty' : ''}`}>
+                          <span className="overview-row-label">{col.label}</span>
+                          <span className="overview-row-value">
                             {empty ? <span className="overview-field-empty">—</span> :
                               col.type === 'url' ? (
-                                <a href={display} target="_blank" rel="noreferrer" onClick={e => e.stopPropagation()} style={{ color: accentColor }}>Abrir link</a>
+                                <a href={display} target="_blank" rel="noreferrer" onClick={e => e.stopPropagation()} style={{ color: accentColor }}>Abrir</a>
                               ) : col.statusColor ? (
                                 <span className={`status-badge ${getStatusClass(display)}`}>{display}</span>
                               ) : col.type === 'simnao' ? (
@@ -142,11 +158,11 @@ function GameCard({ row, config, onEdit, accentColor, defaultOpen }) {
                       )
                     })}
                   </div>
-                )}
-              </div>
-            )
-          })}
-        </div>
+                </div>
+              )
+            })}
+          </div>
+        </>
       )}
     </div>
   )
