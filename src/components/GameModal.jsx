@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { getStatusClass, STATUS_OPTIONS } from '../config/tables'
 import { getCustomOptions, addCustomOption } from '../hooks/useCustomOptions'
+import { useHubFornecedores, getApelidosForColumn } from '../hooks/useHubFornecedores'
 
 const EXCLUDED = new Set(['id', 'created_at', 'updated_at'])
 
@@ -58,13 +59,15 @@ function getSmartPlaceholder(col) {
   return hints[col.key] || ''
 }
 
-function SelectWithAdd({ col, value, onSet, accentColor }) {
+function SelectWithAdd({ col, value, onSet, accentColor, hubFornecedores }) {
   const [adding, setAdding] = useState(false)
   const [newValue, setNewValue] = useState('')
   const [customOpts, setCustomOpts] = useState(() => getCustomOptions(col.key))
   const inputRef = useRef(null)
 
-  const allOptions = [...(col.options || []), ...customOpts.filter(o => !(col.options || []).includes(o))]
+  const hubApelidos = getApelidosForColumn(col.key, hubFornecedores || [])
+  const merged = [...(col.options || []), ...hubApelidos, ...customOpts]
+  const allOptions = Array.from(new Set(merged))
 
   function handleAdd() {
     const trimmed = newValue.trim()
@@ -118,7 +121,7 @@ function SelectWithAdd({ col, value, onSet, accentColor }) {
   )
 }
 
-function FormSection({ group, cols, formData, onSet, accentColor }) {
+function FormSection({ group, cols, formData, onSet, accentColor, hubFornecedores }) {
   const metaKey = Object.keys(SECTION_META).find(k =>
     k.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') ===
     group.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
@@ -180,7 +183,7 @@ function FormSection({ group, cols, formData, onSet, accentColor }) {
                     ><span className="simnao-icon">✕</span>Não</button>
                   </div>
                 ) : col.type === 'select' ? (
-                  <SelectWithAdd col={col} value={value} onSet={onSet} accentColor={accentColor} />
+                  <SelectWithAdd col={col} value={value} onSet={onSet} accentColor={accentColor} hubFornecedores={hubFornecedores} />
                 ) : col.type === 'url' ? (
                   <input className="form-input" type="url" value={value}
                     placeholder="https://"
@@ -213,6 +216,7 @@ export default function GameModal({ mode, row, config, onClose, onSave, accentCo
   const [formData, setFormData] = useState({})
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState('')
+  const { fornecedores: hubFornecedores } = useHubFornecedores()
 
   useEffect(() => {
     setFormData(mode === 'edit' && row ? { ...row } : {})
@@ -278,6 +282,7 @@ export default function GameModal({ mode, row, config, onClose, onSave, accentCo
                 formData={formData}
                 onSet={set}
                 accentColor={accentColor}
+                hubFornecedores={hubFornecedores}
               />
             )
           })}

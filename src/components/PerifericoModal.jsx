@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { getEscudoUrl } from '../lib/escudos'
+import { useHubFornecedores, getApelidosForColumn } from '../hooks/useHubFornecedores'
 
 const EQUIPAMENTOS = [
   { key: 'drone',     label: 'Drone',     fornecedor: 'fornecedor_drone' },
@@ -16,6 +17,7 @@ export default function PerifericoModal({ row, mode, accentColor, onClose, onSav
   const [data, setData] = useState({})
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const { fornecedores: hubFornecedores } = useHubFornecedores()
 
   useEffect(() => {
     setData(mode === 'edit' && row ? { ...row } : {})
@@ -135,10 +137,16 @@ export default function PerifericoModal({ row, mode, accentColor, onClose, onSav
                         <input
                           className="form-input pm-forn"
                           type="text"
+                          list={`fornecedores-${eq.fornecedor}`}
                           value={data[eq.fornecedor] || ''}
                           onChange={e => set(eq.fornecedor, e.target.value)}
                           placeholder="Fornecedor"
                         />
+                        <datalist id={`fornecedores-${eq.fornecedor}`}>
+                          {getApelidosForColumn(eq.fornecedor, hubFornecedores).map(a => (
+                            <option key={a} value={a} />
+                          ))}
+                        </datalist>
                       </div>
                     )}
                   </div>
