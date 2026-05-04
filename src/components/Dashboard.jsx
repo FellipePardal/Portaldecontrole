@@ -63,20 +63,7 @@ function CalendarView({ data, accentColor, onMatchClick }) {
     return best?.key || null
   }, [data, today])
 
-  const initial = useMemo(() => {
-    let earliest = null
-    for (const row of data) {
-      const d = parseDataMatch(row.data)
-      if (!d) continue
-      if (!earliest || d.year < earliest.year || (d.year === earliest.year && d.month < earliest.month)) {
-        earliest = d
-      }
-    }
-    if (earliest) return { year: earliest.year, month: earliest.month }
-    return { year: today.year, month: today.month }
-  }, [data, today])
-
-  const [view, setView] = useState(initial)
+  const [view, setView] = useState({ year: today.year, month: today.month })
 
   const cells = useMemo(() => {
     const first = new Date(view.year, view.month, 1)
