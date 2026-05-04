@@ -23,9 +23,9 @@ const MATCH = {
   fornecedor_dslr:         f => /\bDSLR\b/i.test(f.funcao),
   fornecedor_grua:         f => /\bGrua\b/i.test(f.funcao),
   fornecedor_goalcam:      f => /goal[ ]?cam/i.test(f.funcao),
-  fornecedor_trilho:       f => /trilho/i.test(f.funcao),
+  fornecedor_trilho:       f => /trilho|especial/i.test(f.funcao),
   fornecedor_carrinho:     f => /carrinho/i.test(f.funcao),
-  fornecedor_clipcam:      f => /clip[ ]?cam/i.test(f.funcao),
+  fornecedor_clipcam:      f => /clip[ ]?cam|especial/i.test(f.funcao),
 }
 
 export function useHubFornecedores() {
