@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect } from 'react'
 import Header from './components/Header'
 import TablePage from './components/TablePage'
 import Dashboard from './components/Dashboard'
+import JogosOverview from './components/JogosOverview'
 import NewCompetitionDialog from './components/NewCompetitionDialog'
 import { useTableData } from './hooks/useTableData'
 import { useCompetitionEvents } from './hooks/useCompetitionEvents'
@@ -131,7 +132,9 @@ export default function App() {
       </div>
 
       <main className="main-content">
-        {section.isDashboard ? (
+        {section.isOverview ? (
+          <JogosOverview key={section.id} config={section.config} accentColor={section.config.accentColor} />
+        ) : section.isDashboard ? (
           <DashboardWrapper key={section.id} config={section.config} />
         ) : (
           <TablePage key={section.id} config={section.config} />

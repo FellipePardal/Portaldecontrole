@@ -22,7 +22,8 @@ const HARDCODED_FALLBACK = [
     label: 'Brasileirão 26',
     accentColor: '#65B32E',
     sections: [
-      { id: 'br-dashboard', label: 'Dashboard', config: BRASILEIRAO_CONFIG, isDashboard: true },
+      { id: 'br-overview', label: 'Visão Geral', config: BRASILEIRAO_CONFIG, isOverview: true },
+      { id: 'br-dashboard', label: 'Calendário', config: BRASILEIRAO_CONFIG, isDashboard: true },
       { id: 'br-controle', label: 'Controle', config: BRASILEIRAO_CONFIG },
       { id: 'br-periferico', label: 'Periférico', config: PERIFERICO_BR_CONFIG },
     ],
@@ -32,7 +33,8 @@ const HARDCODED_FALLBACK = [
     label: 'Paulistão Fem. 26',
     accentColor: '#ec4899',
     sections: [
-      { id: 'pf-dashboard', label: 'Dashboard', config: PAULISTAO_FEM_CONFIG, isDashboard: true },
+      { id: 'pf-overview', label: 'Visão Geral', config: PAULISTAO_FEM_CONFIG, isOverview: true },
+      { id: 'pf-dashboard', label: 'Calendário', config: PAULISTAO_FEM_CONFIG, isDashboard: true },
       { id: 'pf-controle', label: 'Controle', config: PAULISTAO_FEM_CONFIG },
       { id: 'pf-periferico', label: 'Periférico', config: PERIFERICO_PF_CONFIG },
     ],
@@ -42,7 +44,8 @@ const HARDCODED_FALLBACK = [
 function buildSectionsForCompetition(parent, children, columnsByCompId) {
   const sections = []
   const parentConfig = configForRow(parent, columnsByCompId)
-  sections.push({ id: `${parent.slug}-dashboard`, label: 'Dashboard', config: parentConfig, isDashboard: true })
+  sections.push({ id: `${parent.slug}-overview`, label: 'Visão Geral', config: parentConfig, isOverview: true })
+  sections.push({ id: `${parent.slug}-dashboard`, label: 'Calendário', config: parentConfig, isDashboard: true })
   sections.push({ id: `${parent.slug}-controle`, label: 'Controle', config: parentConfig })
   for (const child of children) {
     const childConfig = configForRow(child, columnsByCompId)
