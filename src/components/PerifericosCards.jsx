@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react'
 import { useTableData } from '../hooks/useTableData'
 import PerifericoModal from './PerifericoModal'
 import ConfirmDialog from './ConfirmDialog'
+import { getEscudoUrl } from '../lib/escudos'
 
 const EQUIPAMENTOS = [
   { key: 'drone',     label: 'Drone',     fornecedor: 'fornecedor_drone' },
@@ -113,9 +114,15 @@ export default function PerifericosCards({ config }) {
                 </div>
 
                 <div className="card-teams">
-                  <span className="team home">{row.mandante || '—'}</span>
+                  <div className="card-team-side home">
+                    {getEscudoUrl(row.mandante) && <img className="card-team-logo" src={getEscudoUrl(row.mandante)} alt={row.mandante} />}
+                    <span className="team">{row.mandante || '—'}</span>
+                  </div>
                   <span className="team-vs">×</span>
-                  <span className="team away">{row.visitante || '—'}</span>
+                  <div className="card-team-side away">
+                    {getEscudoUrl(row.visitante) && <img className="card-team-logo" src={getEscudoUrl(row.visitante)} alt={row.visitante} />}
+                    <span className="team">{row.visitante || '—'}</span>
+                  </div>
                 </div>
 
                 <div className="card-meta">

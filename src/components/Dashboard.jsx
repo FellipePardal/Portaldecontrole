@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import GameModal from './GameModal'
 import ConfirmDialog from './ConfirmDialog'
+import { getEscudoUrl } from '../lib/escudos'
 
 const MESES = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro']
 const DIAS_SEMANA = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB']
@@ -26,6 +27,14 @@ function teamInitials(name) {
   const parts = String(name).trim().split(/\s+/)
   if (parts.length === 1) return parts[0].slice(0, 3).toUpperCase()
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+}
+
+function TeamLogo({ name, size = 26 }) {
+  const url = getEscudoUrl(name)
+  if (url) {
+    return <img className="cal-team-logo" src={url} alt={name} title={name} style={{ width: size, height: size }} />
+  }
+  return <div className="cal-team-bubble" title={name} style={{ width: size, height: size }}>{teamInitials(name)}</div>
 }
 
 function CalendarView({ data, accentColor, onMatchClick }) {
@@ -179,9 +188,9 @@ function CalendarView({ data, accentColor, onMatchClick }) {
                 >
                   {m.hora_brt && <div className="cal-match-time">{m.hora_brt}</div>}
                   <div className="cal-match-row">
-                    <div className="cal-team-bubble" title={m.mandante}>{teamInitials(m.mandante)}</div>
+                    <TeamLogo name={m.mandante} />
                     <div className="cal-match-vs">×</div>
-                    <div className="cal-team-bubble" title={m.visitante}>{teamInitials(m.visitante)}</div>
+                    <TeamLogo name={m.visitante} />
                   </div>
                   <div className="cal-match-teams-full">
                     <span>{m.mandante}</span>

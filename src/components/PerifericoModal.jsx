@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { getEscudoUrl } from '../lib/escudos'
 
 const EQUIPAMENTOS = [
   { key: 'drone',     label: 'Drone',     fornecedor: 'fornecedor_drone' },
@@ -59,9 +60,15 @@ export default function PerifericoModal({ row, mode, accentColor, onClose, onSav
             <button className="modal-close" onClick={onClose}>✕</button>
           </div>
           <div className="pm-teams">
-            <span className="team home">{data.mandante || '—'}</span>
+            <div className="pm-team-side home">
+              {getEscudoUrl(data.mandante) && <img className="pm-team-logo" src={getEscudoUrl(data.mandante)} alt={data.mandante} />}
+              <span className="team">{data.mandante || '—'}</span>
+            </div>
             <span className="team-vs">×</span>
-            <span className="team away">{data.visitante || '—'}</span>
+            <div className="pm-team-side away">
+              {getEscudoUrl(data.visitante) && <img className="pm-team-logo" src={getEscudoUrl(data.visitante)} alt={data.visitante} />}
+              <span className="team">{data.visitante || '—'}</span>
+            </div>
           </div>
           <div className="pm-meta">
             {data.data && <span>{data.data}</span>}
