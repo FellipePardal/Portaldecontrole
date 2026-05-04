@@ -19,7 +19,19 @@ function parseDataMatch(str) {
   return null
 }
 
+function teamInitials(name) {
+  if (!name) return ''
+  const parts = String(name).trim().split(/\s+/)
+  if (parts.length === 1) return parts[0].slice(0, 3).toUpperCase()
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+}
+
 function CalendarView({ data, accentColor }) {
+  const today = useMemo(() => {
+    const d = new Date()
+    return { year: d.getFullYear(), month: d.getMonth(), day: d.getDate() }
+  }, [])
+
   const byDate = useMemo(() => {
     const map = new Map()
     for (const row of data) {
@@ -33,6 +45,22 @@ function CalendarView({ data, accentColor }) {
     return map
   }, [data])
 
+  // Próximo jogo a partir de hoje
+  const nextMatchKey = useMemo(() => {
+    const todayTs = new Date(today.year, today.month, today.day).getTime()
+    let best = null
+    for (const row of data) {
+      if (!row.mandante || !row.visitante) continue
+      const d = parseDataMatch(row.data)
+      if (!d) continue
+      const ts = new Date(d.year, d.month, d.day).getTime()
+      if (ts >= todayTs && (!best || ts < best.ts)) {
+        best = { ts, key: `${d.year}-${d.month}-${d.day}` }
+      }
+    }
+    return best?.key || null
+  }, [data, today])
+
   const initial = useMemo(() => {
     let earliest = null
     for (const row of data) {
@@ -43,9 +71,8 @@ function CalendarView({ data, accentColor }) {
       }
     }
     if (earliest) return { year: earliest.year, month: earliest.month }
-    const now = new Date()
-    return { year: now.getFullYear(), month: now.getMonth() }
-  }, [data])
+    return { year: today.year, month: today.month }
+  }, [data, today])
 
   const [view, setView] = useState(initial)
 
@@ -60,7 +87,7 @@ function CalendarView({ data, accentColor }) {
     }
     for (let d = 1; d <= lastDay; d++) {
       const key = `${view.year}-${view.month}-${d}`
-      result.push({ day: d, current: true, matches: byDate.get(key) || [] })
+      result.push({ day: d, current: true, key, matches: byDate.get(key) || [], weekday: (startWeekDay + d - 1) % 7 })
     }
     let nextDay = 1
     while (result.length % 7 !== 0) {
@@ -75,46 +102,101 @@ function CalendarView({ data, accentColor }) {
   function next() {
     setView(v => v.month === 11 ? { year: v.year + 1, month: 0 } : { year: v.year, month: v.month + 1 })
   }
+  function goToday() {
+    setView({ year: today.year, month: today.month })
+  }
 
   const monthMatchCount = cells.filter(c => c.current && c.matches?.length).reduce((s, c) => s + c.matches.length, 0)
+  const monthB1 = cells.filter(c => c.current).flatMap(c => c.matches || []).filter(m => m.padrao === 'B1').length
+  const monthB2 = cells.filter(c => c.current).flatMap(c => c.matches || []).filter(m => m.padrao === 'B2').length
+  const isCurrentMonth = view.year === today.year && view.month === today.month
 
   return (
     <div className="cal-view">
       <div className="cal-toolbar">
-        <button className="cal-nav-btn" onClick={prev} title="Mês anterior">‹</button>
         <div className="cal-title">
-          <h2 className="cal-month">{MESES[view.month]}</h2>
-          <span className="cal-year">{view.year}</span>
+          <span className="cal-month-num">{String(view.month + 1).padStart(2, '0')}</span>
+          <div className="cal-title-text">
+            <h2 className="cal-month">{MESES[view.month]}</h2>
+            <span className="cal-year">{view.year}</span>
+          </div>
         </div>
-        <button className="cal-nav-btn" onClick={next} title="Próximo mês">›</button>
-        <div className="cal-summary" style={{ borderColor: accentColor + '55' }}>
-          <span className="cal-summary-num" style={{ color: accentColor }}>{monthMatchCount}</span>
-          <span className="cal-summary-label">jogo{monthMatchCount === 1 ? '' : 's'} no mês</span>
+
+        <div className="cal-nav-group">
+          <button className="cal-nav-btn" onClick={prev} title="Mês anterior">‹</button>
+          <button
+            className={`cal-today-btn${isCurrentMonth ? ' disabled' : ''}`}
+            onClick={goToday}
+            disabled={isCurrentMonth}
+            title="Ir para hoje"
+          >Hoje</button>
+          <button className="cal-nav-btn" onClick={next} title="Próximo mês">›</button>
+        </div>
+
+        <div className="cal-stats">
+          <div className="cal-stat" style={{ borderColor: accentColor + '55' }}>
+            <span className="cal-stat-num" style={{ color: accentColor }}>{monthMatchCount}</span>
+            <span className="cal-stat-label">jogos</span>
+          </div>
+          {monthB1 > 0 && (
+            <div className="cal-stat">
+              <span className="cal-stat-num">{monthB1}</span>
+              <span className="cal-stat-label">B1</span>
+            </div>
+          )}
+          {monthB2 > 0 && (
+            <div className="cal-stat">
+              <span className="cal-stat-num">{monthB2}</span>
+              <span className="cal-stat-label">B2</span>
+            </div>
+          )}
         </div>
       </div>
 
       <div className="cal-grid">
-        {DIAS_SEMANA.map(d => <div key={d} className="cal-day-name">{d}</div>)}
+        {DIAS_SEMANA.map((d, i) => (
+          <div key={d} className={`cal-day-name${i === 0 || i === 6 ? ' weekend' : ''}`}>{d}</div>
+        ))}
         {cells.map((c, i) => {
           const has = c.matches && c.matches.length > 0
+          const isToday = c.current && c.day === today.day && view.year === today.year && view.month === today.month
+          const isNext = c.key === nextMatchKey
+          const isWeekend = c.weekday === 0 || c.weekday === 6
           return (
             <div
               key={i}
-              className={`cal-cell${c.otherMonth ? ' other-month' : ''}${has ? ' has-match' : ''}`}
+              className={[
+                'cal-cell',
+                c.otherMonth ? 'other-month' : '',
+                has ? 'has-match' : '',
+                isToday ? 'is-today' : '',
+                isNext ? 'is-next' : '',
+                isWeekend && c.current ? 'is-weekend' : '',
+              ].filter(Boolean).join(' ')}
               style={has ? { '--accent': accentColor } : {}}
             >
-              <span className="cal-day-num">{c.day}</span>
+              <div className="cal-cell-head">
+                <span className="cal-day-num">{c.day}</span>
+                {isToday && <span className="cal-today-pill">HOJE</span>}
+                {isNext && !isToday && <span className="cal-next-pill" style={{ background: accentColor }}>PRÓXIMO</span>}
+              </div>
               {has && c.matches.map((m, idx) => (
                 <div key={idx} className="cal-match">
                   {m.hora_brt && <div className="cal-match-time">{m.hora_brt}</div>}
-                  <div className="cal-match-teams">
-                    <div className="cal-match-team">{m.mandante}</div>
+                  <div className="cal-match-row">
+                    <div className="cal-team-bubble" title={m.mandante}>{teamInitials(m.mandante)}</div>
                     <div className="cal-match-vs">×</div>
-                    <div className="cal-match-team">{m.visitante}</div>
+                    <div className="cal-team-bubble" title={m.visitante}>{teamInitials(m.visitante)}</div>
+                  </div>
+                  <div className="cal-match-teams-full">
+                    <span>{m.mandante}</span>
+                    <span className="cal-vs-mini">×</span>
+                    <span>{m.visitante}</span>
                   </div>
                   <div className="cal-match-meta">
-                    {m.padrao && <span className="cal-match-tag">{m.padrao}</span>}
+                    {m.padrao && <span className={`cal-match-tag p-${String(m.padrao).toLowerCase()}`}>{m.padrao}</span>}
                     {(m.eu || m.rod) && <span className="cal-match-rod">R{m.eu || m.rod}</span>}
+                    {m.detentor && <span className="cal-match-det">{m.detentor}</span>}
                   </div>
                 </div>
               ))}
