@@ -65,7 +65,14 @@ export function useHubJogos(tableName) {
       const arr = Array.isArray(data?.value) ? data.value : []
       const mapped = arr
         .filter(j => j && j.mandante && j.mandante !== 'A definir')
-        .map(j => mapHubJogo(j, tableName))
+        .map(j => ({ raw: j, mapped: mapHubJogo(j, tableName) }))
+        .sort((a, b) => {
+          const ra = parseInt(a.raw.rodada) || 0
+          const rb = parseInt(b.raw.rodada) || 0
+          if (ra !== rb) return ra - rb
+          return (a.raw.id || 0) - (b.raw.id || 0)
+        })
+        .map(x => x.mapped)
       setHubJogos(mapped)
       setLoading(false)
     }
