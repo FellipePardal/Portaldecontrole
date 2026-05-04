@@ -6,10 +6,15 @@ import Filters from './Filters'
 import DataTable from './DataTable'
 import GameModal from './GameModal'
 import ConfirmDialog from './ConfirmDialog'
+import PerifericosCards from './PerifericosCards'
 
 const DEFAULT_FILTERS = { search: '', status: '', dateFrom: '', dateTo: '', rodada: '', detentor: '', estadio: '', um: '' }
 
 export default function TablePage({ config }) {
+  if (config.id?.startsWith('periferico')) {
+    return <PerifericosCards config={config} />
+  }
+
   const legacy = useTableData(config.isLegacy ? config.tableName : null)
   const dynamic = useCompetitionEvents(config.isLegacy ? null : config.competitionId)
   const { data, loading, error, addRow, updateRow, deleteRow } = config.isLegacy ? legacy : dynamic
