@@ -1419,7 +1419,19 @@ body {
   font-size: 11px;
   line-height: 1.2;
   border: 1px solid rgba(120,130,140,0.08);
+  font-family: inherit;
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+  width: 100%;
+  transition: background 0.15s, border-color 0.15s, transform 0.15s;
 }
+.cal-match:hover {
+  background: color-mix(in srgb, var(--accent) 14%, var(--bg-card));
+  border-color: var(--accent);
+  transform: translateX(1px);
+}
+.cal-match:active { transform: translateX(0) scale(0.99); }
 .cal-match-time {
   font-size: 11px;
   font-weight: 800;

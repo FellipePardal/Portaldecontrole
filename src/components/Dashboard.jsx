@@ -1,4 +1,6 @@
 import { useMemo, useState } from 'react'
+import GameModal from './GameModal'
+import ConfirmDialog from './ConfirmDialog'
 
 const MESES = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro']
 const DIAS_SEMANA = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB']
@@ -26,7 +28,7 @@ function teamInitials(name) {
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
 }
 
-function CalendarView({ data, accentColor }) {
+function CalendarView({ data, accentColor, onMatchClick }) {
   const today = useMemo(() => {
     const d = new Date()
     return { year: d.getFullYear(), month: d.getMonth(), day: d.getDate() }
@@ -181,7 +183,13 @@ function CalendarView({ data, accentColor }) {
                 {isNext && !isToday && <span className="cal-next-pill" style={{ background: accentColor }}>PRÓXIMO</span>}
               </div>
               {has && c.matches.map((m, idx) => (
-                <div key={idx} className="cal-match">
+                <button
+                  key={idx}
+                  type="button"
+                  className="cal-match"
+                  onClick={() => onMatchClick?.(m)}
+                  title="Ver detalhes / editar"
+                >
                   {m.hora_brt && <div className="cal-match-time">{m.hora_brt}</div>}
                   <div className="cal-match-row">
                     <div className="cal-team-bubble" title={m.mandante}>{teamInitials(m.mandante)}</div>
@@ -198,7 +206,7 @@ function CalendarView({ data, accentColor }) {
                     {(m.eu || m.rod) && <span className="cal-match-rod">R{m.eu || m.rod}</span>}
                     {m.detentor && <span className="cal-match-det">{m.detentor}</span>}
                   </div>
-                </div>
+                </button>
               ))}
             </div>
           )
@@ -208,8 +216,22 @@ function CalendarView({ data, accentColor }) {
   )
 }
 
-export default function Dashboard({ data, config }) {
+export default function Dashboard({ data, config, onAdd, onUpdate, onDelete }) {
   const total = data.filter(r => r.mandante && r.visitante).length
+  const [modal, setModal] = useState(null)
+  const [confirmDelete, setConfirmDelete] = useState(null)
+
+  async function handleSave(formData) {
+    if (modal?.mode === 'edit') await onUpdate?.(modal.row.id, formData)
+    else await onAdd?.(formData)
+  }
+
+  async function handleDelete() {
+    if (!confirmDelete) return
+    await onDelete?.(confirmDelete.id)
+    setConfirmDelete(null)
+    setModal(null)
+  }
 
   return (
     <div className="dashboard">
@@ -229,7 +251,30 @@ export default function Dashboard({ data, config }) {
           </div>
         </div>
       ) : (
-        <CalendarView data={data} accentColor={config.accentColor} />
+        <CalendarView
+          data={data}
+          accentColor={config.accentColor}
+          onMatchClick={row => setModal({ mode: 'edit', row })}
+        />
+      )}
+
+      {modal && (
+        <GameModal
+          mode={modal.mode}
+          row={modal.row}
+          config={config}
+          accentColor={config.accentColor}
+          onClose={() => setModal(null)}
+          onSave={handleSave}
+        />
+      )}
+
+      {confirmDelete && (
+        <ConfirmDialog
+          message={`Excluir o jogo ${confirmDelete.mandante} × ${confirmDelete.visitante}?`}
+          onConfirm={handleDelete}
+          onCancel={() => setConfirmDelete(null)}
+        />
       )}
     </div>
   )

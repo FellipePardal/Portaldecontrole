@@ -10,7 +10,8 @@ import { useCompetitions } from './hooks/useCompetitions'
 function DashboardWrapper({ config }) {
   const legacy = useTableData(config.isLegacy ? config.tableName : null)
   const dynamic = useCompetitionEvents(config.isLegacy ? null : config.competitionId)
-  const { data, loading } = config.isLegacy ? legacy : dynamic
+  const source = config.isLegacy ? legacy : dynamic
+  const { data, loading, addRow, updateRow, deleteRow } = source
 
   if (loading) {
     return (
@@ -21,7 +22,15 @@ function DashboardWrapper({ config }) {
     )
   }
 
-  return <Dashboard data={data} config={config} />
+  return (
+    <Dashboard
+      data={data}
+      config={config}
+      onAdd={addRow}
+      onUpdate={updateRow}
+      onDelete={deleteRow}
+    />
+  )
 }
 
 export default function App() {
