@@ -30,6 +30,8 @@ const MAP = {
   'rb bragantino': 'bragantino',
   'remo': 'remo',
   'clube do remo': 'remo',
+  'santos': 'santos',
+  'santos fc': 'santos',
   'sao paulo': 'sao-paulo',
   'são paulo': 'sao-paulo',
   'mirassol': 'mirassol',
@@ -45,5 +47,5 @@ export function getEscudoUrl(team) {
   const key = norm(team)
   const slug = MAP[key]
   if (!slug) return null
-  return `/escudos/${slug}.jpeg`
+  return `/escudos/${slug}.png`
 }

@@ -1462,11 +1462,8 @@ body {
 }
 .cal-team-logo {
   flex-shrink: 0;
-  border-radius: 4px;
   object-fit: contain;
-  background: rgba(255,255,255,0.92);
-  padding: 1px;
-  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3));
+  filter: drop-shadow(0 2px 3px rgba(0,0,0,0.4));
 }
 
 /* Escudos nos cards de periféricos */
@@ -1483,10 +1480,8 @@ body {
   width: 26px;
   height: 26px;
   object-fit: contain;
-  border-radius: 4px;
-  background: rgba(255,255,255,0.92);
-  padding: 1px;
   flex-shrink: 0;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.35));
 }
 .card-team-side .team {
   font-weight: 600;
@@ -1507,13 +1502,11 @@ body {
 .pm-team-side.home { justify-content: flex-end; flex-direction: row-reverse; text-align: right; }
 .pm-team-side.away { justify-content: flex-start; text-align: left; }
 .pm-team-logo {
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   object-fit: contain;
-  border-radius: 6px;
-  background: rgba(255,255,255,0.95);
-  padding: 2px;
   flex-shrink: 0;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.45));
 }
 .cal-match-vs {
   font-size: 11px;
