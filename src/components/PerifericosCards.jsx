@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react'
 import { useTableData } from '../hooks/useTableData'
-import GameModal from './GameModal'
+import PerifericoModal from './PerifericoModal'
 import ConfirmDialog from './ConfirmDialog'
 
 const EQUIPAMENTOS = [
@@ -155,10 +155,9 @@ export default function PerifericosCards({ config }) {
       )}
 
       {modal.open && (
-        <GameModal
+        <PerifericoModal
           mode={modal.mode}
           row={modal.row}
-          config={config}
           accentColor={config.accentColor}
           onClose={() => setModal({ open: false, mode: 'add', row: null })}
           onSave={handleSave}
