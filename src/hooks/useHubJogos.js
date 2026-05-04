@@ -4,6 +4,8 @@ import { supabase, isConfigured } from '../lib/supabase'
 const HUB_KEYS = {
   brasileirao_jogos: 'jogos',
   paulistao_feminino_jogos: 'paulistao_jogos',
+  perifericos_brasileirao: 'jogos',
+  perifericos_paulistao: 'paulistao_jogos',
 }
 
 const DIA_SEMANA = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado']
@@ -26,8 +28,8 @@ function parseDataToDia(dataStr) {
 }
 
 function mapHubJogo(j, tableName) {
-  const isPaulistao = tableName === 'paulistao_feminino_jogos'
-  const rodadaField = isPaulistao ? 'rod' : 'eu'
+  // Brasileirão controle usa "eu" para rodada; demais (Paulistão e periféricos) usam "rod".
+  const rodadaField = tableName === 'brasileirao_jogos' ? 'eu' : 'rod'
   return {
     id: `hub:${j.id}`,
     hub_jogo_id: String(j.id),
