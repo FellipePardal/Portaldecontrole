@@ -19,7 +19,7 @@ export default function TablePage({ config }) {
   }
 
   async function handleCopy(row) {
-    const { id, created_at, updated_at, ...rowData } = row
+    const { id, created_at, updated_at, hub_jogo_id, ...rowData } = row
     await addRow(rowData)
   }
   const [filters, setFilters] = useState(DEFAULT_FILTERS)
