@@ -3,6 +3,7 @@ import Header from './components/Header'
 import TablePage from './components/TablePage'
 import Dashboard from './components/Dashboard'
 import JogosOverview from './components/JogosOverview'
+import HomeView from './components/HomeView'
 import NewCompetitionDialog from './components/NewCompetitionDialog'
 import { useTableData } from './hooks/useTableData'
 import { useCompetitionEvents } from './hooks/useCompetitionEvents'
@@ -36,7 +37,8 @@ function DashboardWrapper({ config }) {
 
 export default function App() {
   const { competitions, loading: compsLoading, error: compsError } = useCompetitions()
-  const [activeComp, setActiveComp] = useState(null)
+  const [activeView,    setActiveView]    = useState('home')
+  const [activeComp,    setActiveComp]    = useState(null)
   const [activeSection, setActiveSection] = useState(null)
   const [showNewDialog, setShowNewDialog] = useState(false)
 
@@ -60,6 +62,11 @@ export default function App() {
     setActiveComp(compId)
     const comp = competitions.find(c => c.id === compId)
     setActiveSection(comp?.sections[0]?.id || null)
+    setActiveView('comp')
+  }
+
+  function handleHomeClick() {
+    setActiveView('home')
   }
 
   if (compsLoading && competitions.length === 0) {
@@ -79,13 +86,37 @@ export default function App() {
     )
   }
 
+  // Home view — available even without a selected competition
+  if (activeView === 'home') {
+    return (
+      <div className="app">
+        <Header
+          competitions={competitions}
+          activeComp={activeComp}
+          activeView="home"
+          onCompSelect={handleCompSelect}
+          onHomeClick={handleHomeClick}
+          onNewCompetition={() => setShowNewDialog(true)}
+        />
+        <main className="main-content main-content--home">
+          <HomeView competitions={competitions} onCompSelect={handleCompSelect} />
+        </main>
+        {showNewDialog && (
+          <NewCompetitionDialog onClose={() => setShowNewDialog(false)} />
+        )}
+      </div>
+    )
+  }
+
   if (!competition || !section) {
     return (
       <div className="app">
         <Header
           competitions={competitions}
           activeComp={null}
+          activeView="comp"
           onCompSelect={() => {}}
+          onHomeClick={handleHomeClick}
           onNewCompetition={() => setShowNewDialog(true)}
         />
         <main className="main-content" style={{ paddingTop: 84 }}>
@@ -112,7 +143,9 @@ export default function App() {
       <Header
         competitions={competitions}
         activeComp={activeComp}
+        activeView="comp"
         onCompSelect={handleCompSelect}
+        onHomeClick={handleHomeClick}
         onNewCompetition={() => setShowNewDialog(true)}
       />
 

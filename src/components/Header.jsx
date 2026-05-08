@@ -1,8 +1,8 @@
-export default function Header({ competitions, activeComp, onCompSelect, onNewCompetition }) {
+export default function Header({ competitions, activeComp, activeView, onCompSelect, onHomeClick, onNewCompetition }) {
   return (
     <header className="header">
-      <div className="logo-area">
-        <div className="logo-icon" />
+      <div className="logo-area" onClick={onHomeClick} style={{ cursor: 'pointer' }} title="Início">
+        <div className="logo-icon" style={activeView === 'home' ? { background: '#65B32E' } : {}} />
         <div className="logo-divider" />
         <div className="logo-text">
           <span className="logo-title">Livemode</span>
@@ -11,8 +11,16 @@ export default function Header({ competitions, activeComp, onCompSelect, onNewCo
       </div>
 
       <nav className="nav-tabs">
+        <button
+          className={`nav-tab${activeView === 'home' ? ' active' : ''}`}
+          onClick={onHomeClick}
+          style={activeView === 'home' ? { color: '#65B32E', borderColor: '#65B32E' } : {}}
+        >
+          Início
+        </button>
+
         {competitions.map(comp => {
-          const isActive = comp.id === activeComp
+          const isActive = activeView !== 'home' && comp.id === activeComp
           return (
             <button
               key={comp.id}
