@@ -1,12 +1,13 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase, isConfigured } from '../lib/supabase'
+import { MOCK_DATA } from '../data/mockData'
 
 function parseDate(str) {
   if (!str) return null
   const s = String(str).trim()
   let m = s.match(/^(\d{4})-(\d{2})-(\d{2})/)
   if (m) return { year: +m[1], month: +m[2] - 1, day: +m[3] }
-  m = s.match(/^(\d{2})\/(\d{2})(?:\/(\d{2,4}))?/)
+  m = s.match(/^(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?/)
   if (m) {
     const day = +m[1], month = +m[2] - 1
     const yrRaw = m[3] ? +m[3] : 2026
@@ -25,7 +26,7 @@ export function useHomeData(competitions) {
   const [loading, setLoading] = useState(false)
 
   const load = useCallback(async () => {
-    if (!isConfigured || !competitions.length) return
+    if (!competitions.length) return
     setLoading(true)
 
     const allMatches = []
@@ -38,7 +39,10 @@ export function useHomeData(competitions) {
 
       try {
         let rows = []
-        if (cfg.tableName) {
+
+        if (!isConfigured) {
+          rows = MOCK_DATA[cfg.tableName] || []
+        } else if (cfg.tableName) {
           const { data } = await supabase
             .from(cfg.tableName)
             .select('mandante, visitante, data, hora_brt, rod, status, detentor')

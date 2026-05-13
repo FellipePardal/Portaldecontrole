@@ -8,18 +8,15 @@ const DIAS  = ['DOM','SEG','TER','QUA','QUI','SEX','SÁB']
 
 function compIcon(label) {
   if (!label) return '⚽'
-  const l = label.toLowerCase()
-  if (l.includes('nba') || l.includes('basket')) return '🏀'
   return '⚽'
 }
 
 function abbrevComp(label) {
   if (!label) return '?'
   const l = label.toLowerCase()
-  if (l.includes('brasileir'))                          return 'BRA'
-  if (l.includes('paulist') && l.includes('fem'))      return 'PAU F'
-  if (l.includes('paulist'))                            return 'PAUL'
-  if (l.includes('nba'))                                return 'NBA'
+  if (l.includes('brasileir'))                     return 'BRA'
+  if (l.includes('paulist') && l.includes('fem')) return 'PAU F'
+  if (l.includes('paulist'))                       return 'PAUL'
   return label.slice(0, 4).toUpperCase().trim()
 }
 

@@ -108,14 +108,16 @@ ALTER PUBLICATION supabase_realtime ADD TABLE dropdown_options;
 CREATE INDEX IF NOT EXISTS idx_dropdown_options_cat ON dropdown_options(category, sort_order);
 
 -- ============================================================
--- 5) SEED — competições legacy (Brasileirão, Paulistão Fem., NBA)
+-- 5) SEED — competições legacy (Brasileirão, Paulistão Fem.)
 -- ============================================================
 INSERT INTO competitions (slug, label, accent_color, accent_bg, template_key, legacy_table, section_kind, sort_order)
 VALUES
-  ('brasileirao',        'Brasileirão 26',     '#65B32E', '#0d1a06', 'legacy_brasileirao',  'brasileirao_jogos',          'controle',  10),
-  ('paulistao-fem',      'Paulistão Fem. 26',  '#ec4899', '#1a0a14', 'legacy_paulistao_fem', 'paulistao_feminino_jogos',  'controle',  20),
-  ('nba-prime',          'NBA Prime Video',    '#f59e0b', '#1a1305', 'legacy_nba_prime',     'nba_prime_video',           'controle',  30)
+  ('brasileirao',   'Brasileirão 26',    '#65B32E', '#0d1a06', 'legacy_brasileirao',  'brasileirao_jogos',         'controle', 10),
+  ('paulistao-fem', 'Paulistão Fem. 26', '#ec4899', '#1a0a14', 'legacy_paulistao_fem', 'paulistao_feminino_jogos', 'controle', 20)
 ON CONFLICT (slug) DO NOTHING;
+
+-- Para remover NBA do banco já existente, execute no Supabase:
+-- UPDATE competitions SET archived = true WHERE slug = 'nba-prime';
 
 -- Subseções "Periférico" para Brasileirão e Paulistão Fem.
 INSERT INTO competitions (slug, label, accent_color, accent_bg, template_key, legacy_table, section_kind, sort_order, parent_competition_id)
