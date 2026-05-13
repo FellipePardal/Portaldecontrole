@@ -67,11 +67,14 @@ export default function HomeView({ competitions, onCompSelect }) {
     return { year: d.getFullYear(), month: d.getMonth(), day: d.getDate() }
   }, [])
 
-  const [viewMonth,     setViewMonth]     = useState({ year: today.year, month: today.month })
-  const [activeFilters, setActiveFilters] = useState(new Set(['all']))
-  const [selectedKey,   setSelectedKey]   = useState(null)
-  const [calKey,        setCalKey]        = useState(0)
-  const [calDir,        setCalDir]        = useState(null)
+  const [viewMonth,      setViewMonth]      = useState({ year: today.year, month: today.month })
+  const [activeFilters,  setActiveFilters]  = useState(new Set(['all']))
+  const [selectedKey,    setSelectedKey]    = useState(null)
+  const [calKey,         setCalKey]         = useState(0)
+  const [calDir,         setCalDir]         = useState(null)
+  const [spotlightIdx,   setSpotlightIdx]   = useState(0)
+  const [spotlightDir,   setSpotlightDir]   = useState(null)
+  const [spotlightKey,   setSpotlightKey]   = useState(0)
   const [mounted,       setMounted]       = useState(false)
 
   const { matchesByDate, totalsByComp, loading } = useHomeData(competitions)
@@ -195,6 +198,20 @@ export default function HomeView({ competitions, onCompSelect }) {
   const restGames      = spotlightTs != null ? upcoming.filter(m => m.ts !== spotlightTs).slice(0, 8) : []
   const cdLabel        = spotlightTs != null ? countdownLabel(spotlightTs) : null
   const isToday        = cdLabel === 'Hoje'
+
+  // Reseta índice quando o grupo de jogos mudar
+  useEffect(() => { setSpotlightIdx(0) }, [spotlightTs])
+
+  const safeIdx = Math.min(spotlightIdx, Math.max(0, spotlightGames.length - 1))
+  const currentGame = spotlightGames[safeIdx] ?? null
+
+  function navigateSpotlight(dir) {
+    const next = safeIdx + dir
+    if (next < 0 || next >= spotlightGames.length) return
+    setSpotlightDir(dir > 0 ? 'right' : 'left')
+    setSpotlightKey(k => k + 1)
+    setSpotlightIdx(next)
+  }
 
   return (
     <div className={`hv-root${mounted ? ' hv-mounted' : ''}`}>
@@ -453,112 +470,114 @@ export default function HomeView({ competitions, onCompSelect }) {
             </div>
           ) : (
             <div className="hv-panel-inner hv-panel-anim" key="default">
-              {spotlightGames.length > 0 ? (
-                spotlightGames.length === 1 ? (
-                  // ── Spotlight: jogo único ──
-                  <div
-                    className="hv-spotlight"
-                    style={{
-                      '--c': spotlightGames[0].accentColor,
-                      background: `linear-gradient(160deg, #ffffff 50%, ${spotlightGames[0].accentColor}10 100%)`
-                    }}
-                  >
-                    <div className="hv-spotlight-header">
-                      <div
-                        className={`hv-spotlight-badge${isToday ? ' hv-spotlight-badge-live' : ''}`}
-                        style={{ background: spotlightGames[0].accentColor + '18', color: spotlightGames[0].accentColor }}
-                      >
-                        {isToday ? '● AO VIVO EM BREVE' : '◉ PRÓXIMO JOGO'}
-                      </div>
-                      <span className="hv-spotlight-comp">{cleanComp(spotlightGames[0].competitionLabel)}</span>
+              {currentGame ? (
+                <div
+                  className="hv-spotlight"
+                  style={{
+                    '--c': currentGame.accentColor,
+                    background: `linear-gradient(160deg, #ffffff 50%, ${currentGame.accentColor}10 100%)`
+                  }}
+                >
+                  {/* Header: badge + navegação */}
+                  <div className="hv-spotlight-header">
+                    <div
+                      className={`hv-spotlight-badge${isToday ? ' hv-spotlight-badge-live' : ''}`}
+                      style={{ background: currentGame.accentColor + '18', color: currentGame.accentColor }}
+                    >
+                      {isToday ? '● AO VIVO EM BREVE' : '◉ PRÓXIMO JOGO'}
                     </div>
+                    <span className="hv-spotlight-comp">{cleanComp(currentGame.competitionLabel)}</span>
+                    {spotlightGames.length > 1 && (
+                      <div className="hv-sp-nav">
+                        <button
+                          className="hv-sp-nav-btn"
+                          disabled={safeIdx === 0}
+                          onClick={() => navigateSpotlight(-1)}
+                        >
+                          <svg viewBox="0 0 16 16" fill="none" width="12" height="12">
+                            <path d="M10 3L5 8l5 5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
+                        </button>
+                        <span className="hv-sp-nav-count">{safeIdx + 1}/{spotlightGames.length}</span>
+                        <button
+                          className="hv-sp-nav-btn"
+                          disabled={safeIdx === spotlightGames.length - 1}
+                          onClick={() => navigateSpotlight(1)}
+                        >
+                          <svg viewBox="0 0 16 16" fill="none" width="12" height="12">
+                            <path d="M6 3l5 5-5 5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
+                        </button>
+                      </div>
+                    )}
+                  </div>
 
+                  {/* Conteúdo do jogo com transição direcional */}
+                  <div
+                    key={spotlightKey}
+                    className={`hv-sp-slide${spotlightDir === 'right' ? ' hv-sp-slide-right' : spotlightDir === 'left' ? ' hv-sp-slide-left' : ''}`}
+                  >
                     <div className="hv-spotlight-teams">
                       <div className="hv-spotlight-team">
-                        {getEscudoUrl(spotlightGames[0].mandante)
-                          ? <img src={getEscudoUrl(spotlightGames[0].mandante)} className="hv-spotlight-shield" alt={spotlightGames[0].mandante} />
-                          : <div className="hv-spotlight-shield-fb" style={{ background: spotlightGames[0].accentColor + '28' }} />
+                        {getEscudoUrl(currentGame.mandante)
+                          ? <img src={getEscudoUrl(currentGame.mandante)} className="hv-spotlight-shield" alt={currentGame.mandante} />
+                          : <div className="hv-spotlight-shield-fb" style={{ background: currentGame.accentColor + '28' }} />
                         }
-                        <span className="hv-spotlight-tname">{spotlightGames[0].mandante}</span>
+                        <span className="hv-spotlight-tname">{currentGame.mandante}</span>
                       </div>
                       <span className="hv-spotlight-vs">×</span>
                       <div className="hv-spotlight-team">
-                        {getEscudoUrl(spotlightGames[0].visitante)
-                          ? <img src={getEscudoUrl(spotlightGames[0].visitante)} className="hv-spotlight-shield" alt={spotlightGames[0].visitante} />
-                          : <div className="hv-spotlight-shield-fb" style={{ background: spotlightGames[0].accentColor + '28' }} />
+                        {getEscudoUrl(currentGame.visitante)
+                          ? <img src={getEscudoUrl(currentGame.visitante)} className="hv-spotlight-shield" alt={currentGame.visitante} />
+                          : <div className="hv-spotlight-shield-fb" style={{ background: currentGame.accentColor + '28' }} />
                         }
-                        <span className="hv-spotlight-tname">{spotlightGames[0].visitante}</span>
+                        <span className="hv-spotlight-tname">{currentGame.visitante}</span>
                       </div>
                     </div>
 
                     <div className="hv-spotlight-chips">
-                      {spotlightGames[0].rawDate  && <span className="hv-sp-chip">{spotlightGames[0].rawDate}</span>}
-                      {spotlightGames[0].hora_brt && <span className="hv-sp-chip hv-sp-chip-em">{spotlightGames[0].hora_brt} BRT</span>}
-                      {spotlightGames[0].rod      && <span className="hv-sp-chip">Rod. {spotlightGames[0].rod}</span>}
-                      {spotlightGames[0].detentor && <span className="hv-sp-chip">{spotlightGames[0].detentor}</span>}
+                      {currentGame.rawDate  && <span className="hv-sp-chip">{currentGame.rawDate}</span>}
+                      {currentGame.hora_brt && <span className="hv-sp-chip hv-sp-chip-em">{currentGame.hora_brt} BRT</span>}
+                      {currentGame.rod      && <span className="hv-sp-chip">Rod. {currentGame.rod}</span>}
+                      {currentGame.detentor && <span className="hv-sp-chip">{currentGame.detentor}</span>}
                     </div>
 
-                    <div className="hv-spotlight-status" style={{ color: statusColor(spotlightGames[0].status) }}>
-                      <span className="hv-spotlight-sdot" style={{ background: statusColor(spotlightGames[0].status) }} />
-                      {spotlightGames[0].status || 'Pendente'}
+                    <div className="hv-spotlight-status" style={{ color: statusColor(currentGame.status) }}>
+                      <span className="hv-spotlight-sdot" style={{ background: statusColor(currentGame.status) }} />
+                      {currentGame.status || 'Pendente'}
                     </div>
-
-                    <button
-                      className="hv-spotlight-cta"
-                      style={{ background: spotlightGames[0].accentColor, borderColor: spotlightGames[0].accentColor }}
-                      onClick={() => onCompSelect(spotlightGames[0].competitionId)}
-                    >
-                      Ver campeonato
-                      <svg viewBox="0 0 16 16" fill="none" width="13" height="13">
-                        <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
-                    </button>
                   </div>
-                ) : (
-                  // ── Spotlight: múltiplos jogos no mesmo dia ──
-                  <div className="hv-spotlight-multi">
-                    <div className="hv-spotlight-multi-head">
-                      <div className={`hv-spotlight-badge${isToday ? ' hv-spotlight-badge-live' : ''}`}
-                        style={{ background: 'rgba(0,0,0,.05)', color: '#444' }}>
-                        {isToday ? '● HOJE' : `◉ ${cdLabel?.toUpperCase()}`}
-                      </div>
-                      <span className="hv-spotlight-multi-date">
-                        {spotlightGames[0].rawDate} · {spotlightGames.length} jogos
-                      </span>
-                    </div>
 
-                    <div className="hv-spotlight-multi-list">
-                      {spotlightGames.map((m, i) => (
-                        <div
+                  {/* Dots indicadores */}
+                  {spotlightGames.length > 1 && (
+                    <div className="hv-sp-dots">
+                      {spotlightGames.map((_, i) => (
+                        <button
                           key={i}
-                          className="hv-sp-game"
-                          style={{ background: `linear-gradient(135deg, #ffffff 55%, ${m.accentColor}0c 100%)` }}
-                          onClick={() => onCompSelect(m.competitionId)}
-                        >
-                          <div className="hv-sp-game-bar" style={{ background: m.accentColor }} />
-                          <div className="hv-sp-game-body">
-                            <div className="hv-sp-game-comp">
-                              <span className="hv-sp-game-dot" style={{ background: m.accentColor }} />
-                              {cleanComp(m.competitionLabel)}
-                            </div>
-                            <div className="hv-sp-game-teams">
-                              <ShieldSm name={m.mandante} accentColor={m.accentColor} />
-                              <span>{m.mandante}</span>
-                              <span className="hv-sp-game-x">×</span>
-                              <ShieldSm name={m.visitante} accentColor={m.accentColor} />
-                              <span>{m.visitante}</span>
-                            </div>
-                            <div className="hv-sp-game-meta">
-                              {m.hora_brt && <span className="hv-sp-game-time">{m.hora_brt}</span>}
-                              {m.rod      && <span>Rod. {m.rod}</span>}
-                              <span style={{ color: statusColor(m.status) }}>● {m.status || 'Pendente'}</span>
-                            </div>
-                          </div>
-                        </div>
+                          className={`hv-sp-dot${i === safeIdx ? ' hv-sp-dot-on' : ''}`}
+                          style={i === safeIdx ? { background: currentGame.accentColor } : {}}
+                          onClick={() => {
+                            const dir = i > safeIdx ? 1 : -1
+                            setSpotlightDir(dir > 0 ? 'right' : 'left')
+                            setSpotlightKey(k => k + 1)
+                            setSpotlightIdx(i)
+                          }}
+                        />
                       ))}
                     </div>
-                  </div>
-                )
+                  )}
+
+                  <button
+                    className="hv-spotlight-cta"
+                    style={{ background: currentGame.accentColor, borderColor: currentGame.accentColor }}
+                    onClick={() => onCompSelect(currentGame.competitionId)}
+                  >
+                    Ver campeonato
+                    <svg viewBox="0 0 16 16" fill="none" width="13" height="13">
+                      <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </button>
+                </div>
               ) : (
                 !loading && (
                   <div className="hv-empty">
