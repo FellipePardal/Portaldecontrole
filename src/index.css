@@ -2565,412 +2565,357 @@ body {
   overflow: visible !important;
 }
 
-/* ══════════════════════════════════════════════
-   FIFA / EA Sports Home View
-══════════════════════════════════════════════ */
-
-.fifa-home {
+.hv-root {
   position: relative;
   min-height: calc(100vh - 56px);
-  background: #080c18;
-  color: #fff;
-  display: flex; flex-direction: column;
+  background: #FAFAFA;
+  color: #111111;
   overflow: hidden;
-  font-family: inherit;
 }
 
-/* ── Background layers ── */
-.fifa-bg {
-  position: absolute; inset: 0; pointer-events: none; overflow: hidden;
-}
-.fifa-grid-overlay {
-  position: absolute; inset: 0;
-  background-image:
-    linear-gradient(rgba(255,255,255,.028) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,.028) 1px, transparent 1px);
-  background-size: 52px 52px;
-}
-.fifa-field-svg {
-  position: absolute; bottom: -60px; left: 50%; transform: translateX(-50%);
-  width: min(900px, 100%); opacity: .55; pointer-events: none;
-}
-.fifa-vignette {
-  position: absolute; inset: 0;
+/* ── subtle dot grid ── */
+.hv-bg {
+  position: absolute; inset: 0; pointer-events: none;
   background:
-    radial-gradient(ellipse 80% 60% at 50% 100%, rgba(8,12,24,.95) 0%, transparent 70%),
-    radial-gradient(ellipse 60% 40% at 50% 0%,   rgba(8,12,24,.7)  0%, transparent 70%);
+    radial-gradient(ellipse 70% 50% at 50% -10%, rgba(101,179,46,.05) 0%, transparent 70%),
+    radial-gradient(1px 1px at 0 0, rgba(0,0,0,.04) 0%, transparent 100%);
+  background-size: 100% 100%, 28px 28px;
 }
 
-/* ── Entrance animation ── */
-@keyframes fifa-fadein {
-  from { opacity: 0; transform: translateY(20px); }
-  to   { opacity: 1; transform: none; }
+/* ── entrance animations ── */
+.hv-enter {
+  opacity: 0;
+  transform: translateY(18px);
+  transition:
+    opacity  0.48s cubic-bezier(.22,1,.36,1) calc(var(--i, 0) * 70ms),
+    transform 0.48s cubic-bezier(.22,1,.36,1) calc(var(--i, 0) * 70ms);
 }
-.fifa-mounted .fifa-hud,
-.fifa-mounted .fifa-tabs,
-.fifa-mounted .fifa-content,
-.fifa-mounted .fifa-hints {
-  animation: fifa-fadein .45s cubic-bezier(.22,1,.36,1) both;
-}
-.fifa-mounted .fifa-hud     { animation-delay:  30ms; }
-.fifa-mounted .fifa-tabs    { animation-delay:  90ms; }
-.fifa-mounted .fifa-content { animation-delay: 150ms; }
-.fifa-mounted .fifa-hints   { animation-delay: 220ms; }
+.hv-mounted .hv-enter { opacity: 1; transform: none; }
 
-/* ── HUD bar ── */
-.fifa-hud {
-  position: relative; z-index: 2;
+/* ── Hero ── */
+.hv-hero {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 16px 32px 12px;
-  border-bottom: 1px solid rgba(255,255,255,.06);
-  background: rgba(8,12,24,.6);
-  backdrop-filter: blur(8px);
+  padding: 28px 40px 22px;
+  border-bottom: 1px solid rgba(0,0,0,.08);
 }
-.fifa-hud-left {
-  display: flex; align-items: center; gap: 10px;
+.hv-hero-eyebrow {
+  font-size: 10px; font-weight: 700; letter-spacing: .2em;
+  color: rgba(0,0,0,.35); text-transform: uppercase; margin-bottom: 5px;
 }
-.fifa-club-dot {
-  width: 8px; height: 8px; border-radius: 50%;
-  background: #65B32E;
-  box-shadow: 0 0 0 3px rgba(101,179,46,.2);
-}
-.fifa-club-name {
-  font-size: 12px; font-weight: 800; letter-spacing: .2em;
-  color: rgba(255,255,255,.9); text-transform: uppercase;
-}
-.fifa-club-season {
-  font-size: 11px; font-weight: 300; color: rgba(255,255,255,.3);
-  letter-spacing: .1em;
+.hv-hero-title {
+  font-size: 22px; font-weight: 700; color: #111111; letter-spacing: -.3px;
 }
 
-/* Clock (dark themed) */
-.fifa-clock {
-  display: flex; align-items: center; gap: 8px;
-  font-variant-numeric: tabular-nums;
-}
-.fifa-clock-date {
-  font-size: 10px; font-weight: 500; color: rgba(255,255,255,.35);
-  text-transform: uppercase; letter-spacing: .1em;
-}
-.fifa-clock-time { display: flex; align-items: baseline; gap: 2px; }
-.fifa-clock-hm   { font-size: 22px; font-weight: 200; color: rgba(255,255,255,.9); letter-spacing: .05em; }
-.fifa-clock-ss   { font-size: 13px; font-weight: 300; color: rgba(255,255,255,.3); }
-.fifa-clock-tz   { font-size: 9px; font-weight: 700; letter-spacing: .15em; color: rgba(255,255,255,.25); }
+/* Live Clock */
+.hv-clock { display: flex; align-items: baseline; gap: 3px; font-variant-numeric: tabular-nums; }
+.hv-clock-hm { font-size: 30px; font-weight: 200; color: #111111; letter-spacing: .04em; line-height: 1; }
+.hv-clock-ss { font-size: 16px; font-weight: 300; color: rgba(0,0,0,.3); letter-spacing: .04em; }
+.hv-clock-tz { font-size: 10px; font-weight: 600; color: rgba(0,0,0,.3); letter-spacing: .14em; text-transform: uppercase; margin-left: 4px; }
 
-/* ── Tabs ── */
-.fifa-tabs {
-  position: relative; z-index: 2;
-  display: flex; align-items: flex-end; gap: 0;
-  padding: 0 32px;
-  border-bottom: 1px solid rgba(255,255,255,.07);
-  background: rgba(8,12,24,.5);
-}
-.fifa-tab {
-  position: relative;
-  padding: 12px 20px 11px;
-  background: none; border: none; cursor: pointer; font-family: inherit;
-  font-size: 11px; font-weight: 700; letter-spacing: .16em;
-  color: rgba(255,255,255,.35); text-transform: uppercase;
-  transition: color .15s;
-}
-.fifa-tab:hover { color: rgba(255,255,255,.7); }
-.fifa-tab--active { color: #fff; }
-.fifa-tab-line {
-  position: absolute; bottom: -1px; left: 20px; right: 20px; height: 2px;
-  background: #65B32E; border-radius: 2px 2px 0 0;
-  animation: fifa-tabline .2s cubic-bezier(.22,1,.36,1);
-}
-@keyframes fifa-tabline { from { transform: scaleX(0); } to { transform: scaleX(1); } }
-
-/* ── Content area ── */
-.fifa-content {
-  position: relative; z-index: 1;
-  flex: 1; overflow-y: auto;
-}
-.fifa-content--exit {
-  animation: fifa-exit .18s ease forwards;
-}
-@keyframes fifa-exit {
-  to { opacity: 0; transform: translateX(-12px); }
-}
-
-/* ── Section label ── */
-.fifa-section-label {
-  font-size: 9.5px; font-weight: 800; letter-spacing: .25em;
-  color: rgba(255,255,255,.25); text-transform: uppercase;
-  padding: 24px 32px 14px;
-}
-
-/* ══ Competition cards ══ */
-.fifa-cards-section { padding-bottom: 24px; }
-
-.fifa-cards-grid {
+/* ── Competition nav cards ── */
+.hv-navgrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 14px; padding: 0 32px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  padding: 20px 40px 24px;
+  border-bottom: 1px solid rgba(0,0,0,.08);
 }
 
-/* Individual card */
-.fc-card {
+.hv-navcard {
   position: relative; overflow: hidden;
-  display: flex; flex-direction: column;
-  padding: 26px 22px 20px;
-  background: rgba(255,255,255,.04);
-  border: 1px solid rgba(255,255,255,.08);
+  display: flex; align-items: stretch;
+  background: #fff;
+  border: 1px solid rgba(0,0,0,.09);
   border-radius: 16px;
   cursor: pointer; text-align: left; font-family: inherit;
-  transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease, background .15s ease;
-  opacity: 0;
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+  padding: 0;
 }
-.fifa-mounted .fc-card {
-  animation: fifa-fadein .4s cubic-bezier(.22,1,.36,1) calc(var(--i,0) * 80ms + 200ms) both;
-}
-.fc-card:hover {
-  transform: scale(1.01);
-  background: rgba(255,255,255,.065);
-  border-color: rgba(255,255,255,.16);
-}
-.fc-card--sel {
-  transform: scale(1.025) !important;
-  border-color: var(--ac) !important;
-  background: rgba(255,255,255,.07) !important;
-  box-shadow: 0 0 0 1px var(--ac), 0 12px 48px rgba(var(--ac-rgb),.22) !important;
+.hv-navcard:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 32px rgba(0,0,0,.1);
+  border-color: var(--ac, rgba(0,0,0,.15));
 }
 
-/* Triangle corner (active) */
-.fc-corner {
-  position: absolute; top: 0; left: 0;
-  width: 0; height: 0;
-  border-style: solid;
-  border-width: 30px 30px 0 0;
-  border-color: var(--ac) transparent transparent transparent;
-  opacity: 0; transition: opacity .2s;
-}
-.fc-card--sel .fc-corner { opacity: 1; }
-
-/* Badge top-right */
-.fc-badge {
-  position: absolute; top: 14px; right: 14px;
-  font-size: 8.5px; font-weight: 800; letter-spacing: .14em;
-  color: #fff; padding: 3px 8px; border-radius: 4px;
-  text-transform: uppercase;
+.hv-navcard-stripe {
+  width: 5px; flex-shrink: 0;
+  border-radius: 16px 0 0 16px;
 }
 
-/* Icon */
-.fc-icon-wrap {
-  position: relative; width: 60px; height: 60px;
-  border-radius: 14px; margin-bottom: 16px;
+.hv-navcard-inner {
+  flex: 1; display: flex; align-items: center; gap: 14px;
+  padding: 18px 16px 18px 14px;
+}
+
+.hv-navcard-icon-wrap {
+  width: 46px; height: 46px; border-radius: 12px;
   display: flex; align-items: center; justify-content: center;
-  overflow: hidden;
+  flex-shrink: 0;
 }
-.fc-icon { font-size: 28px; line-height: 1; position: relative; z-index: 1; }
-.fc-icon-glow {
-  position: absolute; inset: 0; opacity: .18;
-  filter: blur(10px);
+.hv-navcard-icon { font-size: 22px; line-height: 1; }
+
+.hv-navcard-info { flex: 1; min-width: 0; }
+.hv-navcard-name {
+  font-size: 14px; font-weight: 700; color: #111;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  margin-bottom: 4px;
+}
+.hv-navcard-stats {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 11.5px; color: rgba(0,0,0,.4);
+}
+.hv-navcard-count { font-weight: 600; color: rgba(0,0,0,.55); }
+.hv-navcard-sep   { color: rgba(0,0,0,.2); }
+.hv-navcard-next  { white-space: nowrap; }
+
+.hv-navcard-arrow {
+  flex-shrink: 0; opacity: .35;
+  transition: opacity .18s, transform .18s;
+}
+.hv-navcard:hover .hv-navcard-arrow { opacity: 1; transform: translateX(3px); }
+
+/* ── Calendar wrapper ── */
+.hv-cal-wrap {
+  padding: 24px 40px;
+  border-bottom: 1px solid rgba(0,0,0,.08);
 }
 
-/* Name / sublabel */
-.fc-name {
-  font-size: 16px; font-weight: 800; letter-spacing: .08em;
-  color: #fff; margin-bottom: 4px; line-height: 1.1;
+.hv-cal-head {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;
 }
-.fc-card--sel .fc-name { color: var(--ac); }
-.fc-sublabel {
-  font-size: 11px; font-weight: 400;
-  color: rgba(255,255,255,.35); margin-bottom: 16px;
+.hv-cal-title {
+  flex: 1; display: flex; align-items: baseline; justify-content: center; gap: 10px;
 }
+.hv-cal-mname {
+  font-size: 19px; font-weight: 700; color: #111111;
+  text-transform: uppercase; letter-spacing: .06em;
+}
+.hv-cal-year { font-size: 14px; font-weight: 300; color: rgba(0,0,0,.4); }
 
-/* Divider */
-.fc-divider { height: 1px; width: 100%; margin-bottom: 14px; }
-
-/* Footer stats */
-.fc-footer {
-  display: flex; align-items: flex-end; justify-content: space-between;
-}
-.fc-stat { display: flex; flex-direction: column; gap: 2px; }
-.fc-stat--right { text-align: right; align-items: flex-end; }
-.fc-stat-val {
-  font-size: 20px; font-weight: 700; color: #fff;
-  font-variant-numeric: tabular-nums; letter-spacing: -.5px; line-height: 1;
-}
-.fc-stat-key {
-  font-size: 8.5px; font-weight: 700; letter-spacing: .15em;
-  color: rgba(255,255,255,.3); text-transform: uppercase;
-}
-
-/* Checkmark */
-.fc-check {
-  position: absolute; bottom: 18px; right: 18px;
-  animation: fifa-fadein .2s ease;
-}
-
-/* Hover overlay */
-.fc-overlay {
-  position: absolute; inset: 0; pointer-events: none;
-  background: linear-gradient(135deg, rgba(var(--ac-rgb,255,255,255),.04) 0%, transparent 60%);
-  opacity: 0; transition: opacity .2s;
-}
-.fc-card:hover .fc-overlay, .fc-card--sel .fc-overlay { opacity: 1; }
-
-/* ══ Calendar (Agenda tab) ══ */
-.fifa-agenda { padding: 24px 32px; }
-
-.fc-cal-head {
-  display: flex; align-items: center; gap: 10px; margin-bottom: 18px;
-}
-.fc-cal-month {
-  flex: 1; text-align: center;
-  font-size: 14px; font-weight: 700; letter-spacing: .1em;
-  color: rgba(255,255,255,.9); text-transform: uppercase;
-}
-.fc-cal-month span { color: rgba(255,255,255,.3); font-weight: 300; margin-left: 6px; }
-.fc-cal-nav {
-  width: 32px; height: 32px; border-radius: 8px;
-  border: 1px solid rgba(255,255,255,.12);
-  background: rgba(255,255,255,.05);
-  color: rgba(255,255,255,.5); cursor: pointer;
+.hv-cal-nav {
+  width: 34px; height: 34px; border-radius: 9px;
+  border: 1px solid rgba(0,0,0,.12);
+  background: #ffffff;
+  color: rgba(0,0,0,.5); cursor: pointer;
   display: flex; align-items: center; justify-content: center;
   transition: all .14s;
 }
-.fc-cal-nav:hover { background: rgba(255,255,255,.1); color: #fff; }
-.fc-cal-today {
-  padding: 5px 12px; border-radius: 7px;
-  border: 1px solid rgba(255,255,255,.12);
-  background: transparent; color: rgba(255,255,255,.4);
-  font-size: 10px; font-weight: 700; letter-spacing: .1em;
-  font-family: inherit; cursor: pointer; transition: all .14s;
-}
-.fc-cal-today:hover { color: #fff; background: rgba(255,255,255,.08); }
+.hv-cal-nav:hover { background: rgba(0,0,0,.05); color: #111111; border-color: rgba(0,0,0,.18); }
 
-.fc-cal-dnames {
+.hv-cal-today {
+  padding: 6px 13px; border-radius: 8px;
+  border: 1px solid rgba(0,0,0,.12);
+  background: transparent; color: rgba(0,0,0,.45);
+  font-size: 12px; font-weight: 500; font-family: inherit; cursor: pointer;
+  transition: all .14s;
+}
+.hv-cal-today:hover { color: #111111; background: rgba(0,0,0,.05); border-color: rgba(0,0,0,.18); }
+
+.hv-cal-days {
   display: grid; grid-template-columns: repeat(7, 1fr);
   gap: 3px; margin-bottom: 4px;
 }
-.fc-cal-dnames > div {
-  text-align: center; font-size: 10px; font-weight: 700;
-  color: rgba(255,255,255,.2); letter-spacing: .1em; padding: 4px 0;
+.hv-cal-dname {
+  text-align: center; font-size: 10.5px; font-weight: 600;
+  color: rgba(0,0,0,.35); letter-spacing: .07em; text-transform: uppercase;
+  padding: 5px 0;
 }
 
-@keyframes fc-slide-l { from { opacity:0; transform:translateX(20px) } to { opacity:1; transform:none } }
-@keyframes fc-slide-r { from { opacity:0; transform:translateX(-20px) } to { opacity:1; transform:none } }
-.fc-cal-grid   { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
-.fc-cal-left   { animation: fc-slide-l .2s cubic-bezier(.22,1,.36,1); }
-.fc-cal-right  { animation: fc-slide-r .2s cubic-bezier(.22,1,.36,1); }
+/* Calendar grid animations */
+@keyframes hv-slide-l { from { opacity:0; transform:translateX(28px) } to { opacity:1; transform:none } }
+@keyframes hv-slide-r { from { opacity:0; transform:translateX(-28px) } to { opacity:1; transform:none } }
+
+.hv-cal-grid {
+  display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px;
+}
+.hv-cal-left  { animation: hv-slide-l .22s cubic-bezier(.22,1,.36,1); }
+.hv-cal-right { animation: hv-slide-r .22s cubic-bezier(.22,1,.36,1); }
 
 /* Calendar cells */
-.fc-cell {
-  min-height: 72px;
+.hv-cell {
+  min-height: 80px;
   display: flex; flex-direction: column; align-items: flex-start;
-  padding: 5px 5px 4px; border-radius: 8px; gap: 3px;
-  cursor: pointer; transition: background .12s;
+  padding: 6px 5px 5px; border-radius: 10px; gap: 4px;
+  cursor: pointer; position: relative;
+  transition: background .13s;
 }
-.fc-cell:hover { background: rgba(255,255,255,.05); }
-.fc-cell--out {
-  opacity: .15; cursor: default; pointer-events: none;
-  font-size: 12px; color: rgba(255,255,255,.3);
+.hv-cell:hover { background: rgba(0,0,0,.04); }
+.hv-cell-out {
+  opacity: .2; cursor: default; pointer-events: none;
+  font-size: 13px; color: rgba(0,0,0,.3);
   display: flex; align-items: center; justify-content: center;
 }
-.fc-cell--sel { background: rgba(255,255,255,.06); outline: 1px solid rgba(255,255,255,.14); }
 
-.fc-cell-num {
-  font-size: 12.5px; font-weight: 400; color: rgba(255,255,255,.3);
-  width: 24px; height: 24px; border-radius: 50%;
+.hv-cell-num {
+  font-size: 13px; font-weight: 400; color: rgba(0,0,0,.35);
+  width: 26px; height: 26px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
-  transition: all .14s; flex-shrink: 0;
+  transition: all .14s; flex-shrink: 0; line-height: 1;
+  align-self: flex-start;
 }
-.fc-cell--has   .fc-cell-num { color: rgba(255,255,255,.8); font-weight: 600; }
-.fc-cell--today .fc-cell-num { background: #65B32E; color: #fff; font-weight: 700; }
-.fc-cell--sel   .fc-cell-num { background: rgba(255,255,255,.12); color: #fff; }
+.hv-cell-has   .hv-cell-num { color: rgba(0,0,0,.85); font-weight: 600; }
+.hv-cell-today .hv-cell-num { background: #111111; color: #fff; font-weight: 700; }
+.hv-cell-sel   .hv-cell-num { background: rgba(0,0,0,.1); color: #111111; font-weight: 600; }
 
-.fc-cell-badges { display: flex; flex-direction: column; gap: 2px; width: 100%; }
-.fc-cell-badge {
+.hv-cell-sel { background: rgba(0,0,0,.05); outline: 1px solid rgba(0,0,0,.12); }
+
+/* today pulse */
+@keyframes hv-today-pulse {
+  0%,100% { box-shadow: 0 0 0 0 rgba(0,0,0,.08); }
+  50%      { box-shadow: 0 0 0 5px rgba(0,0,0,.03); }
+}
+.hv-cell-today { animation: hv-today-pulse 3.5s ease infinite; }
+
+/* Filter chips (inside calendar header) */
+.hv-cal-chips {
+  display: flex; align-items: center; gap: 5px; margin-left: auto;
+}
+.hv-chip {
+  padding: 4px 11px; border-radius: 20px;
+  border: 1px solid rgba(0,0,0,.13);
+  background: transparent; color: rgba(0,0,0,.5);
+  font-size: 11px; font-weight: 600; font-family: inherit;
+  cursor: pointer; transition: all .15s; letter-spacing: .01em;
+}
+.hv-chip:hover { background: rgba(0,0,0,.05); color: #111; border-color: rgba(0,0,0,.2); }
+.hv-chip-on { background: #111; border-color: #111; color: #fff; }
+.hv-chip-on:hover { background: #111; }
+
+/* Calendar cell badges (solid colored) */
+.hv-cell-badges {
+  display: flex; flex-direction: column; gap: 2px; width: 100%;
+}
+.hv-cbadge {
   display: block; width: 100%;
-  font-size: 8px; font-weight: 800; letter-spacing: .05em;
-  padding: 2px 3px; border-radius: 3px;
-  color: #fff; text-align: center;
+  font-size: 8.5px; font-weight: 800; letter-spacing: .04em;
+  padding: 2px 4px; border-radius: 4px;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  opacity: .9;
+  text-align: center;
+  transition: opacity .13s;
+}
+.hv-cell:hover .hv-cbadge { opacity: .85; }
+
+/* ── Day detail ── */
+@keyframes hv-detail-in {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: none; }
+}
+.hv-detail {
+  padding: 20px 40px;
+  border-bottom: 1px solid rgba(0,0,0,.08);
+}
+.hv-detail-in { animation: hv-detail-in .22s cubic-bezier(.22,1,.36,1); }
+
+.hv-detail-bar {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 14px;
+}
+.hv-detail-date { font-size: 15px; font-weight: 700; color: #111111; }
+.hv-detail-count {
+  font-size: 11px; background: rgba(0,0,0,.05);
+  border: 1px solid rgba(0,0,0,.1); color: rgba(0,0,0,.5);
+  padding: 2px 10px; border-radius: 100px;
 }
 
-/* Day detail */
-.fc-day-detail {
-  margin-top: 16px; padding: 16px;
-  background: rgba(255,255,255,.04); border-radius: 12px;
-  border: 1px solid rgba(255,255,255,.07);
+.hv-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 10px;
 }
-.fc-day-label {
-  font-size: 11px; font-weight: 700; letter-spacing: .1em;
-  color: rgba(255,255,255,.4); text-transform: uppercase; margin-bottom: 10px;
-}
-.fc-match-row {
-  display: flex; align-items: center; gap: 10px;
-  padding: 10px 12px; border-radius: 8px;
-  background: rgba(255,255,255,.03); cursor: pointer;
-  margin-bottom: 4px; transition: background .13s;
-}
-.fc-match-row:hover { background: rgba(255,255,255,.06); }
-.fc-match-accent { width: 3px; height: 32px; border-radius: 2px; flex-shrink: 0; }
-.fc-match-comp { font-size: 9.5px; font-weight: 700; color: rgba(255,255,255,.35); width: 80px; flex-shrink: 0; letter-spacing: .05em; }
-.fc-match-teams { flex: 1; font-size: 13px; font-weight: 600; color: #fff; display: flex; gap: 6px; align-items: center; }
-.fc-match-vs { font-size: 10px; color: rgba(255,255,255,.3); }
-.fc-match-hora { font-size: 11px; color: rgba(255,255,255,.4); font-variant-numeric: tabular-nums; width: 44px; text-align: right; }
-.fc-match-status { font-size: 10px; }
 
-/* ══ Próximos tab ══ */
-.fifa-proximos { padding: 0 32px 32px; }
+.hv-card {
+  background: #ffffff;
+  border: 1px solid rgba(0,0,0,.1);
+  border-left: 3px solid var(--c, rgba(0,0,0,.2));
+  border-radius: 10px; padding: 14px 16px;
+  cursor: pointer;
+  transition: background .15s, transform .15s, box-shadow .15s;
+}
+.hv-card:hover {
+  background: rgba(0,0,0,.02);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(0,0,0,.1);
+}
 
-.fc-up-row {
-  display: flex; align-items: center; gap: 0;
-  background: rgba(255,255,255,.04);
-  border: 1px solid rgba(255,255,255,.07);
-  border-radius: 12px; margin-bottom: 8px;
-  cursor: pointer; overflow: hidden;
-  transition: background .14s, transform .14s;
-  opacity: 0;
-}
-.fifa-mounted .fc-up-row {
-  animation: fifa-fadein .35s cubic-bezier(.22,1,.36,1) calc(var(--i,0) * 50ms + 150ms) both;
-}
-.fc-up-row:hover { background: rgba(255,255,255,.07); transform: translateX(3px); }
-.fc-up-bar { width: 4px; align-self: stretch; flex-shrink: 0; }
-.fc-up-body { flex: 1; padding: 12px 14px; }
-.fc-up-meta { display: flex; align-items: center; gap: 10px; margin-bottom: 5px; }
-.fc-up-comp { font-size: 9.5px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
-.fc-up-date { font-size: 11px; color: rgba(255,255,255,.35); font-variant-numeric: tabular-nums; }
-.fc-up-teams { font-size: 13.5px; font-weight: 600; color: #fff; display: flex; gap: 8px; align-items: center; }
-.fc-up-vs { font-size: 11px; color: rgba(255,255,255,.25); }
-.fc-up-arrow { font-size: 22px; color: rgba(255,255,255,.15); padding-right: 14px; transition: color .14s; }
-.fc-up-row:hover .fc-up-arrow { color: var(--ac); }
-
-/* ══ Bottom hints bar ══ */
-.fifa-hints {
-  position: relative; z-index: 2;
-  display: flex; align-items: center; gap: 24px;
-  padding: 10px 32px;
-  border-top: 1px solid rgba(255,255,255,.05);
-  background: rgba(8,12,24,.7);
-  backdrop-filter: blur(8px);
-}
-.fifa-hint {
+.hv-card-comp {
   display: flex; align-items: center; gap: 6px;
-  font-size: 10px; font-weight: 500; letter-spacing: .05em;
-  color: rgba(255,255,255,.3);
+  font-size: 10px; font-weight: 700;
+  color: rgba(0,0,0,.45); text-transform: uppercase; letter-spacing: .08em;
+  margin-bottom: 8px;
 }
-.fifa-btn {
-  width: 18px; height: 18px; border-radius: 50%;
-  display: inline-flex; align-items: center; justify-content: center;
-  font-size: 9px; font-weight: 700; line-height: 1;
-  border: 1.5px solid currentColor;
-}
-.fifa-btn--x   { color: #f87171; }
-.fifa-btn--o   { color: #65B32E; }
-.fifa-btn--sq  { color: #ec4899; }
-.fifa-btn--tri { color: #60a5fa; }
+.hv-card-comp-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
 
-/* ── Empty ── */
-.fifa-empty {
-  padding: 48px; text-align: center;
-  font-size: 13px; color: rgba(255,255,255,.25);
-  letter-spacing: .05em;
+.hv-card-match {
+  display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+  margin-bottom: 6px;
 }
+.hv-card-team { font-size: 13px; font-weight: 600; color: #111111; }
+.hv-card-vs   { font-size: 11px; color: rgba(0,0,0,.3); }
+
+.hv-card-meta {
+  display: flex; gap: 8px; flex-wrap: wrap;
+  font-size: 11px; color: rgba(0,0,0,.4); margin-bottom: 7px;
+}
+.hv-card-time    { font-weight: 600; color: rgba(0,0,0,.6); font-variant-numeric: tabular-nums; }
+.hv-card-detentor { max-width: 110px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.hv-card-status {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 11px; font-weight: 500;
+}
+.hv-card-sdot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+
+/* ── Upcoming ── */
+.hv-upcoming { padding: 28px 40px 44px; }
+
+.hv-sec-label {
+  font-size: 10px; font-weight: 700; letter-spacing: .18em;
+  color: rgba(0,0,0,.35); text-transform: uppercase; margin-bottom: 14px;
+}
+
+.hv-upcoming-row {
+  display: flex; gap: 10px;
+  overflow-x: auto; scrollbar-width: none; padding-bottom: 6px;
+}
+.hv-upcoming-row::-webkit-scrollbar { display: none; }
+
+.hv-up-card {
+  min-width: 174px; flex-shrink: 0;
+  padding: 16px 18px;
+  background: #ffffff;
+  border: 1px solid rgba(0,0,0,.1);
+  border-top: 2px solid var(--c, rgba(0,0,0,.2));
+  border-radius: 12px;
+  cursor: pointer; font-family: inherit; text-align: left;
+  transition: background .15s, transform .15s, box-shadow .15s;
+}
+.hv-up-card:hover {
+  background: rgba(0,0,0,.02);
+  transform: translateY(-3px);
+  box-shadow: 0 14px 36px rgba(0,0,0,.1);
+}
+.hv-up-comp {
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .07em; margin-bottom: 5px;
+}
+.hv-up-date {
+  font-size: 11.5px; color: rgba(0,0,0,.4); margin-bottom: 9px;
+  font-variant-numeric: tabular-nums;
+}
+.hv-up-teams {
+  font-size: 12.5px; font-weight: 600; color: #111111;
+  display: flex; align-items: center; gap: 5px; flex-wrap: wrap;
+}
+.hv-up-x { color: rgba(0,0,0,.3); font-weight: 400; font-size: 11px; }
+
+/* ── Empty state ── */
+.hv-empty {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 12px; padding: 60px 40px;
+}
+.hv-empty-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: rgba(0,0,0,.15);
+  animation: hv-today-pulse 2s ease infinite;
+}
+.hv-empty-text { font-size: 13px; color: rgba(0,0,0,.35); }
 
