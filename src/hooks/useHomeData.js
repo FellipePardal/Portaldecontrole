@@ -45,7 +45,7 @@ export function useHomeData(competitions) {
         } else if (cfg.tableName) {
           const { data } = await supabase
             .from(cfg.tableName)
-            .select('mandante, visitante, data, hora_brt, rod, status, detentor')
+            .select('*')
           rows = data || []
         } else if (cfg.competitionId) {
           const { data: events } = await supabase
@@ -82,7 +82,7 @@ export function useHomeData(competitions) {
             visitante: row.visitante,
             status:   row.status || 'Pendente',
             detentor: row.detentor || '',
-            rod:      row.rod || '',
+            rod:      row.rod || row.eu || '',
           })
         }
       } catch (e) {

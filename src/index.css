@@ -2837,8 +2837,9 @@ body {
   display: flex; align-items: center;
   border-radius: 5px; overflow: hidden;
   transition: filter .12s;
+  border-radius: 0 5px 5px 0;
 }
-.hv-cell:hover .hv-cell-game { filter: brightness(.94); }
+.hv-cell:hover .hv-cell-game { filter: brightness(.93); }
 
 .hv-cell-shields {
   display: flex; align-items: center; gap: 3px;
