@@ -58,7 +58,14 @@ export function useHomeData(competitions) {
           }))
         }
 
-        const valid = rows.filter(r => r.mandante && r.visitante && r.data)
+        const seen = new Set()
+        const valid = rows.filter(r => {
+          if (!r.mandante || !r.visitante || !r.data) return false
+          const key = `${r.mandante}|${r.visitante}|${r.data}`
+          if (seen.has(key)) return false
+          seen.add(key)
+          return true
+        })
         totals[comp.id] = valid.length
 
         for (const row of valid) {

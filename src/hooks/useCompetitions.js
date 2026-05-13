@@ -65,15 +65,16 @@ function capitalize(s) {
 function configForRow(row, columnsByCompId) {
   const isLegacy = row.template_key && row.template_key.startsWith('legacy_')
   if (isLegacy && LEGACY_CONFIGS[row.template_key]) {
+    const baseConfig = LEGACY_CONFIGS[row.template_key]
     return {
-      ...LEGACY_CONFIGS[row.template_key],
+      ...baseConfig,
       id: row.slug,
       label: row.label,
       accentColor: row.accent_color,
       accentBg: row.accent_bg,
       competitionId: row.id,
       isLegacy: true,
-      tableName: row.legacy_table,
+      tableName: row.legacy_table || baseConfig.tableName,
     }
   }
 
