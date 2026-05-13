@@ -5,14 +5,21 @@ const MESES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho',
                'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro']
 const DIAS  = ['DOM','SEG','TER','QUA','QUI','SEX','SÁB']
 
+function compIcon(label) {
+  if (!label) return '⚽'
+  const l = label.toLowerCase()
+  if (l.includes('nba') || l.includes('basket')) return '🏀'
+  return '⚽'
+}
+
 function abbrevComp(label) {
   if (!label) return '?'
   const l = label.toLowerCase()
-  if (l.includes('brasileir')) return 'Bras.'
-  if (l.includes('paulist') && (l.includes('fem') || l.includes('f'))) return 'Paul.F'
-  if (l.includes('paulist')) return 'Paul.'
-  if (l.includes('nba')) return 'NBA'
-  return label.slice(0, 5).trim()
+  if (l.includes('brasileir'))                          return 'BRA'
+  if (l.includes('paulist') && l.includes('fem'))      return 'PAU F'
+  if (l.includes('paulist'))                            return 'PAUL'
+  if (l.includes('nba'))                                return 'NBA'
+  return label.slice(0, 4).toUpperCase().trim()
 }
 
 function statusColor(s) {
@@ -54,12 +61,12 @@ export default function HomeView({ competitions, onCompSelect }) {
     return { year: d.getFullYear(), month: d.getMonth(), day: d.getDate() }
   }, [])
 
-  const [viewMonth,      setViewMonth]      = useState({ year: today.year, month: today.month })
-  const [activeFilters,  setActiveFilters]  = useState(new Set(['all']))
-  const [selectedKey,    setSelectedKey]    = useState(null)
-  const [calKey,         setCalKey]         = useState(0)
-  const [calDir,         setCalDir]         = useState(null)
-  const [mounted,        setMounted]        = useState(false)
+  const [viewMonth,     setViewMonth]     = useState({ year: today.year, month: today.month })
+  const [activeFilters, setActiveFilters] = useState(new Set(['all']))
+  const [selectedKey,   setSelectedKey]   = useState(null)
+  const [calKey,        setCalKey]        = useState(0)
+  const [calDir,        setCalDir]        = useState(null)
+  const [mounted,       setMounted]       = useState(false)
 
   const { matchesByDate, totalsByComp, loading } = useHomeData(competitions)
 
@@ -146,14 +153,6 @@ export default function HomeView({ competitions, onCompSelect }) {
     return result
   }, [matchesByDate, today])
 
-  const totalAll = Object.values(totalsByComp).reduce((a, b) => a + b, 0)
-
-  const nextAll = useMemo(() => {
-    const vals = Object.values(nextByComp)
-    if (!vals.length) return null
-    return vals.reduce((a, b) => a.ts < b.ts ? a : b)
-  }, [nextByComp])
-
   return (
     <div className={`hv-root${mounted ? ' hv-mounted' : ''}`}>
       <div className="hv-bg" />
@@ -167,51 +166,41 @@ export default function HomeView({ competitions, onCompSelect }) {
         <LiveClock />
       </div>
 
-      {/* ── Competition tiles ── */}
-      <div className="hv-tiles hv-enter" style={{ '--i': 1 }}>
-
-        {/* Todos */}
-        <button
-          className={`hv-tile${activeFilters.has('all') ? ' hv-tile-on' : ''}`}
-          onClick={() => toggleFilter('all')}
-        >
-          <div className="hv-tile-bar" style={{ background: 'linear-gradient(90deg,#65B32E,#ec4899,#f59e0b)' }} />
-          <div className="hv-tile-top">
-            <span className="hv-tile-label" style={{ color: activeFilters.has('all') ? '#fff' : undefined }}>Todos</span>
-            <span className={`hv-tile-badge${activeFilters.has('all') ? ' on' : ''}`}>●</span>
-          </div>
-          <div className="hv-tile-num">{loading ? '—' : totalAll}</div>
-          <div className="hv-tile-sub">
-            {nextAll ? `próx. ${nextAll.rawDate}` : `${competitions.length} campeonatos`}
-          </div>
-        </button>
-
-        {competitions.map(comp => {
-          const on    = activeFilters.has(comp.id) && !activeFilters.has('all')
+      {/* ── Competition nav cards ── */}
+      <div className="hv-navgrid hv-enter" style={{ '--i': 1 }}>
+        {competitions.map((comp, idx) => {
           const total = totalsByComp[comp.id] ?? 0
           const next  = nextByComp[comp.id]
+          const icon  = compIcon(comp.label)
           return (
             <button
               key={comp.id}
-              className={`hv-tile${on ? ' hv-tile-on' : ''}`}
-              style={on ? {
-                '--ac': comp.accentColor,
-                borderColor: comp.accentColor + '50',
-                boxShadow:   `0 0 0 1px ${comp.accentColor}30, 0 8px 40px ${comp.accentColor}14`,
-              } : { '--ac': comp.accentColor }}
-              onClick={() => toggleFilter(comp.id)}
+              className="hv-navcard hv-enter"
+              style={{ '--ac': comp.accentColor, '--i': idx + 1 }}
+              onClick={() => onCompSelect(comp.id)}
             >
-              <div className="hv-tile-bar" style={{ background: comp.accentColor }} />
-              <div className="hv-tile-top">
-                <span className="hv-tile-label" style={on ? { color: comp.accentColor } : {}}>
-                  {comp.label}
-                </span>
-                <span className={`hv-tile-badge${on ? ' on' : ''}`}
-                      style={on ? { color: comp.accentColor } : {}}>●</span>
-              </div>
-              <div className="hv-tile-num">{loading ? '—' : total}</div>
-              <div className="hv-tile-sub">
-                {next ? `próx. ${next.rawDate}` : 'sem jogos'}
+              <div className="hv-navcard-stripe" style={{ background: comp.accentColor }} />
+              <div className="hv-navcard-inner">
+                <div className="hv-navcard-icon-wrap" style={{ background: comp.accentColor + '18', color: comp.accentColor }}>
+                  <span className="hv-navcard-icon">{icon}</span>
+                </div>
+                <div className="hv-navcard-info">
+                  <div className="hv-navcard-name">{comp.label}</div>
+                  <div className="hv-navcard-stats">
+                    <span className="hv-navcard-count">{loading ? '—' : total} jogos</span>
+                    {next && (
+                      <>
+                        <span className="hv-navcard-sep">·</span>
+                        <span className="hv-navcard-next">próx. {next.rawDate}</span>
+                      </>
+                    )}
+                  </div>
+                </div>
+                <div className="hv-navcard-arrow" style={{ color: comp.accentColor }}>
+                  <svg viewBox="0 0 16 16" fill="none" width="16" height="16">
+                    <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </div>
               </div>
             </button>
           )
@@ -221,6 +210,7 @@ export default function HomeView({ competitions, onCompSelect }) {
       {/* ── Calendar ── */}
       <div className="hv-cal-wrap hv-enter" style={{ '--i': 2 }}>
 
+        {/* Calendar header */}
         <div className="hv-cal-head">
           <button className="hv-cal-nav" onClick={() => changeMonth(-1)}>
             <svg viewBox="0 0 16 16" fill="none" width="14" height="14">
@@ -237,26 +227,44 @@ export default function HomeView({ competitions, onCompSelect }) {
             </svg>
           </button>
           <button className="hv-cal-today" onClick={goToday}>Hoje</button>
+
+          {/* Filter chips inline */}
+          <div className="hv-cal-chips">
+            <button
+              className={`hv-chip${activeFilters.has('all') ? ' hv-chip-on' : ''}`}
+              onClick={() => toggleFilter('all')}
+            >Todos</button>
+            {competitions.map(comp => {
+              const on = activeFilters.has(comp.id) && !activeFilters.has('all')
+              return (
+                <button
+                  key={comp.id}
+                  className={`hv-chip${on ? ' hv-chip-on' : ''}`}
+                  style={on ? { background: comp.accentColor, borderColor: comp.accentColor, color: '#fff' } : {}}
+                  onClick={() => toggleFilter(comp.id)}
+                >
+                  {abbrevComp(comp.label)}
+                </button>
+              )
+            })}
+          </div>
         </div>
 
         <div className="hv-cal-days">
           {DIAS.map(d => <div key={d} className="hv-cal-dname">{d}</div>)}
         </div>
 
-        <div
-          key={calKey}
-          className={`hv-cal-grid${calDir ? ` hv-cal-${calDir}` : ''}`}
-        >
+        <div key={calKey} className={`hv-cal-grid${calDir ? ` hv-cal-${calDir}` : ''}`}>
           {calCells.map((cell, i) => {
             if (!cell.current) return (
               <div key={i} className="hv-cell hv-cell-out">{cell.day}</div>
             )
 
-            const raw      = matchesByDate.get(cell.dateKey) || []
-            const matches  = raw.filter(passFilter)
-            const isToday  = cell.day === today.day && viewMonth.month === today.month && viewMonth.year === today.year
-            const isSel    = cell.dateKey === selectedKey
-            const hasMat   = matches.length > 0
+            const raw     = matchesByDate.get(cell.dateKey) || []
+            const matches = raw.filter(passFilter)
+            const isToday = cell.day === today.day && viewMonth.month === today.month && viewMonth.year === today.year
+            const isSel   = cell.dateKey === selectedKey
+            const hasMat  = matches.length > 0
 
             const compGroups = [...matches.reduce((map, m) => {
               if (!map.has(m.competitionId)) map.set(m.competitionId, { ...m, count: 0 })
@@ -282,13 +290,10 @@ export default function HomeView({ competitions, onCompSelect }) {
                       <span
                         key={g.competitionId}
                         className="hv-cbadge"
-                        style={{
-                          background: g.accentColor + '22',
-                          color: g.accentColor,
-                          borderColor: g.accentColor + '55',
-                        }}
+                        style={{ background: g.accentColor, color: '#fff' }}
+                        title={g.competitionLabel + (g.count > 1 ? ` (${g.count})` : '')}
                       >
-                        {abbrevComp(g.competitionLabel)}{g.count > 1 ? ` ·${g.count}` : ''}
+                        {abbrevComp(g.competitionLabel)}{g.count > 1 ? ` ${g.count}` : ''}
                       </span>
                     ))}
                   </div>
@@ -297,7 +302,6 @@ export default function HomeView({ competitions, onCompSelect }) {
             )
           })}
         </div>
-
       </div>
 
       {/* ── Day detail ── */}
@@ -368,7 +372,6 @@ export default function HomeView({ competitions, onCompSelect }) {
         </div>
       )}
 
-      {/* empty state */}
       {!loading && !upcoming.length && selectedMatches.length === 0 && (
         <div className="hv-empty">
           <div className="hv-empty-dot" />

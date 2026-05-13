@@ -2612,53 +2612,67 @@ body {
 .hv-clock-ss { font-size: 16px; font-weight: 300; color: rgba(0,0,0,.3); letter-spacing: .04em; }
 .hv-clock-tz { font-size: 10px; font-weight: 600; color: rgba(0,0,0,.3); letter-spacing: .14em; text-transform: uppercase; margin-left: 4px; }
 
-/* ── Competition tiles ── */
-.hv-tiles {
-  display: flex; gap: 10px;
-  padding: 24px 40px;
-  overflow-x: auto; scrollbar-width: none;
+/* ── Competition nav cards ── */
+.hv-navgrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  padding: 20px 40px 24px;
   border-bottom: 1px solid rgba(0,0,0,.08);
 }
-.hv-tiles::-webkit-scrollbar { display: none; }
 
-.hv-tile {
-  position: relative;
-  min-width: 155px; flex-shrink: 0;
-  padding: 18px 20px 16px;
-  background: #ffffff;
-  border: 1px solid rgba(0,0,0,.1);
-  border-radius: 14px;
+.hv-navcard {
+  position: relative; overflow: hidden;
+  display: flex; align-items: stretch;
+  background: #fff;
+  border: 1px solid rgba(0,0,0,.09);
+  border-radius: 16px;
   cursor: pointer; text-align: left; font-family: inherit;
-  transition: background .18s ease, border-color .18s ease, box-shadow .18s ease, transform .18s ease;
-  overflow: hidden;
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+  padding: 0;
 }
-.hv-tile:hover { background: rgba(0,0,0,.02); transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,.08); }
+.hv-navcard:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 32px rgba(0,0,0,.1);
+  border-color: var(--ac, rgba(0,0,0,.15));
+}
 
-.hv-tile-bar {
-  position: absolute; top: 0; left: 0; right: 0; height: 2px;
-  border-radius: 14px 14px 0 0; opacity: .75;
+.hv-navcard-stripe {
+  width: 5px; flex-shrink: 0;
+  border-radius: 16px 0 0 16px;
 }
 
-.hv-tile-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
-.hv-tile-label {
-  font-size: 12px; font-weight: 600; color: rgba(0,0,0,.45);
-  transition: color .18s;
+.hv-navcard-inner {
+  flex: 1; display: flex; align-items: center; gap: 14px;
+  padding: 18px 16px 18px 14px;
 }
-.hv-tile:hover .hv-tile-label { color: rgba(0,0,0,.75); }
-.hv-tile-on .hv-tile-label    { color: rgba(0,0,0,.85); }
 
-.hv-tile-badge {
-  font-size: 8px; color: rgba(0,0,0,.25);
-  transition: color .18s;
+.hv-navcard-icon-wrap {
+  width: 46px; height: 46px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
 }
-.hv-tile-badge.on { color: var(--ac, #111); }
+.hv-navcard-icon { font-size: 22px; line-height: 1; }
 
-.hv-tile-num {
-  font-size: 32px; font-weight: 700; color: #111111;
-  letter-spacing: -.8px; line-height: 1; margin-bottom: 5px;
-  font-variant-numeric: tabular-nums;
+.hv-navcard-info { flex: 1; min-width: 0; }
+.hv-navcard-name {
+  font-size: 14px; font-weight: 700; color: #111;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  margin-bottom: 4px;
 }
-.hv-tile-sub { font-size: 11px; color: rgba(0,0,0,.38); }
+.hv-navcard-stats {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 11.5px; color: rgba(0,0,0,.4);
+}
+.hv-navcard-count { font-weight: 600; color: rgba(0,0,0,.55); }
+.hv-navcard-sep   { color: rgba(0,0,0,.2); }
+.hv-navcard-next  { white-space: nowrap; }
+
+.hv-navcard-arrow {
+  flex-shrink: 0; opacity: .35;
+  transition: opacity .18s, transform .18s;
+}
+.hv-navcard:hover .hv-navcard-arrow { opacity: 1; transform: translateX(3px); }
 
 /* ── Calendar wrapper ── */
 .hv-cal-wrap {
@@ -2667,7 +2681,7 @@ body {
 }
 
 .hv-cal-head {
-  display: flex; align-items: center; gap: 10px; margin-bottom: 20px;
+  display: flex; align-items: center; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;
 }
 .hv-cal-title {
   flex: 1; display: flex; align-items: baseline; justify-content: center; gap: 10px;
@@ -2752,19 +2766,34 @@ body {
 }
 .hv-cell-today { animation: hv-today-pulse 3.5s ease infinite; }
 
+/* Filter chips (inside calendar header) */
+.hv-cal-chips {
+  display: flex; align-items: center; gap: 5px; margin-left: auto;
+}
+.hv-chip {
+  padding: 4px 11px; border-radius: 20px;
+  border: 1px solid rgba(0,0,0,.13);
+  background: transparent; color: rgba(0,0,0,.5);
+  font-size: 11px; font-weight: 600; font-family: inherit;
+  cursor: pointer; transition: all .15s; letter-spacing: .01em;
+}
+.hv-chip:hover { background: rgba(0,0,0,.05); color: #111; border-color: rgba(0,0,0,.2); }
+.hv-chip-on { background: #111; border-color: #111; color: #fff; }
+.hv-chip-on:hover { background: #111; }
+
+/* Calendar cell badges (solid colored) */
 .hv-cell-badges {
   display: flex; flex-direction: column; gap: 2px; width: 100%;
 }
 .hv-cbadge {
   display: block; width: 100%;
-  font-size: 9px; font-weight: 700; letter-spacing: .02em;
+  font-size: 8.5px; font-weight: 800; letter-spacing: .04em;
   padding: 2px 4px; border-radius: 4px;
-  border: 1px solid;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   text-align: center;
   transition: opacity .13s;
 }
-.hv-cell:hover .hv-cbadge { opacity: .8; }
+.hv-cell:hover .hv-cbadge { opacity: .85; }
 
 /* ── Day detail ── */
 @keyframes hv-detail-in {
