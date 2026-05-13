@@ -371,8 +371,8 @@ export default function HomeView({ competitions, onCompSelect }) {
                             key={gi}
                             className="hv-cell-game"
                             title={`${m.mandante} × ${m.visitante} · ${m.status}`}
+                            style={{ background: m.accentColor + '18' }}
                           >
-                            <div className="hv-cell-game-bar" style={{ background: m.accentColor }} />
                             <div className="hv-cell-shields">
                               {s1
                                 ? <img src={s1} className="hv-cell-shield" alt={m.mandante} />
