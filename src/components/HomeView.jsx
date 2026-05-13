@@ -11,6 +11,13 @@ function cleanComp(label) {
   return label.replace(/\s+\d{2,4}$/, '').trim()
 }
 
+function ShieldSm({ name, accentColor }) {
+  const url = getEscudoUrl(name)
+  return url
+    ? <img src={url} className="hv-shield-sm" alt="" />
+    : <span className="hv-shield-sm-fb" style={{ background: (accentColor || '#999') + '50' }} />
+}
+
 function statusColor(s) {
   const v = (s || '').toLowerCase()
   if (v.includes('confirm') || v.includes('reserv')) return '#4ade80'
@@ -254,20 +261,19 @@ export default function HomeView({ competitions, onCompSelect }) {
               <div className="hv-navcard-stripe" style={{ background: comp.accentColor }} />
               <div className="hv-navcard-body">
                 <div className="hv-navcard-inner">
-                  <div className="hv-navcard-icon-wrap" style={{ background: comp.accentColor + '18', color: comp.accentColor }}>
-                    <span className="hv-navcard-icon">⚽</span>
-                  </div>
                   <div className="hv-navcard-info">
-                    <div className="hv-navcard-name">{comp.label}</div>
-                    <div className="hv-navcard-stats">
-                      <span className="hv-navcard-count">{loading ? '—' : total} jogos</span>
-                      {next && (
-                        <>
-                          <span className="hv-navcard-sep">·</span>
-                          <span className="hv-navcard-next">próx. {next.rawDate}</span>
-                        </>
-                      )}
+                    <div className="hv-navcard-name">
+                      <span className="hv-navcard-dot" style={{ background: comp.accentColor }} />
+                      {cleanComp(comp.label)}
                     </div>
+                    {!loading && total > 0 && (
+                      <div className="hv-navcard-prog-wrap">
+                        <div className="hv-navcard-prog-track">
+                          <div className="hv-navcard-prog-fill" style={{ width: `${pct}%`, background: comp.accentColor }} />
+                        </div>
+                        <span className="hv-navcard-prog-label">{done} de {total} jogos</span>
+                      </div>
+                    )}
                   </div>
                   <div className="hv-navcard-arrow" style={{ color: comp.accentColor }}>
                     <svg viewBox="0 0 16 16" fill="none" width="16" height="16">
@@ -275,17 +281,6 @@ export default function HomeView({ competitions, onCompSelect }) {
                     </svg>
                   </div>
                 </div>
-                {!loading && total > 0 && (
-                  <div className="hv-navcard-prog-wrap">
-                    <div className="hv-navcard-prog-track">
-                      <div
-                        className="hv-navcard-prog-fill"
-                        style={{ width: `${pct}%`, background: comp.accentColor }}
-                      />
-                    </div>
-                    <span className="hv-navcard-prog-label">{done}/{total}</span>
-                  </div>
-                )}
               </div>
             </button>
           )
@@ -431,8 +426,10 @@ export default function HomeView({ competitions, onCompSelect }) {
                       {cleanComp(m.competitionLabel)}
                     </div>
                     <div className="hv-card-match">
+                      <ShieldSm name={m.mandante} accentColor={m.accentColor} />
                       <span className="hv-card-team">{m.mandante}</span>
                       <span className="hv-card-vs">×</span>
+                      <ShieldSm name={m.visitante} accentColor={m.accentColor} />
                       <span className="hv-card-team">{m.visitante}</span>
                     </div>
                     <div className="hv-card-meta">
@@ -539,8 +536,10 @@ export default function HomeView({ competitions, onCompSelect }) {
                               {cleanComp(m.competitionLabel)}
                             </div>
                             <div className="hv-sp-game-teams">
+                              <ShieldSm name={m.mandante} accentColor={m.accentColor} />
                               <span>{m.mandante}</span>
                               <span className="hv-sp-game-x">×</span>
+                              <ShieldSm name={m.visitante} accentColor={m.accentColor} />
                               <span>{m.visitante}</span>
                             </div>
                             <div className="hv-sp-game-meta">
@@ -577,8 +576,10 @@ export default function HomeView({ competitions, onCompSelect }) {
                         <div className="hv-up-row-bar" style={{ background: m.accentColor }} />
                         <div className="hv-up-row-body">
                           <div className="hv-up-row-teams">
+                            <ShieldSm name={m.mandante} accentColor={m.accentColor} />
                             <span>{m.mandante}</span>
                             <span className="hv-up-x">×</span>
+                            <ShieldSm name={m.visitante} accentColor={m.accentColor} />
                             <span>{m.visitante}</span>
                           </div>
                           <div className="hv-up-row-meta">

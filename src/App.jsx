@@ -91,10 +91,7 @@ export default function App() {
     return (
       <div className="app">
         <Header
-          competitions={competitions}
-          activeComp={activeComp}
           activeView="home"
-          onCompSelect={handleCompSelect}
           onHomeClick={handleHomeClick}
           onNewCompetition={() => setShowNewDialog(true)}
         />
@@ -112,10 +109,7 @@ export default function App() {
     return (
       <div className="app">
         <Header
-          competitions={competitions}
-          activeComp={null}
           activeView="comp"
-          onCompSelect={() => {}}
           onHomeClick={handleHomeClick}
           onNewCompetition={() => setShowNewDialog(true)}
         />
@@ -141,21 +135,26 @@ export default function App() {
   return (
     <div className="app">
       <Header
-        competitions={competitions}
-        activeComp={activeComp}
         activeView="comp"
-        onCompSelect={handleCompSelect}
         onHomeClick={handleHomeClick}
         onNewCompetition={() => setShowNewDialog(true)}
       />
 
       <div className="sub-tabs-bar">
+        <div className="sub-tabs-comp" style={{ '--ac': competition.accentColor }}>
+          <span className="sub-tabs-comp-dot" style={{ background: competition.accentColor }} />
+          <span className="sub-tabs-comp-name">
+            {competition.label.replace(/\s+\d{2,4}$/, '').trim()}
+          </span>
+        </div>
+        <div className="sub-tabs-sep" />
         {competition.sections.map(s => {
           const isActive = s.id === activeSection
           return (
             <button
               key={s.id}
               className={`sub-tab${isActive ? ' active' : ''}`}
+              style={isActive ? { borderBottomColor: competition.accentColor, color: '#000' } : {}}
               onClick={() => setActiveSection(s.id)}
             >
               {s.label}

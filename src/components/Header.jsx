@@ -1,4 +1,4 @@
-export default function Header({ competitions, activeComp, activeView, onCompSelect, onHomeClick, onNewCompetition }) {
+export default function Header({ activeView, onHomeClick, onNewCompetition }) {
   return (
     <header className="header">
       <div className="logo-area" onClick={onHomeClick} style={{ cursor: 'pointer' }} title="Início">
@@ -10,43 +10,27 @@ export default function Header({ competitions, activeComp, activeView, onCompSel
         </div>
       </div>
 
-      <nav className="nav-tabs">
+      <div className="header-actions">
         <button
-          className={`nav-tab${activeView === 'home' ? ' active' : ''}`}
+          className={`header-nav-btn${activeView === 'home' ? ' header-nav-active' : ''}`}
           onClick={onHomeClick}
-          style={activeView === 'home' ? { color: '#65B32E', borderColor: '#65B32E' } : {}}
         >
+          <svg viewBox="0 0 16 16" fill="none" width="14" height="14">
+            <path d="M2 6.5L8 2l6 4.5V14a1 1 0 01-1 1H3a1 1 0 01-1-1V6.5z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"/>
+            <path d="M6 15V9h4v6" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"/>
+          </svg>
           Início
         </button>
 
-        {competitions.map(comp => {
-          const isActive = activeView !== 'home' && comp.id === activeComp
-          return (
-            <button
-              key={comp.id}
-              className={`nav-tab${isActive ? ' active' : ''}`}
-              onClick={() => onCompSelect(comp.id)}
-              style={isActive ? {
-                color: comp.accentColor,
-                borderColor: comp.accentColor,
-                boxShadow: `0 0 14px ${comp.accentColor}33`,
-              } : {}}
-            >
-              {comp.label}
-            </button>
-          )
-        })}
-
         {onNewCompetition && (
-          <button
-            className="nav-tab nav-tab-new"
-            onClick={onNewCompetition}
-            title="Adicionar novo campeonato"
-          >
-            + Novo
+          <button className="header-new-btn" onClick={onNewCompetition} title="Novo campeonato">
+            <svg viewBox="0 0 16 16" fill="none" width="13" height="13">
+              <path d="M8 2v12M2 8h12" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+            </svg>
+            Novo
           </button>
         )}
-      </nav>
+      </div>
     </header>
   )
 }
