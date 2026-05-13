@@ -2719,9 +2719,9 @@ body {
 
 /* Calendar cells */
 .hv-cell {
-  min-height: 66px;
-  display: flex; flex-direction: column; align-items: center;
-  padding: 10px 4px 8px; border-radius: 10px; gap: 5px;
+  min-height: 80px;
+  display: flex; flex-direction: column; align-items: flex-start;
+  padding: 6px 5px 5px; border-radius: 10px; gap: 4px;
   cursor: pointer; position: relative;
   transition: background .13s;
 }
@@ -2733,10 +2733,11 @@ body {
 }
 
 .hv-cell-num {
-  font-size: 14px; font-weight: 400; color: rgba(0,0,0,.35);
-  width: 28px; height: 28px; border-radius: 50%;
+  font-size: 13px; font-weight: 400; color: rgba(0,0,0,.35);
+  width: 26px; height: 26px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
   transition: all .14s; flex-shrink: 0; line-height: 1;
+  align-self: flex-start;
 }
 .hv-cell-has   .hv-cell-num { color: rgba(0,0,0,.85); font-weight: 600; }
 .hv-cell-today .hv-cell-num { background: #111111; color: #fff; font-weight: 700; }
@@ -2751,16 +2752,19 @@ body {
 }
 .hv-cell-today { animation: hv-today-pulse 3.5s ease infinite; }
 
-.hv-cell-dots { display: flex; gap: 3px; align-items: center; }
-.hv-dot {
-  width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0;
-  transition: transform .15s;
+.hv-cell-badges {
+  display: flex; flex-direction: column; gap: 2px; width: 100%;
 }
-.hv-cell:hover .hv-dot { transform: scale(1.25); }
-
-.hv-cell-cnt {
-  font-size: 9.5px; color: rgba(0,0,0,.35); font-variant-numeric: tabular-nums;
+.hv-cbadge {
+  display: block; width: 100%;
+  font-size: 9px; font-weight: 700; letter-spacing: .02em;
+  padding: 2px 4px; border-radius: 4px;
+  border: 1px solid;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  text-align: center;
+  transition: opacity .13s;
 }
+.hv-cell:hover .hv-cbadge { opacity: .8; }
 
 /* ── Day detail ── */
 @keyframes hv-detail-in {

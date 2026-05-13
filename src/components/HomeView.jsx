@@ -5,6 +5,16 @@ const MESES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho',
                'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro']
 const DIAS  = ['DOM','SEG','TER','QUA','QUI','SEX','SÁB']
 
+function abbrevComp(label) {
+  if (!label) return '?'
+  const l = label.toLowerCase()
+  if (l.includes('brasileir')) return 'Bras.'
+  if (l.includes('paulist') && (l.includes('fem') || l.includes('f'))) return 'Paul.F'
+  if (l.includes('paulist')) return 'Paul.'
+  if (l.includes('nba')) return 'NBA'
+  return label.slice(0, 5).trim()
+}
+
 function statusColor(s) {
   const v = (s || '').toLowerCase()
   if (v.includes('confirm') || v.includes('reserv')) return '#4ade80'
@@ -248,7 +258,11 @@ export default function HomeView({ competitions, onCompSelect }) {
             const isSel    = cell.dateKey === selectedKey
             const hasMat   = matches.length > 0
 
-            const dots = [...new Map(matches.map(m => [m.competitionId, m.accentColor])).entries()]
+            const compGroups = [...matches.reduce((map, m) => {
+              if (!map.has(m.competitionId)) map.set(m.competitionId, { ...m, count: 0 })
+              map.get(m.competitionId).count++
+              return map
+            }, new Map()).values()]
 
             return (
               <div
@@ -263,14 +277,21 @@ export default function HomeView({ competitions, onCompSelect }) {
               >
                 <div className="hv-cell-num">{cell.day}</div>
                 {hasMat && (
-                  <div className="hv-cell-dots">
-                    {dots.slice(0, 3).map(([id, color]) => (
-                      <span key={id} className="hv-dot" style={{ background: color }} />
+                  <div className="hv-cell-badges">
+                    {compGroups.slice(0, 3).map(g => (
+                      <span
+                        key={g.competitionId}
+                        className="hv-cbadge"
+                        style={{
+                          background: g.accentColor + '22',
+                          color: g.accentColor,
+                          borderColor: g.accentColor + '55',
+                        }}
+                      >
+                        {abbrevComp(g.competitionLabel)}{g.count > 1 ? ` ·${g.count}` : ''}
+                      </span>
                     ))}
                   </div>
-                )}
-                {matches.length > 1 && (
-                  <div className="hv-cell-cnt">{matches.length}</div>
                 )}
               </div>
             )
