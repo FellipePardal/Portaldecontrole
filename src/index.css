@@ -2795,6 +2795,14 @@ body {
 .hv-cell-has   .hv-cell-num { color: rgba(0,0,0,.85); font-weight: 600; }
 .hv-cell-today .hv-cell-num { background: #111111; color: #fff; font-weight: 700; }
 .hv-cell-sel   .hv-cell-num { background: rgba(0,0,0,.1); color: #111111; font-weight: 600; }
+.hv-cell-past  .hv-cell-num { color: rgba(0,0,0,.28); font-weight: 400; }
+
+/* Jogos passados — cinza/desativado */
+.hv-cell-past .hv-cell-game {
+  filter: grayscale(1);
+  opacity: 0.35;
+}
+.hv-cell-past .hv-cell-more { opacity: 0.3; }
 
 .hv-cell-sel { background: rgba(0,0,0,.05); outline: 1px solid rgba(0,0,0,.12); }
 

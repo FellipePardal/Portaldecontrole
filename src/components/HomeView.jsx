@@ -345,6 +345,8 @@ export default function HomeView({ competitions, onCompSelect }) {
               const isTodayCell = cell.day === today.day && viewMonth.month === today.month && viewMonth.year === today.year
               const isSel   = cell.dateKey === selectedKey
               const hasMat  = matches.length > 0
+              const [cy, cmo, cd] = cell.dateKey.split('-').map(Number)
+              const isPast  = !isTodayCell && new Date(cy, cmo, cd).getTime() < todayTs
 
               return (
                 <div
@@ -354,6 +356,7 @@ export default function HomeView({ competitions, onCompSelect }) {
                     hasMat      ? 'hv-cell-has'   : '',
                     isTodayCell ? 'hv-cell-today' : '',
                     isSel       ? 'hv-cell-sel'   : '',
+                    isPast      ? 'hv-cell-past'  : '',
                   ].filter(Boolean).join(' ')}
                   onClick={() => cell.dateKey && setSelectedKey(isSel ? null : cell.dateKey)}
                 >
