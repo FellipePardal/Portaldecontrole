@@ -86,6 +86,7 @@ export default function HomeView({ competitions, onCompSelect }) {
   const [spotlightDir,   setSpotlightDir]   = useState(null)
   const [spotlightKey,   setSpotlightKey]   = useState(0)
   const [showUpcoming,   setShowUpcoming]   = useState(true)
+  const [viewMode,       setViewMode]       = useState('split')
   const [mounted,       setMounted]       = useState(false)
 
   const { matchesByDate, totalsByComp, loading } = useHomeData(competitions)
@@ -323,7 +324,7 @@ export default function HomeView({ competitions, onCompSelect }) {
       </div>
 
       {/* ── Split: Calendar (left) + Panel (right) ── */}
-      <div className="hv-split hv-enter" style={{ '--i': 3 }}>
+      <div className={`hv-split hv-enter${viewMode === 'full' ? ' hv-split--full' : ''}`} style={{ '--i': 3 }}>
 
         {/* Left: Calendar */}
         <div className="hv-cal-wrap">
@@ -343,6 +344,28 @@ export default function HomeView({ competitions, onCompSelect }) {
               </svg>
             </button>
             <button className="hv-cal-today" onClick={goToday}>Hoje</button>
+
+            <div className="hv-view-toggle">
+              <button
+                className={`hv-view-btn${viewMode === 'split' ? ' hv-view-btn-on' : ''}`}
+                onClick={() => setViewMode('split')}
+                title="Visão dividida"
+              >
+                <svg viewBox="0 0 16 16" fill="none" width="14" height="14">
+                  <rect x="1" y="2" width="6" height="12" rx="1.5" fill="currentColor" opacity=".9"/>
+                  <rect x="9" y="2" width="6" height="12" rx="1.5" fill="currentColor" opacity=".9"/>
+                </svg>
+              </button>
+              <button
+                className={`hv-view-btn${viewMode === 'full' ? ' hv-view-btn-on' : ''}`}
+                onClick={() => setViewMode('full')}
+                title="Calendário completo"
+              >
+                <svg viewBox="0 0 16 16" fill="none" width="14" height="14">
+                  <rect x="1" y="2" width="14" height="12" rx="1.5" fill="currentColor" opacity=".9"/>
+                </svg>
+              </button>
+            </div>
 
             <div className="hv-cal-chips">
               <button

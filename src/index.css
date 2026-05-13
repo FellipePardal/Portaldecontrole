@@ -2759,6 +2759,19 @@ body {
 }
 .hv-cal-today:hover { color: #111111; background: rgba(0,0,0,.05); border-color: rgba(0,0,0,.18); }
 
+.hv-view-toggle {
+  display: flex; gap: 2px;
+  background: rgba(0,0,0,.05); border-radius: 8px; padding: 3px;
+}
+.hv-view-btn {
+  width: 28px; height: 28px; border-radius: 6px; border: none;
+  background: transparent; cursor: pointer; color: rgba(0,0,0,.35);
+  display: flex; align-items: center; justify-content: center;
+  transition: background .12s, color .12s;
+}
+.hv-view-btn:hover { color: rgba(0,0,0,.6); }
+.hv-view-btn-on { background: #fff !important; color: #111 !important; box-shadow: 0 1px 3px rgba(0,0,0,.1); }
+
 .hv-cal-days {
   display: grid; grid-template-columns: repeat(7, 1fr);
   gap: 3px; margin-bottom: 4px;
@@ -3038,6 +3051,10 @@ body {
   align-items: start;
   border-top: 1px solid rgba(0,0,0,.08);
 }
+.hv-split--full { grid-template-columns: 1fr; }
+.hv-split--full .hv-panel { display: none; }
+.hv-split--full .hv-cell { min-height: 88px; }
+.hv-split--full .hv-cal-wrap { padding-bottom: 40px; }
 
 /* ── Right panel ── */
 .hv-panel {
