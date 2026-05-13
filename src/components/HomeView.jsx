@@ -85,6 +85,7 @@ export default function HomeView({ competitions, onCompSelect }) {
   const [spotlightIdx,   setSpotlightIdx]   = useState(0)
   const [spotlightDir,   setSpotlightDir]   = useState(null)
   const [spotlightKey,   setSpotlightKey]   = useState(0)
+  const [showUpcoming,   setShowUpcoming]   = useState(true)
   const [mounted,       setMounted]       = useState(false)
 
   const { matchesByDate, totalsByComp, loading } = useHomeData(competitions)
@@ -606,33 +607,31 @@ export default function HomeView({ competitions, onCompSelect }) {
 
               {restGames.length > 0 && (
                 <div className="hv-panel-upcoming">
-                  <div className="hv-sec-label">Próximos Jogos</div>
-                  <div className="hv-upcoming-list">
-                    {restGames.map((m, i) => (
-                      <div
-                        key={i}
-                        className="hv-up-row"
-                        style={{ background: `linear-gradient(135deg, #ffffff 60%, ${m.accentColor}08 100%)` }}
-                        onClick={() => onCompSelect(m.competitionId)}
-                      >
-                        <div className="hv-up-row-bar" style={{ background: m.accentColor }} />
-                        <div className="hv-up-row-body">
-                          <div className="hv-up-row-teams">
-                            <ShieldSm name={m.mandante} accentColor={m.accentColor} />
-                            <span>{m.mandante}</span>
-                            <span className="hv-up-x">×</span>
-                            <ShieldSm name={m.visitante} accentColor={m.accentColor} />
-                            <span>{m.visitante}</span>
-                          </div>
-                          <div className="hv-up-row-meta">
-                            <span className="hv-up-row-dot" style={{ background: m.accentColor }} />
-                            <span style={{ color: m.accentColor, fontWeight: 600 }}>{cleanComp(m.competitionLabel)}</span>
-                            <span>{m.rawDate}{m.hora_brt ? ` · ${m.hora_brt}` : ''}</span>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
+                  <div className="hv-up-header">
+                    <span className="hv-sec-label">Próximos Jogos</span>
+                    <button className="hv-up-toggle" onClick={() => setShowUpcoming(v => !v)}>
+                      {showUpcoming ? 'Ocultar' : `Ver ${restGames.length}`}
+                    </button>
                   </div>
+                  {showUpcoming && (
+                    <div className="hv-upcoming-list">
+                      {restGames.map((m, i) => (
+                        <div
+                          key={i}
+                          className="hv-up-row"
+                          onClick={() => onCompSelect(m.competitionId)}
+                        >
+                          <span className="hv-up-dot" style={{ background: m.accentColor }} />
+                          <span className="hv-up-teams">
+                            {m.mandante} × {m.visitante}
+                          </span>
+                          <span className="hv-up-date">
+                            {new Date(m.ts).getDate()} {MESES[new Date(m.ts).getMonth()].slice(0,3)}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
