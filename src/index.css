@@ -2568,8 +2568,8 @@ body {
 .hv-root {
   position: relative;
   min-height: calc(100vh - 56px);
-  background: #06070e;
-  color: #e2e4f0;
+  background: #FAFAFA;
+  color: #111111;
   overflow: hidden;
 }
 
@@ -2577,8 +2577,8 @@ body {
 .hv-bg {
   position: absolute; inset: 0; pointer-events: none;
   background:
-    radial-gradient(ellipse 70% 50% at 50% -10%, rgba(101,179,46,.07) 0%, transparent 70%),
-    radial-gradient(1px 1px at 0 0, rgba(255,255,255,.035) 0%, transparent 100%);
+    radial-gradient(ellipse 70% 50% at 50% -10%, rgba(101,179,46,.05) 0%, transparent 70%),
+    radial-gradient(1px 1px at 0 0, rgba(0,0,0,.04) 0%, transparent 100%);
   background-size: 100% 100%, 28px 28px;
 }
 
@@ -2596,28 +2596,28 @@ body {
 .hv-hero {
   display: flex; align-items: center; justify-content: space-between;
   padding: 28px 40px 22px;
-  border-bottom: 1px solid rgba(255,255,255,.04);
+  border-bottom: 1px solid rgba(0,0,0,.08);
 }
 .hv-hero-eyebrow {
   font-size: 10px; font-weight: 700; letter-spacing: .2em;
-  color: rgba(255,255,255,.2); text-transform: uppercase; margin-bottom: 5px;
+  color: rgba(0,0,0,.35); text-transform: uppercase; margin-bottom: 5px;
 }
 .hv-hero-title {
-  font-size: 22px; font-weight: 700; color: #fff; letter-spacing: -.3px;
+  font-size: 22px; font-weight: 700; color: #111111; letter-spacing: -.3px;
 }
 
 /* Live Clock */
 .hv-clock { display: flex; align-items: baseline; gap: 3px; font-variant-numeric: tabular-nums; }
-.hv-clock-hm { font-size: 30px; font-weight: 200; color: #fff; letter-spacing: .04em; line-height: 1; }
-.hv-clock-ss { font-size: 16px; font-weight: 300; color: rgba(255,255,255,.25); letter-spacing: .04em; }
-.hv-clock-tz { font-size: 10px; font-weight: 600; color: rgba(255,255,255,.18); letter-spacing: .14em; text-transform: uppercase; margin-left: 4px; }
+.hv-clock-hm { font-size: 30px; font-weight: 200; color: #111111; letter-spacing: .04em; line-height: 1; }
+.hv-clock-ss { font-size: 16px; font-weight: 300; color: rgba(0,0,0,.3); letter-spacing: .04em; }
+.hv-clock-tz { font-size: 10px; font-weight: 600; color: rgba(0,0,0,.3); letter-spacing: .14em; text-transform: uppercase; margin-left: 4px; }
 
 /* ── Competition tiles ── */
 .hv-tiles {
   display: flex; gap: 10px;
   padding: 24px 40px;
   overflow-x: auto; scrollbar-width: none;
-  border-bottom: 1px solid rgba(255,255,255,.04);
+  border-bottom: 1px solid rgba(0,0,0,.08);
 }
 .hv-tiles::-webkit-scrollbar { display: none; }
 
@@ -2625,14 +2625,14 @@ body {
   position: relative;
   min-width: 155px; flex-shrink: 0;
   padding: 18px 20px 16px;
-  background: rgba(255,255,255,.03);
-  border: 1px solid rgba(255,255,255,.07);
+  background: #ffffff;
+  border: 1px solid rgba(0,0,0,.1);
   border-radius: 14px;
   cursor: pointer; text-align: left; font-family: inherit;
   transition: background .18s ease, border-color .18s ease, box-shadow .18s ease, transform .18s ease;
   overflow: hidden;
 }
-.hv-tile:hover { background: rgba(255,255,255,.06); transform: translateY(-2px); }
+.hv-tile:hover { background: rgba(0,0,0,.02); transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,.08); }
 
 .hv-tile-bar {
   position: absolute; top: 0; left: 0; right: 0; height: 2px;
@@ -2641,29 +2641,29 @@ body {
 
 .hv-tile-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
 .hv-tile-label {
-  font-size: 12px; font-weight: 600; color: rgba(255,255,255,.4);
+  font-size: 12px; font-weight: 600; color: rgba(0,0,0,.45);
   transition: color .18s;
 }
-.hv-tile:hover .hv-tile-label { color: rgba(255,255,255,.75); }
-.hv-tile-on .hv-tile-label    { color: rgba(255,255,255,.85); }
+.hv-tile:hover .hv-tile-label { color: rgba(0,0,0,.75); }
+.hv-tile-on .hv-tile-label    { color: rgba(0,0,0,.85); }
 
 .hv-tile-badge {
-  font-size: 8px; color: rgba(255,255,255,.18);
+  font-size: 8px; color: rgba(0,0,0,.25);
   transition: color .18s;
 }
-.hv-tile-badge.on { color: var(--ac, #fff); }
+.hv-tile-badge.on { color: var(--ac, #111); }
 
 .hv-tile-num {
-  font-size: 32px; font-weight: 700; color: #fff;
+  font-size: 32px; font-weight: 700; color: #111111;
   letter-spacing: -.8px; line-height: 1; margin-bottom: 5px;
   font-variant-numeric: tabular-nums;
 }
-.hv-tile-sub { font-size: 11px; color: rgba(255,255,255,.22); }
+.hv-tile-sub { font-size: 11px; color: rgba(0,0,0,.38); }
 
 /* ── Calendar wrapper ── */
 .hv-cal-wrap {
   padding: 24px 40px;
-  border-bottom: 1px solid rgba(255,255,255,.04);
+  border-bottom: 1px solid rgba(0,0,0,.08);
 }
 
 .hv-cal-head {
@@ -2673,29 +2673,29 @@ body {
   flex: 1; display: flex; align-items: baseline; justify-content: center; gap: 10px;
 }
 .hv-cal-mname {
-  font-size: 19px; font-weight: 700; color: #fff;
+  font-size: 19px; font-weight: 700; color: #111111;
   text-transform: uppercase; letter-spacing: .06em;
 }
-.hv-cal-year { font-size: 14px; font-weight: 300; color: rgba(255,255,255,.3); }
+.hv-cal-year { font-size: 14px; font-weight: 300; color: rgba(0,0,0,.4); }
 
 .hv-cal-nav {
   width: 34px; height: 34px; border-radius: 9px;
-  border: 1px solid rgba(255,255,255,.08);
-  background: rgba(255,255,255,.03);
-  color: rgba(255,255,255,.45); cursor: pointer;
+  border: 1px solid rgba(0,0,0,.12);
+  background: #ffffff;
+  color: rgba(0,0,0,.5); cursor: pointer;
   display: flex; align-items: center; justify-content: center;
   transition: all .14s;
 }
-.hv-cal-nav:hover { background: rgba(255,255,255,.08); color: #fff; border-color: rgba(255,255,255,.15); }
+.hv-cal-nav:hover { background: rgba(0,0,0,.05); color: #111111; border-color: rgba(0,0,0,.18); }
 
 .hv-cal-today {
   padding: 6px 13px; border-radius: 8px;
-  border: 1px solid rgba(255,255,255,.08);
-  background: transparent; color: rgba(255,255,255,.35);
+  border: 1px solid rgba(0,0,0,.12);
+  background: transparent; color: rgba(0,0,0,.45);
   font-size: 12px; font-weight: 500; font-family: inherit; cursor: pointer;
   transition: all .14s;
 }
-.hv-cal-today:hover { color: #fff; background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.14); }
+.hv-cal-today:hover { color: #111111; background: rgba(0,0,0,.05); border-color: rgba(0,0,0,.18); }
 
 .hv-cal-days {
   display: grid; grid-template-columns: repeat(7, 1fr);
@@ -2703,7 +2703,7 @@ body {
 }
 .hv-cal-dname {
   text-align: center; font-size: 10.5px; font-weight: 600;
-  color: rgba(255,255,255,.16); letter-spacing: .07em; text-transform: uppercase;
+  color: rgba(0,0,0,.35); letter-spacing: .07em; text-transform: uppercase;
   padding: 5px 0;
 }
 
@@ -2725,29 +2725,29 @@ body {
   cursor: pointer; position: relative;
   transition: background .13s;
 }
-.hv-cell:hover { background: rgba(255,255,255,.05); }
+.hv-cell:hover { background: rgba(0,0,0,.04); }
 .hv-cell-out {
-  opacity: .1; cursor: default; pointer-events: none;
-  font-size: 13px; color: rgba(255,255,255,.3);
+  opacity: .2; cursor: default; pointer-events: none;
+  font-size: 13px; color: rgba(0,0,0,.3);
   display: flex; align-items: center; justify-content: center;
 }
 
 .hv-cell-num {
-  font-size: 14px; font-weight: 400; color: rgba(255,255,255,.3);
+  font-size: 14px; font-weight: 400; color: rgba(0,0,0,.35);
   width: 28px; height: 28px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
   transition: all .14s; flex-shrink: 0; line-height: 1;
 }
-.hv-cell-has   .hv-cell-num { color: rgba(255,255,255,.88); font-weight: 600; }
-.hv-cell-today .hv-cell-num { background: #fff; color: #06070e; font-weight: 700; }
-.hv-cell-sel   .hv-cell-num { background: rgba(255,255,255,.12); color: #fff; font-weight: 600; }
+.hv-cell-has   .hv-cell-num { color: rgba(0,0,0,.85); font-weight: 600; }
+.hv-cell-today .hv-cell-num { background: #111111; color: #fff; font-weight: 700; }
+.hv-cell-sel   .hv-cell-num { background: rgba(0,0,0,.1); color: #111111; font-weight: 600; }
 
-.hv-cell-sel { background: rgba(255,255,255,.06); outline: 1px solid rgba(255,255,255,.12); }
+.hv-cell-sel { background: rgba(0,0,0,.05); outline: 1px solid rgba(0,0,0,.12); }
 
 /* today pulse */
 @keyframes hv-today-pulse {
-  0%,100% { box-shadow: 0 0 0 0 rgba(255,255,255,.06); }
-  50%      { box-shadow: 0 0 0 5px rgba(255,255,255,.02); }
+  0%,100% { box-shadow: 0 0 0 0 rgba(0,0,0,.08); }
+  50%      { box-shadow: 0 0 0 5px rgba(0,0,0,.03); }
 }
 .hv-cell-today { animation: hv-today-pulse 3.5s ease infinite; }
 
@@ -2759,7 +2759,7 @@ body {
 .hv-cell:hover .hv-dot { transform: scale(1.25); }
 
 .hv-cell-cnt {
-  font-size: 9.5px; color: rgba(255,255,255,.2); font-variant-numeric: tabular-nums;
+  font-size: 9.5px; color: rgba(0,0,0,.35); font-variant-numeric: tabular-nums;
 }
 
 /* ── Day detail ── */
@@ -2769,17 +2769,17 @@ body {
 }
 .hv-detail {
   padding: 20px 40px;
-  border-bottom: 1px solid rgba(255,255,255,.04);
+  border-bottom: 1px solid rgba(0,0,0,.08);
 }
 .hv-detail-in { animation: hv-detail-in .22s cubic-bezier(.22,1,.36,1); }
 
 .hv-detail-bar {
   display: flex; align-items: center; gap: 10px; margin-bottom: 14px;
 }
-.hv-detail-date { font-size: 15px; font-weight: 700; color: #fff; }
+.hv-detail-date { font-size: 15px; font-weight: 700; color: #111111; }
 .hv-detail-count {
-  font-size: 11px; background: rgba(255,255,255,.05);
-  border: 1px solid rgba(255,255,255,.08); color: rgba(255,255,255,.35);
+  font-size: 11px; background: rgba(0,0,0,.05);
+  border: 1px solid rgba(0,0,0,.1); color: rgba(0,0,0,.5);
   padding: 2px 10px; border-radius: 100px;
 }
 
@@ -2790,23 +2790,23 @@ body {
 }
 
 .hv-card {
-  background: rgba(255,255,255,.03);
-  border: 1px solid rgba(255,255,255,.07);
-  border-left: 3px solid var(--c, rgba(255,255,255,.2));
+  background: #ffffff;
+  border: 1px solid rgba(0,0,0,.1);
+  border-left: 3px solid var(--c, rgba(0,0,0,.2));
   border-radius: 10px; padding: 14px 16px;
   cursor: pointer;
   transition: background .15s, transform .15s, box-shadow .15s;
 }
 .hv-card:hover {
-  background: rgba(255,255,255,.07);
+  background: rgba(0,0,0,.02);
   transform: translateY(-2px);
-  box-shadow: 0 8px 28px rgba(0,0,0,.35);
+  box-shadow: 0 8px 28px rgba(0,0,0,.1);
 }
 
 .hv-card-comp {
   display: flex; align-items: center; gap: 6px;
   font-size: 10px; font-weight: 700;
-  color: rgba(255,255,255,.3); text-transform: uppercase; letter-spacing: .08em;
+  color: rgba(0,0,0,.45); text-transform: uppercase; letter-spacing: .08em;
   margin-bottom: 8px;
 }
 .hv-card-comp-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
@@ -2815,14 +2815,14 @@ body {
   display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
   margin-bottom: 6px;
 }
-.hv-card-team { font-size: 13px; font-weight: 600; color: #e2e4f0; }
-.hv-card-vs   { font-size: 11px; color: rgba(255,255,255,.18); }
+.hv-card-team { font-size: 13px; font-weight: 600; color: #111111; }
+.hv-card-vs   { font-size: 11px; color: rgba(0,0,0,.3); }
 
 .hv-card-meta {
   display: flex; gap: 8px; flex-wrap: wrap;
-  font-size: 11px; color: rgba(255,255,255,.25); margin-bottom: 7px;
+  font-size: 11px; color: rgba(0,0,0,.4); margin-bottom: 7px;
 }
-.hv-card-time    { font-weight: 600; color: rgba(255,255,255,.45); font-variant-numeric: tabular-nums; }
+.hv-card-time    { font-weight: 600; color: rgba(0,0,0,.6); font-variant-numeric: tabular-nums; }
 .hv-card-detentor { max-width: 110px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 .hv-card-status {
@@ -2836,7 +2836,7 @@ body {
 
 .hv-sec-label {
   font-size: 10px; font-weight: 700; letter-spacing: .18em;
-  color: rgba(255,255,255,.18); text-transform: uppercase; margin-bottom: 14px;
+  color: rgba(0,0,0,.35); text-transform: uppercase; margin-bottom: 14px;
 }
 
 .hv-upcoming-row {
@@ -2848,31 +2848,31 @@ body {
 .hv-up-card {
   min-width: 174px; flex-shrink: 0;
   padding: 16px 18px;
-  background: rgba(255,255,255,.03);
-  border: 1px solid rgba(255,255,255,.06);
-  border-top: 2px solid var(--c, rgba(255,255,255,.2));
+  background: #ffffff;
+  border: 1px solid rgba(0,0,0,.1);
+  border-top: 2px solid var(--c, rgba(0,0,0,.2));
   border-radius: 12px;
   cursor: pointer; font-family: inherit; text-align: left;
   transition: background .15s, transform .15s, box-shadow .15s;
 }
 .hv-up-card:hover {
-  background: rgba(255,255,255,.07);
+  background: rgba(0,0,0,.02);
   transform: translateY(-3px);
-  box-shadow: 0 14px 36px rgba(0,0,0,.45);
+  box-shadow: 0 14px 36px rgba(0,0,0,.1);
 }
 .hv-up-comp {
   font-size: 10px; font-weight: 700; text-transform: uppercase;
   letter-spacing: .07em; margin-bottom: 5px;
 }
 .hv-up-date {
-  font-size: 11.5px; color: rgba(255,255,255,.28); margin-bottom: 9px;
+  font-size: 11.5px; color: rgba(0,0,0,.4); margin-bottom: 9px;
   font-variant-numeric: tabular-nums;
 }
 .hv-up-teams {
-  font-size: 12.5px; font-weight: 600; color: #e2e4f0;
+  font-size: 12.5px; font-weight: 600; color: #111111;
   display: flex; align-items: center; gap: 5px; flex-wrap: wrap;
 }
-.hv-up-x { color: rgba(255,255,255,.18); font-weight: 400; font-size: 11px; }
+.hv-up-x { color: rgba(0,0,0,.3); font-weight: 400; font-size: 11px; }
 
 /* ── Empty state ── */
 .hv-empty {
@@ -2881,8 +2881,8 @@ body {
 }
 .hv-empty-dot {
   width: 6px; height: 6px; border-radius: 50%;
-  background: rgba(255,255,255,.15);
+  background: rgba(0,0,0,.15);
   animation: hv-today-pulse 2s ease infinite;
 }
-.hv-empty-text { font-size: 13px; color: rgba(255,255,255,.2); }
+.hv-empty-text { font-size: 13px; color: rgba(0,0,0,.35); }
 
