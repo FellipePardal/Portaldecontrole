@@ -8,7 +8,10 @@ const DIAS  = ['DOM','SEG','TER','QUA','QUI','SEX','SÁB']
 
 function cleanComp(label) {
   if (!label) return ''
-  return label.replace(/\s+\d{2,4}$/, '').trim()
+  const s = String(label)
+  if (/paulist[aã]/i.test(s) && /fem/i.test(s)) return 'Paulistão F'
+  // Expand 2-digit year suffix: "26" → "2026"
+  return s.replace(/\s+(\d{2})$/, (_, yr) => ` 20${yr}`).trim()
 }
 
 function ShieldSm({ name, accentColor }) {
@@ -279,7 +282,13 @@ export default function HomeView({ competitions, onCompSelect }) {
               onClick={() => onCompSelect(comp.id)}
             >
               {/* Cabeçalho colorido */}
-              <div className="hv-navcard-header" style={{ background: comp.accentColor }}>
+              <div
+                className="hv-navcard-header"
+                style={{
+                  backgroundColor: comp.accentColor,
+                  backgroundImage: 'linear-gradient(150deg, rgba(255,255,255,.22) 0%, transparent 55%, rgba(0,0,0,.18) 100%)'
+                }}
+              >
                 <span className="hv-navcard-htitle">{cleanComp(comp.label)}</span>
                 {!loading && total > 0 && (
                   <span className="hv-navcard-hcount">{done}/{total}</span>
