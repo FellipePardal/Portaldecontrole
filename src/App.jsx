@@ -9,6 +9,13 @@ import { useTableData } from './hooks/useTableData'
 import { useCompetitionEvents } from './hooks/useCompetitionEvents'
 import { useCompetitions } from './hooks/useCompetitions'
 
+function cleanComp(label) {
+  if (!label) return ''
+  const s = String(label)
+  if (/paulist[aã]/i.test(s) && /fem/i.test(s)) return 'Paulistão F'
+  return s.replace(/\s+(\d{2})$/, (_, yr) => ` 20${yr}`).trim()
+}
+
 function DashboardWrapper({ config }) {
   const legacy = useTableData(config.isLegacy ? config.tableName : null)
   const dynamic = useCompetitionEvents(config.isLegacy ? null : config.competitionId)
@@ -144,7 +151,7 @@ export default function App() {
         <div className="sub-tabs-comp" style={{ '--ac': competition.accentColor }}>
           <span className="sub-tabs-comp-dot" style={{ background: competition.accentColor }} />
           <span className="sub-tabs-comp-name">
-            {competition.label.replace(/\s+\d{2,4}$/, '').trim()}
+            {cleanComp(competition.label)}
           </span>
         </div>
         <div className="sub-tabs-sep" />

@@ -22,6 +22,13 @@ function parseDataMatch(str) {
   return null
 }
 
+function cleanComp(label) {
+  if (!label) return ''
+  const s = String(label)
+  if (/paulist[aã]/i.test(s) && /fem/i.test(s)) return 'Paulistão F'
+  return s.replace(/\s+(\d{2})$/, (_, yr) => ` 20${yr}`).trim()
+}
+
 function teamInitials(name) {
   if (!name) return ''
   const parts = String(name).trim().split(/\s+/)
@@ -233,7 +240,7 @@ export default function Dashboard({ data, config, onAdd, onUpdate, onDelete }) {
     <div className="dashboard">
       <div className="page-header">
         <div>
-          <h1 className="page-title">{config.label}</h1>
+          <h1 className="page-title">{cleanComp(config.label)}</h1>
           <p className="page-subtitle">{total} jogo{total === 1 ? '' : 's'} no campeonato</p>
         </div>
       </div>

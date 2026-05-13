@@ -23,9 +23,9 @@ const HARDCODED_FALLBACK = [
     accentColor: '#65B32E',
     sections: [
       { id: 'br-overview', label: 'Visão Geral', config: BRASILEIRAO_CONFIG, isOverview: true },
-      { id: 'br-dashboard', label: 'Calendário', config: BRASILEIRAO_CONFIG, isDashboard: true },
       { id: 'br-controle', label: 'Controle', config: BRASILEIRAO_CONFIG },
       { id: 'br-periferico', label: 'Periférico', config: PERIFERICO_BR_CONFIG },
+      { id: 'br-dashboard', label: 'Calendário', config: BRASILEIRAO_CONFIG, isDashboard: true },
     ],
   },
   {
@@ -34,9 +34,9 @@ const HARDCODED_FALLBACK = [
     accentColor: '#ec4899',
     sections: [
       { id: 'pf-overview', label: 'Visão Geral', config: PAULISTAO_FEM_CONFIG, isOverview: true },
-      { id: 'pf-dashboard', label: 'Calendário', config: PAULISTAO_FEM_CONFIG, isDashboard: true },
       { id: 'pf-controle', label: 'Controle', config: PAULISTAO_FEM_CONFIG },
       { id: 'pf-periferico', label: 'Periférico', config: PERIFERICO_PF_CONFIG },
+      { id: 'pf-dashboard', label: 'Calendário', config: PAULISTAO_FEM_CONFIG, isDashboard: true },
     ],
   },
 ]
@@ -45,12 +45,13 @@ function buildSectionsForCompetition(parent, children, columnsByCompId) {
   const sections = []
   const parentConfig = configForRow(parent, columnsByCompId)
   sections.push({ id: `${parent.slug}-overview`, label: 'Visão Geral', config: parentConfig, isOverview: true })
-  sections.push({ id: `${parent.slug}-dashboard`, label: 'Calendário', config: parentConfig, isDashboard: true })
   sections.push({ id: `${parent.slug}-controle`, label: 'Controle', config: parentConfig })
   for (const child of children) {
     const childConfig = configForRow(child, columnsByCompId)
     sections.push({ id: `${child.slug}-${child.section_kind}`, label: capitalize(child.section_kind), config: childConfig })
   }
+  // Calendário sempre por último
+  sections.push({ id: `${parent.slug}-dashboard`, label: 'Calendário', config: parentConfig, isDashboard: true })
   return sections
 }
 

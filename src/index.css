@@ -1497,10 +1497,13 @@ body {
   gap: 4px;
   padding: 6px 8px;
   border-radius: 8px;
-  background: rgba(120,130,140,0.08);
+  background: linear-gradient(90deg,
+    color-mix(in srgb, var(--accent, #999) 18%, transparent) 0%,
+    color-mix(in srgb, var(--accent, #999) 6%, transparent) 45%,
+    transparent 100%);
   font-size: 11px;
   line-height: 1.2;
-  border: 1px solid rgba(120,130,140,0.08);
+  border: 1px solid color-mix(in srgb, var(--accent, #999) 15%, transparent);
   font-family: inherit;
   color: var(--text);
   text-align: left;
@@ -1509,8 +1512,11 @@ body {
   transition: background 0.15s, border-color 0.15s, transform 0.15s;
 }
 .cal-match:hover {
-  background: color-mix(in srgb, var(--accent) 14%, var(--bg-card));
-  border-color: var(--accent);
+  background: linear-gradient(90deg,
+    color-mix(in srgb, var(--accent, #999) 28%, transparent) 0%,
+    color-mix(in srgb, var(--accent, #999) 10%, transparent) 50%,
+    transparent 100%);
+  border-color: color-mix(in srgb, var(--accent, #999) 35%, transparent);
   transform: translateX(1px);
 }
 .cal-match:active { transform: translateX(0) scale(0.99); }
