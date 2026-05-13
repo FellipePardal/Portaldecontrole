@@ -430,8 +430,7 @@ export default function HomeView({ competitions, onCompSelect }) {
                             className="hv-cell-game"
                             title={`${m.mandante} × ${m.visitante} · ${m.status}`}
                             style={{
-                              background: `linear-gradient(90deg, ${m.accentColor}22 0%, ${m.accentColor}0a 100%)`,
-                              borderLeft: `3px solid ${m.accentColor}`
+                              background: `linear-gradient(90deg, ${m.accentColor}60 0%, ${m.accentColor}28 35%, ${m.accentColor}00 100%)`
                             }}
                           >
                             <div className="hv-cell-shields">
