@@ -2783,40 +2783,42 @@ body {
 
 /* Calendar cell — game rows with shields */
 .hv-cell-games {
-  display: flex; flex-direction: column; gap: 3px; width: 100%;
+  display: flex; flex-direction: column; gap: 2px; width: 100%;
 }
 
 .hv-cell-game {
-  display: flex; align-items: center; gap: 4px;
-  border-radius: 5px;
-  overflow: hidden;
+  display: flex; align-items: center;
+  border-radius: 5px; overflow: hidden;
   background: rgba(0,0,0,.03);
-  transition: background .13s;
+  transition: background .12s;
 }
-.hv-cell:hover .hv-cell-game { background: rgba(0,0,0,.06); }
+.hv-cell:hover .hv-cell-game { background: rgba(0,0,0,.055); }
 
 .hv-cell-game-bar {
-  width: 3px; align-self: stretch; flex-shrink: 0; border-radius: 2px 0 0 2px;
+  width: 3px; align-self: stretch; flex-shrink: 0;
 }
 
 .hv-cell-shields {
   display: flex; align-items: center; gap: 3px;
-  padding: 3px 5px 3px 2px;
+  padding: 3px 5px 3px 4px;
 }
 
 .hv-cell-shield {
-  width: 16px; height: 16px; object-fit: contain;
-  flex-shrink: 0; border-radius: 2px;
+  width: 18px; height: 18px; object-fit: contain; flex-shrink: 0;
 }
 
-.hv-cell-shield-dot {
-  width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
-  opacity: .7;
+.hv-shield-fb {
+  width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0;
+}
+
+.hv-cell-x {
+  font-size: 8px; font-weight: 400; color: rgba(0,0,0,.22);
+  line-height: 1; flex-shrink: 0;
 }
 
 .hv-cell-more {
-  font-size: 9px; font-weight: 700; color: rgba(0,0,0,.35);
-  padding: 1px 4px; letter-spacing: .03em;
+  font-size: 9px; font-weight: 600; color: rgba(0,0,0,.3);
+  padding: 0 4px; letter-spacing: .02em;
 }
 
 /* ── Day detail ── */

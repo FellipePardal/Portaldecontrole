@@ -38,12 +38,12 @@ export function useHomeData(competitions) {
 
       try {
         let rows = []
-        if (cfg.isLegacy && cfg.tableName) {
+        if (cfg.tableName) {
           const { data } = await supabase
             .from(cfg.tableName)
             .select('mandante, visitante, data, hora_brt, rod, status, detentor')
           rows = data || []
-        } else if (!cfg.isLegacy && cfg.competitionId) {
+        } else if (cfg.competitionId) {
           const { data: events } = await supabase
             .from('competition_events')
             .select('data, status')

@@ -288,18 +288,19 @@ export default function HomeView({ competitions, onCompSelect }) {
                         <div
                           key={gi}
                           className="hv-cell-game"
-                          title={`${m.mandante} × ${m.visitante} — ${m.competitionLabel}`}
+                          title={`${m.mandante} × ${m.visitante}`}
                           style={{ '--ac': m.accentColor }}
                         >
                           <div className="hv-cell-game-bar" style={{ background: m.accentColor }} />
                           <div className="hv-cell-shields">
                             {s1
                               ? <img src={s1} className="hv-cell-shield" alt={m.mandante} />
-                              : <div className="hv-cell-shield-dot" style={{ background: m.accentColor }} />
+                              : <div className="hv-shield-fb" style={{ background: m.accentColor + '60' }} />
                             }
+                            <span className="hv-cell-x">×</span>
                             {s2
                               ? <img src={s2} className="hv-cell-shield" alt={m.visitante} />
-                              : <div className="hv-cell-shield-dot" style={{ background: m.accentColor }} />
+                              : <div className="hv-shield-fb" style={{ background: m.accentColor + '60' }} />
                             }
                           </div>
                         </div>
