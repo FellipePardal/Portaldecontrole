@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect, useCallback } from 'react'
 import { useHomeData } from '../hooks/useHomeData'
+import { getEscudoUrl } from '../lib/escudos'
 
 const MESES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho',
                'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro']
@@ -266,12 +267,6 @@ export default function HomeView({ competitions, onCompSelect }) {
             const isSel   = cell.dateKey === selectedKey
             const hasMat  = matches.length > 0
 
-            const compGroups = [...matches.reduce((map, m) => {
-              if (!map.has(m.competitionId)) map.set(m.competitionId, { ...m, count: 0 })
-              map.get(m.competitionId).count++
-              return map
-            }, new Map()).values()]
-
             return (
               <div
                 key={i}
@@ -285,17 +280,34 @@ export default function HomeView({ competitions, onCompSelect }) {
               >
                 <div className="hv-cell-num">{cell.day}</div>
                 {hasMat && (
-                  <div className="hv-cell-badges">
-                    {compGroups.slice(0, 3).map(g => (
-                      <span
-                        key={g.competitionId}
-                        className="hv-cbadge"
-                        style={{ background: g.accentColor, color: '#fff' }}
-                        title={g.competitionLabel + (g.count > 1 ? ` (${g.count})` : '')}
-                      >
-                        {abbrevComp(g.competitionLabel)}{g.count > 1 ? ` ${g.count}` : ''}
-                      </span>
-                    ))}
+                  <div className="hv-cell-games">
+                    {matches.slice(0, 3).map((m, gi) => {
+                      const s1 = getEscudoUrl(m.mandante)
+                      const s2 = getEscudoUrl(m.visitante)
+                      return (
+                        <div
+                          key={gi}
+                          className="hv-cell-game"
+                          title={`${m.mandante} × ${m.visitante} — ${m.competitionLabel}`}
+                          style={{ '--ac': m.accentColor }}
+                        >
+                          <div className="hv-cell-game-bar" style={{ background: m.accentColor }} />
+                          <div className="hv-cell-shields">
+                            {s1
+                              ? <img src={s1} className="hv-cell-shield" alt={m.mandante} />
+                              : <div className="hv-cell-shield-dot" style={{ background: m.accentColor }} />
+                            }
+                            {s2
+                              ? <img src={s2} className="hv-cell-shield" alt={m.visitante} />
+                              : <div className="hv-cell-shield-dot" style={{ background: m.accentColor }} />
+                            }
+                          </div>
+                        </div>
+                      )
+                    })}
+                    {matches.length > 3 && (
+                      <div className="hv-cell-more">+{matches.length - 3}</div>
+                    )}
                   </div>
                 )}
               </div>

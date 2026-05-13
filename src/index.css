@@ -2733,9 +2733,9 @@ body {
 
 /* Calendar cells */
 .hv-cell {
-  min-height: 80px;
+  min-height: 86px;
   display: flex; flex-direction: column; align-items: flex-start;
-  padding: 6px 5px 5px; border-radius: 10px; gap: 4px;
+  padding: 6px 5px 5px; border-radius: 10px; gap: 3px;
   cursor: pointer; position: relative;
   transition: background .13s;
 }
@@ -2781,19 +2781,43 @@ body {
 .hv-chip-on { background: #111; border-color: #111; color: #fff; }
 .hv-chip-on:hover { background: #111; }
 
-/* Calendar cell badges (solid colored) */
-.hv-cell-badges {
-  display: flex; flex-direction: column; gap: 2px; width: 100%;
+/* Calendar cell — game rows with shields */
+.hv-cell-games {
+  display: flex; flex-direction: column; gap: 3px; width: 100%;
 }
-.hv-cbadge {
-  display: block; width: 100%;
-  font-size: 8.5px; font-weight: 800; letter-spacing: .04em;
-  padding: 2px 4px; border-radius: 4px;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  text-align: center;
-  transition: opacity .13s;
+
+.hv-cell-game {
+  display: flex; align-items: center; gap: 4px;
+  border-radius: 5px;
+  overflow: hidden;
+  background: rgba(0,0,0,.03);
+  transition: background .13s;
 }
-.hv-cell:hover .hv-cbadge { opacity: .85; }
+.hv-cell:hover .hv-cell-game { background: rgba(0,0,0,.06); }
+
+.hv-cell-game-bar {
+  width: 3px; align-self: stretch; flex-shrink: 0; border-radius: 2px 0 0 2px;
+}
+
+.hv-cell-shields {
+  display: flex; align-items: center; gap: 3px;
+  padding: 3px 5px 3px 2px;
+}
+
+.hv-cell-shield {
+  width: 16px; height: 16px; object-fit: contain;
+  flex-shrink: 0; border-radius: 2px;
+}
+
+.hv-cell-shield-dot {
+  width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+  opacity: .7;
+}
+
+.hv-cell-more {
+  font-size: 9px; font-weight: 700; color: rgba(0,0,0,.35);
+  padding: 1px 4px; letter-spacing: .03em;
+}
 
 /* ── Day detail ── */
 @keyframes hv-detail-in {
