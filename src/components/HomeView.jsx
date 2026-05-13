@@ -297,22 +297,6 @@ export default function HomeView({ competitions, onCompSelect }) {
 
               {/* Corpo */}
               <div className="hv-navcard-body">
-                {next ? (
-                  <div className="hv-navcard-next">
-                    <span className="hv-navcard-next-when">
-                      Próximo · {formatNextTs(next.ts)}
-                      {next.hora_brt ? ` · ${next.hora_brt} BRT` : ''}
-                    </span>
-                    <div className="hv-navcard-next-match">
-                      <span className="hv-navcard-next-team">{next.mandante}</span>
-                      <span className="hv-navcard-next-x">×</span>
-                      <span className="hv-navcard-next-team">{next.visitante}</span>
-                    </div>
-                  </div>
-                ) : !loading && (
-                  <span className="hv-navcard-noNext">Sem jogos futuros</span>
-                )}
-
                 {!loading && total > 0 && (
                   <div className="hv-navcard-prog-wrap">
                     <div className="hv-navcard-prog-track">
