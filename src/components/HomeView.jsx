@@ -43,6 +43,13 @@ function countdownLabel(ts) {
   return `Em ${days} dias`
 }
 
+function formatNextTs(ts) {
+  const d = new Date(ts)
+  const dia = DIAS[d.getDay()]
+  const dayStr = dia[0] + dia.slice(1).toLowerCase()
+  return `${dayStr} ${d.getDate()} ${MESES[d.getMonth()].slice(0, 3)}`
+}
+
 function LiveClock() {
   const [now, setNow] = useState(() => new Date())
   useEffect(() => {
@@ -268,36 +275,53 @@ export default function HomeView({ competitions, onCompSelect }) {
             <button
               key={comp.id}
               className="hv-navcard hv-enter"
-              style={{
-                '--ac': comp.accentColor,
-                '--i': idx + 3,
-                background: `linear-gradient(145deg, #ffffff 60%, ${comp.accentColor}0e 100%)`
-              }}
+              style={{ '--ac': comp.accentColor, '--i': idx + 3 }}
               onClick={() => onCompSelect(comp.id)}
             >
-              <div className="hv-navcard-stripe" style={{ background: comp.accentColor }} />
+              {/* Cabeçalho colorido */}
+              <div className="hv-navcard-header" style={{ background: comp.accentColor }}>
+                <span className="hv-navcard-htitle">{cleanComp(comp.label)}</span>
+                {!loading && total > 0 && (
+                  <span className="hv-navcard-hcount">{done}/{total}</span>
+                )}
+              </div>
+
+              {/* Corpo */}
               <div className="hv-navcard-body">
-                <div className="hv-navcard-inner">
-                  <div className="hv-navcard-info">
-                    <div className="hv-navcard-name">
-                      <span className="hv-navcard-dot" style={{ background: comp.accentColor }} />
-                      {cleanComp(comp.label)}
+                {next ? (
+                  <div className="hv-navcard-next">
+                    <span className="hv-navcard-next-when">
+                      Próximo · {formatNextTs(next.ts)}
+                      {next.hora_brt ? ` · ${next.hora_brt} BRT` : ''}
+                    </span>
+                    <div className="hv-navcard-next-match">
+                      <span className="hv-navcard-next-team">{next.mandante}</span>
+                      <span className="hv-navcard-next-x">×</span>
+                      <span className="hv-navcard-next-team">{next.visitante}</span>
                     </div>
-                    {!loading && total > 0 && (
-                      <div className="hv-navcard-prog-wrap">
-                        <div className="hv-navcard-prog-track">
-                          <div className="hv-navcard-prog-fill" style={{ width: `${pct}%`, background: comp.accentColor }} />
-                        </div>
-                        <span className="hv-navcard-prog-label">{done} de {total} jogos</span>
-                      </div>
-                    )}
                   </div>
-                  <div className="hv-navcard-arrow" style={{ color: comp.accentColor }}>
-                    <svg viewBox="0 0 16 16" fill="none" width="16" height="16">
-                      <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
+                ) : !loading && (
+                  <span className="hv-navcard-noNext">Sem jogos futuros</span>
+                )}
+
+                {!loading && total > 0 && (
+                  <div className="hv-navcard-prog-wrap">
+                    <div className="hv-navcard-prog-track">
+                      <div className="hv-navcard-prog-fill" style={{ width: `${pct}%`, background: comp.accentColor }} />
+                    </div>
+                    <span className="hv-navcard-prog-label">{done} de {total} jogos realizados</span>
                   </div>
-                </div>
+                )}
+              </div>
+
+              {/* Rodapé CTA */}
+              <div className="hv-navcard-footer">
+                <span className="hv-navcard-footer-label" style={{ color: comp.accentColor }}>
+                  Acessar campeonato
+                </span>
+                <svg viewBox="0 0 16 16" fill="none" width="13" height="13" style={{ color: comp.accentColor }}>
+                  <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
               </div>
             </button>
           )
