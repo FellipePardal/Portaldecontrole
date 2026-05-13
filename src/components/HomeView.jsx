@@ -231,7 +231,7 @@ export default function HomeView({ competitions, onCompSelect }) {
       <div className="hv-hero hv-enter" style={{ '--i': 0 }}>
         <div className="hv-hero-left">
           <div className="hv-hero-eyebrow">PORTAL DE CONTROLE</div>
-          <div className="hv-hero-title">FFU Transmissões</div>
+          <div className="hv-hero-title">Host Broadcast</div>
         </div>
         <LiveClock />
       </div>
