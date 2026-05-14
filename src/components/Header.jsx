@@ -1,4 +1,4 @@
-export default function Header({ activeView, onHomeClick, onNewCompetition }) {
+export default function Header({ activeView, onHomeClick, onFornecedoresClick, onNewCompetition }) {
   return (
     <header className="header">
       <div className="logo-area" onClick={onHomeClick} style={{ cursor: 'pointer' }} title="Início">
@@ -20,6 +20,18 @@ export default function Header({ activeView, onHomeClick, onNewCompetition }) {
             <path d="M6 15V9h4v6" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"/>
           </svg>
           Início
+        </button>
+
+        <button
+          className={`header-nav-btn${activeView === 'fornecedores' ? ' header-nav-active' : ''}`}
+          onClick={onFornecedoresClick}
+        >
+          <svg viewBox="0 0 16 16" fill="none" width="14" height="14">
+            <rect x="2" y="4" width="12" height="9" rx="1.5" stroke="currentColor" strokeWidth="1.4"/>
+            <path d="M5 4V3a1 1 0 011-1h4a1 1 0 011 1v1" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"/>
+            <path d="M5 8h6M5 10.5h4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+          </svg>
+          Fornecedores
         </button>
 
         {onNewCompetition && (

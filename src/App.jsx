@@ -4,6 +4,7 @@ import TablePage from './components/TablePage'
 import Dashboard from './components/Dashboard'
 import JogosOverview from './components/JogosOverview'
 import HomeView from './components/HomeView'
+import FornecedoresPage from './components/FornecedoresPage'
 import NewCompetitionDialog from './components/NewCompetitionDialog'
 import { useTableData } from './hooks/useTableData'
 import { useCompetitionEvents } from './hooks/useCompetitionEvents'
@@ -76,6 +77,10 @@ export default function App() {
     setActiveView('home')
   }
 
+  function handleFornecedoresClick() {
+    setActiveView('fornecedores')
+  }
+
   if (compsLoading && competitions.length === 0) {
     return (
       <div className="bootstrap-loader">
@@ -93,6 +98,26 @@ export default function App() {
     )
   }
 
+  if (activeView === 'fornecedores') {
+    return (
+      <div className="app">
+        <Header
+          activeView="fornecedores"
+          onHomeClick={handleHomeClick}
+          onFornecedoresClick={handleFornecedoresClick}
+          onNewCompetition={() => setShowNewDialog(true)}
+        />
+        <main className="main-content" style={{ paddingTop: 84 }}>
+          <div style={{ marginBottom: 16 }}>
+            <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text)' }}>Fornecedores</div>
+            <div style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 2 }}>Base de fornecedores do Hub Financeiro</div>
+          </div>
+          <FornecedoresPage />
+        </main>
+      </div>
+    )
+  }
+
   // Home view — available even without a selected competition
   if (activeView === 'home') {
     return (
@@ -100,6 +125,7 @@ export default function App() {
         <Header
           activeView="home"
           onHomeClick={handleHomeClick}
+          onFornecedoresClick={handleFornecedoresClick}
           onNewCompetition={() => setShowNewDialog(true)}
         />
         <main className="main-content main-content--home">
@@ -118,6 +144,7 @@ export default function App() {
         <Header
           activeView="comp"
           onHomeClick={handleHomeClick}
+          onFornecedoresClick={handleFornecedoresClick}
           onNewCompetition={() => setShowNewDialog(true)}
         />
         <main className="main-content" style={{ paddingTop: 84 }}>
@@ -144,6 +171,7 @@ export default function App() {
       <Header
         activeView="comp"
         onHomeClick={handleHomeClick}
+        onFornecedoresClick={handleFornecedoresClick}
         onNewCompetition={() => setShowNewDialog(true)}
       />
 
