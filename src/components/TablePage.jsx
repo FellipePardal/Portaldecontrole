@@ -7,6 +7,7 @@ import DataTable from './DataTable'
 import GameModal from './GameModal'
 import ConfirmDialog from './ConfirmDialog'
 import PerifericosCards from './PerifericosCards'
+import EscalaView, { funcoesDaConfig } from './EscalaView'
 
 const DEFAULT_FILTERS = { search: '', status: '', dateFrom: '', dateTo: '', rodada: '', detentor: '', estadio: '', um: '' }
 
@@ -30,6 +31,20 @@ export default function TablePage({ config }) {
   const [filters, setFilters] = useState(DEFAULT_FILTERS)
   const [modal, setModal] = useState({ open: false, mode: 'add', row: null })
   const [confirmDelete, setConfirmDelete] = useState(null)
+
+  // Visão Escala (cards interativos) x Planilha (tabela clássica).
+  // Só nas tabelas de controle com escala (grupo "Equipe Técnica").
+  const temEscala = config.isLegacy && funcoesDaConfig(config).length > 0
+  const viewKey = `viewmode_${config.id || config.tableName}`
+  const [view, setViewRaw] = useState(() => {
+    if (!temEscala) return 'planilha'
+    try { return localStorage.getItem(viewKey) || 'escala' } catch { return 'escala' }
+  })
+  const setView = v => { setViewRaw(v); try { localStorage.setItem(viewKey, v) } catch { /* sem storage */ } }
+
+  async function handleSaveCampo(id, campo, valor) {
+    await updateRow(id, { [campo]: valor })
+  }
 
   const filteredData = useMemo(() => {
     let result = data
@@ -141,24 +156,51 @@ VITE_SUPABASE_ANON_KEY=eyJ...`}
     <div className="table-page">
       <StatsCards data={data} config={config} />
 
-      <Filters
-        filters={filters}
-        onChange={setFilters}
-        config={config}
-        onAdd={openAddModal}
-        data={data}
-      />
+      {temEscala && (
+        <div className="view-switch">
+          {[['escala', '🗂 Escala'], ['planilha', '▤ Planilha']].map(([v, l]) => (
+            <button key={v} className={`view-switch-btn ${view === v ? 'is-active' : ''}`}
+              style={view === v ? { borderColor: config.accentColor, color: config.accentColor } : undefined}
+              onClick={() => setView(v)}>
+              {l}
+            </button>
+          ))}
+          {view === 'escala' && (
+            <button className="view-switch-add" style={{ background: config.accentColor }} onClick={openAddModal}>
+              + Novo Jogo
+            </button>
+          )}
+        </div>
+      )}
 
-      <DataTable
-        data={filteredData}
-        columns={config.columns}
-        loading={loading}
-        accentColor={config.accentColor}
-        onEdit={openEditModal}
-        onDelete={setConfirmDelete}
-        onStatusChange={handleStatusChange}
-        onCopy={handleCopy}
-      />
+      {view === 'escala' && temEscala ? (
+        <EscalaView
+          data={data}
+          config={config}
+          onEdit={openEditModal}
+          onStatusChange={handleStatusChange}
+          onSaveCampo={handleSaveCampo}
+        />
+      ) : (<>
+        <Filters
+          filters={filters}
+          onChange={setFilters}
+          config={config}
+          onAdd={openAddModal}
+          data={data}
+        />
+
+        <DataTable
+          data={filteredData}
+          columns={config.columns}
+          loading={loading}
+          accentColor={config.accentColor}
+          onEdit={openEditModal}
+          onDelete={setConfirmDelete}
+          onStatusChange={handleStatusChange}
+          onCopy={handleCopy}
+        />
+      </>)}
 
       {modal.open && (
         <GameModal

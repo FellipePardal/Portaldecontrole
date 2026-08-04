@@ -3327,3 +3327,175 @@ body {
   .hv-cal-wrap { padding: 18px 16px 24px; }
 }
 
+
+/* ============================================================
+   Visão Escala (aba Controle) — cards por jogo + slots de função
+   ============================================================ */
+.view-switch {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 16px;
+}
+.view-switch-btn {
+  padding: 7px 16px; border-radius: 8px; font-size: 13px; font-weight: 600;
+  background: var(--bg-card); border: 1.5px solid var(--border);
+  color: var(--text-muted); cursor: pointer; font-family: inherit;
+  transition: all 0.15s;
+}
+.view-switch-btn:hover { background: var(--bg-hover); }
+.view-switch-btn.is-active { background: var(--bg-card); box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+.view-switch-add {
+  margin-left: auto; padding: 8px 18px; border: none; border-radius: 8px;
+  color: #fff; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit;
+  transition: opacity 0.15s;
+}
+.view-switch-add:hover { opacity: 0.88; }
+
+.esc-toolbar {
+  position: sticky; top: 0; z-index: 30;
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+  background: var(--bg-app); padding: 10px 0 12px; margin-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+.esc-toolbar input, .esc-toolbar select {
+  padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border);
+  background: var(--bg-input); color: var(--text); font-size: 13px; font-family: inherit;
+  outline: none;
+}
+.esc-toolbar input:focus, .esc-toolbar select:focus { border-color: var(--text-dim); }
+.esc-busca { min-width: 170px; }
+.esc-forn { min-width: 150px; }
+.esc-toggle-pend {
+  padding: 8px 14px; border-radius: 8px; font-size: 12.5px; font-weight: 600;
+  border: 1.5px dashed #E8D89A; background: transparent; color: #8C6311;
+  cursor: pointer; font-family: inherit; transition: all 0.15s;
+}
+.esc-toggle-pend.is-on { background: #FBF3DF; border-style: solid; }
+.esc-limpar {
+  padding: 8px 12px; border-radius: 8px; font-size: 12px; border: none;
+  background: var(--bg-surface2); color: var(--text-muted); cursor: pointer; font-family: inherit;
+}
+.esc-resumo { margin-left: auto; font-size: 12.5px; color: var(--text-muted); white-space: nowrap; }
+.esc-resumo strong { color: var(--text); font-variant-numeric: tabular-nums; }
+
+.esc-vazio { text-align: center; padding: 60px 20px; color: var(--text-muted); font-size: 14px; }
+
+.esc-rodada { margin: 22px 0 10px; }
+.esc-rodada-header {
+  display: flex; align-items: center; gap: 14px; margin-bottom: 12px;
+}
+.esc-rodada-num {
+  font-size: 40px; font-weight: 800; line-height: 1; letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums; opacity: 0.9; min-width: 46px; text-align: center;
+}
+.esc-rodada-titulo { font-size: 14px; font-weight: 700; color: var(--text); margin: 0; }
+.esc-rodada-sub { font-size: 11.5px; color: var(--text-dim); margin: 2px 0 0; font-variant-numeric: tabular-nums; }
+.esc-rodada-barra {
+  flex: 1; max-width: 220px; height: 5px; border-radius: 3px;
+  background: var(--bg-surface2); overflow: hidden; margin-left: 8px;
+}
+.esc-rodada-barra span { display: block; height: 100%; border-radius: 3px; transition: width 0.4s ease; }
+
+.esc-cards {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(430px, 1fr)); gap: 14px;
+}
+@media (max-width: 560px) { .esc-cards { grid-template-columns: 1fr; } }
+
+.esc-card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-top: 3px solid; border-radius: 12px; padding: 14px 16px 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+.esc-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); transform: translateY(-1px); }
+
+.esc-card-header {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  gap: 10px; flex-wrap: wrap; margin-bottom: 12px;
+}
+.esc-card-times { display: flex; align-items: center; gap: 7px; }
+.esc-card-nome { font-size: 14.5px; font-weight: 700; color: var(--text); }
+.esc-card-x { color: var(--text-dim); font-size: 12px; }
+.esc-escudo { object-fit: contain; flex-shrink: 0; }
+.esc-escudo-fallback {
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 50%; background: var(--bg-surface2); color: var(--text-dim);
+  font-size: 11px; font-weight: 700;
+}
+.esc-card-meta { font-size: 11.5px; color: var(--text-muted); margin: 5px 0 0; }
+.esc-card-chips { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.esc-chip {
+  padding: 2px 9px; border-radius: 5px; font-size: 10.5px; font-weight: 600;
+  background: var(--bg-surface); border: 1px solid var(--border); color: var(--text-muted);
+  white-space: nowrap;
+}
+.esc-chip-padrao { background: var(--bg-surface2); color: var(--text); letter-spacing: 0.04em; }
+
+.esc-slots {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(125px, 1fr)); gap: 6px;
+}
+.esc-slot { position: relative; }
+.esc-slot-btn {
+  width: 100%; text-align: left; padding: 6px 9px; border-radius: 7px;
+  background: var(--bg-surface); border: 1px solid var(--border);
+  cursor: pointer; font-family: inherit; transition: all 0.13s;
+  display: flex; flex-direction: column; gap: 1px; overflow: hidden;
+}
+.esc-slot-btn:hover { border-color: var(--text-dim); background: var(--bg-hover); }
+.esc-slot-label {
+  font-size: 9px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase;
+  color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.esc-slot-valor {
+  font-size: 12px; font-weight: 600; color: var(--text);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.esc-slot-vazio .esc-slot-btn { border-style: dashed; border-color: #E8D89A; background: #FDFAF0; }
+.esc-slot-vazio .esc-slot-valor { color: #8C6311; font-weight: 500; font-style: italic; }
+.esc-slot-destaque .esc-slot-btn {
+  border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59,130,246,0.25);
+  background: #EFF6FF;
+}
+.esc-slot-menu {
+  position: absolute; top: calc(100% + 4px); left: 0; z-index: 50;
+  min-width: 200px; max-height: 260px; overflow-y: auto;
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: 9px;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.14); padding: 4px;
+}
+.esc-slot-opcao {
+  display: flex; align-items: center; gap: 7px; width: 100%; text-align: left;
+  padding: 7px 10px; border: none; border-radius: 6px; background: none;
+  font-size: 12.5px; color: var(--text); cursor: pointer; font-family: inherit;
+}
+.esc-slot-opcao:hover { background: var(--bg-hover); }
+.esc-slot-opcao.is-atual { background: var(--bg-surface2); font-weight: 700; }
+.esc-slot-livre { display: flex; gap: 4px; padding: 6px 6px 4px; border-top: 1px solid var(--border); margin-top: 4px; }
+.esc-slot-livre input {
+  flex: 1; min-width: 0; padding: 6px 8px; border-radius: 6px;
+  border: 1px solid var(--border); font-size: 12px; font-family: inherit; outline: none;
+}
+.esc-slot-livre button {
+  padding: 6px 10px; border: none; border-radius: 6px; background: var(--text);
+  color: var(--bg-card); font-size: 11px; font-weight: 700; cursor: pointer; font-family: inherit;
+}
+.esc-slot-limpar {
+  display: block; width: 100%; text-align: center; padding: 7px; margin-top: 2px;
+  border: none; border-radius: 6px; background: none; color: #8E2A1E;
+  font-size: 11.5px; cursor: pointer; font-family: inherit;
+}
+.esc-slot-limpar:hover { background: #FBE8E5; }
+
+.esc-status { position: relative; }
+.esc-status .status-badge { cursor: pointer; border: 1px solid transparent; font-family: inherit; }
+.esc-status-menu { right: 0; left: auto; }
+.status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; padding: 0; }
+
+.esc-card-footer { display: flex; align-items: center; gap: 10px; margin-top: 12px; }
+.esc-card-progresso {
+  flex: 1; height: 4px; border-radius: 2px; background: var(--bg-surface2); overflow: hidden;
+}
+.esc-card-progresso span { display: block; height: 100%; border-radius: 2px; transition: width 0.35s ease; }
+.esc-card-contagem { font-size: 11px; font-weight: 700; color: var(--text-dim); font-variant-numeric: tabular-nums; }
+.esc-card-ficha {
+  border: none; background: none; color: var(--text-muted); font-size: 11.5px;
+  font-weight: 600; cursor: pointer; font-family: inherit; padding: 4px 6px; border-radius: 6px;
+}
+.esc-card-ficha:hover { background: var(--bg-hover); color: var(--text); }
