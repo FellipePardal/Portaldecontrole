@@ -2,12 +2,6 @@ import { useState, useEffect, useCallback } from 'react'
 import { supabase, isConfigured } from '../lib/supabase'
 import { MOCK_DATA } from '../data/mockData'
 
-// Tables that source game data from app_state (Hub) instead of directly
-const HUB_KEYS = {
-  brasileirao_jogos:       'jogos',
-  paulistao_feminino_jogos: 'paulistao_jogos',
-}
-
 function parseDate(str) {
   if (!str) return null
   const s = String(str).trim()
@@ -26,30 +20,9 @@ function toDateKey(d) {
   return `${d.year}-${d.month}-${d.day}`
 }
 
+// Portal é a matriz da agenda (2026-08): lê direto das tabelas operacionais,
+// que agora carregam jogo + escala completos (sem passar pelo app_state do Hub).
 async function fetchRows(cfg) {
-  const hubKey = HUB_KEYS[cfg.tableName]
-  if (hubKey) {
-    const [hubRes, opsRes] = await Promise.all([
-      supabase.from('app_state').select('value').eq('key', hubKey).single(),
-      supabase.from(cfg.tableName).select('hub_jogo_id, status'),
-    ])
-    const arr = Array.isArray(hubRes.data?.value) ? hubRes.data.value : []
-    const ops = opsRes.data || []
-    const statusById = new Map(ops.filter(r => r.hub_jogo_id).map(r => [String(r.hub_jogo_id), r.status]))
-    const isForBr = cfg.tableName === 'brasileirao_jogos'
-    return arr
-      .filter(j => j && j.mandante && j.mandante !== 'A definir' && j.data)
-      .map(j => ({
-        mandante:  j.mandante || '',
-        visitante: j.visitante || '',
-        data:      j.data || '',
-        hora_brt:  j.hora || '',
-        detentor:  j.detentor || '',
-        rod:       !isForBr ? (j.rodada != null ? String(j.rodada) : '') : '',
-        eu:        isForBr  ? (j.rodada != null ? String(j.rodada) : '') : '',
-        status:    statusById.get(String(j.id)) || 'Pendente',
-      }))
-  }
   const { data } = await supabase.from(cfg.tableName).select('*')
   return data || []
 }
