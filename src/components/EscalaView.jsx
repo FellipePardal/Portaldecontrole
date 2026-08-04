@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect, useRef } from 'react'
 import { getEscudoUrl } from '../lib/escudos'
 import { STATUS_OPTIONS, getStatusClass } from '../config/tables'
+import { compararPorData, rodadaAtual } from '../lib/datas'
 
 // ─── VISÃO ESCALA ─────────────────────────────────────────────────────────────
 // A aba Controle em formato "prancheta": um card por jogo, com os slots de
@@ -143,8 +144,22 @@ export default function EscalaView({ data, config, onEdit, onStatusChange, onSav
       if (!map.has(rod)) map.set(rod, [])
       map.get(rod).push(r)
     })
+    map.forEach(lista => lista.sort(compararPorData))
     return [...map.entries()].sort((a, b) => (parseInt(a[0]) || 0) - (parseInt(b[0]) || 0))
   }, [filtrados, rodadaKey])
+
+  // Rodada atual (primeira ainda não encerrada) — a página abre nela.
+  const atual = useMemo(() => rodadaAtual(jogos, rodadaKey), [jogos, rodadaKey])
+  const secRefs = useRef({})
+  const jaRolou = useRef(false)
+  useEffect(() => {
+    if (jaRolou.current || !atual || jogos.length === 0 || filtroAtivo) return
+    const el = secRefs.current[atual]
+    if (!el) return
+    jaRolou.current = true
+    // Espera o layout assentar antes de rolar
+    requestAnimationFrame(() => el.scrollIntoView({ behavior: 'smooth', block: 'start' }))
+  }, [atual, jogos.length]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const totalSlots = filtrados.length * funcoes.length
   const slotsOk = filtrados.reduce((s, r) => s + funcoes.filter(f => r[f.key] && String(r[f.key]).trim()).length, 0)
@@ -197,11 +212,14 @@ export default function EscalaView({ data, config, onEdit, onStatusChange, onSav
         const tot = lista.length * funcoes.length
         const ok = lista.reduce((s, r) => s + funcoes.filter(f => r[f.key] && String(r[f.key]).trim()).length, 0)
         return (
-          <section key={rod} className="esc-rodada">
+          <section key={rod} className="esc-rodada" ref={el => { secRefs.current[rod] = el }}>
             <header className="esc-rodada-header">
               <span className="esc-rodada-num" style={{ color: accent }}>{rod}</span>
               <div>
-                <p className="esc-rodada-titulo">Rodada {rod}</p>
+                <p className="esc-rodada-titulo">
+                  Rodada {rod}
+                  {String(rod) === String(atual) && <span className="esc-rodada-atual" style={{ background: accent }}>ATUAL</span>}
+                </p>
                 <p className="esc-rodada-sub">{lista.length} {lista.length === 1 ? 'jogo' : 'jogos'} · {ok}/{tot} slots definidos</p>
               </div>
               <div className="esc-rodada-barra"><span style={{ width: `${tot ? (ok / tot) * 100 : 0}%`, background: accent }} /></div>
