@@ -108,6 +108,7 @@ export default function App() {
           activeView="escala-geral"
           onHomeClick={handleHomeClick}
           onFornecedoresClick={handleFornecedoresClick}
+          onEscalaGeralClick={() => setActiveView('escala-geral')}
         />
         <main className="main-content" style={{ paddingTop: 84 }}>
           <div style={{ marginBottom: 16 }}>
@@ -127,6 +128,7 @@ export default function App() {
           activeView="fornecedores"
           onHomeClick={handleHomeClick}
           onFornecedoresClick={handleFornecedoresClick}
+          onEscalaGeralClick={() => setActiveView('escala-geral')}
           onNewCompetition={() => setShowNewDialog(true)}
         />
         <main className="main-content" style={{ paddingTop: 84 }}>
@@ -148,10 +150,11 @@ export default function App() {
           activeView="home"
           onHomeClick={handleHomeClick}
           onFornecedoresClick={handleFornecedoresClick}
+          onEscalaGeralClick={() => setActiveView('escala-geral')}
           onNewCompetition={() => setShowNewDialog(true)}
         />
         <main className="main-content main-content--home">
-          <HomeView competitions={competitions} onCompSelect={handleCompSelect} onEscalaGeral={() => setActiveView('escala-geral')} />
+          <HomeView competitions={competitions} onCompSelect={handleCompSelect} />
         </main>
         {showNewDialog && (
           <NewCompetitionDialog onClose={() => setShowNewDialog(false)} />
@@ -167,6 +170,7 @@ export default function App() {
           activeView="comp"
           onHomeClick={handleHomeClick}
           onFornecedoresClick={handleFornecedoresClick}
+          onEscalaGeralClick={() => setActiveView('escala-geral')}
           onNewCompetition={() => setShowNewDialog(true)}
         />
         <main className="main-content" style={{ paddingTop: 84 }}>
@@ -204,6 +208,7 @@ export default function App() {
         activeView="comp"
         onHomeClick={handleHomeClick}
         onFornecedoresClick={handleFornecedoresClick}
+          onEscalaGeralClick={() => setActiveView('escala-geral')}
         onNewCompetition={() => setShowNewDialog(true)}
         onNewJogo={handleNovoJogo}
         accentColor={competition.accentColor}

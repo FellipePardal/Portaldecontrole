@@ -71,7 +71,7 @@ function LiveClock() {
   )
 }
 
-export default function HomeView({ competitions, onCompSelect, onEscalaGeral }) {
+export default function HomeView({ competitions, onCompSelect }) {
   const today = useMemo(() => {
     const d = new Date()
     return { year: d.getFullYear(), month: d.getMonth(), day: d.getDate() }
@@ -271,35 +271,6 @@ export default function HomeView({ competitions, onCompSelect, onEscalaGeral }) 
 
       {/* ── Competition cards ── */}
       <div className="hv-navgrid hv-enter" style={{ '--i': 2 }}>
-        {/* Escala Geral — todos os campeonatos numa aba só */}
-        {onEscalaGeral && (
-          <button
-            className="hv-navcard hv-enter"
-            style={{ '--ac': '#111111', '--i': 2 }}
-            onClick={onEscalaGeral}
-          >
-            <div
-              className="hv-navcard-header"
-              style={{
-                backgroundColor: '#111111',
-                backgroundImage: 'linear-gradient(150deg, rgba(255,255,255,.18) 0%, transparent 55%, rgba(0,0,0,.25) 100%)'
-              }}
-            >
-              <span className="hv-navcard-htitle">📋 Escala Geral</span>
-            </div>
-            <div className="hv-navcard-body">
-              <div className="hv-navcard-prog-wrap">
-                <span className="hv-navcard-prog-label">Coordenador UM · Produtor UM · Produtor de Campo · Monitoração — todos os campeonatos</span>
-              </div>
-            </div>
-            <div className="hv-navcard-footer">
-              <span className="hv-navcard-footer-label" style={{ color: '#111111' }}>Acessar escala</span>
-              <svg viewBox="0 0 16 16" fill="none" width="13" height="13" style={{ color: '#111111' }}>
-                <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            </div>
-          </button>
-        )}
         {competitions.map((comp, idx) => {
           const total = totalsByComp[comp.id] ?? 0
           const done  = doneByComp[comp.id]   ?? 0
