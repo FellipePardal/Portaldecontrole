@@ -4,21 +4,12 @@ import { getEscudoUrl } from '../lib/escudos'
 import { parseData } from '../lib/datas'
 import GameModal from './GameModal'
 
-// Ficha completa (GameModal genérico) — todos os campos da linha
+// Ficha completa (GameModal genérico) — SÓ as funções e seus valores; os dados
+// do jogo não entram (edição deles fica fora do escopo desta aba).
 const FICHA_CONFIG = {
   id: 'escala-geral',
   accentColor: '#111111',
   columns: [
-    { key: 'campeonato',  label: 'Campeonato',     type: 'text', group: 'Jogo' },
-    { key: 'fase_rodada', label: 'Fase / Rodada',  type: 'text', group: 'Jogo' },
-    { key: 'dia',         label: 'Dia',            type: 'text', group: 'Jogo' },
-    { key: 'data',        label: 'Data',           type: 'text', group: 'Jogo' },
-    { key: 'horario',     label: 'Horário',        type: 'text', group: 'Jogo' },
-    { key: 'cidade',      label: 'Cidade',         type: 'text', group: 'Jogo' },
-    { key: 'estadio',     label: 'Estádio',        type: 'text', group: 'Jogo' },
-    { key: 'mandante',    label: 'Mandante',       type: 'text', group: 'Jogo' },
-    { key: 'visitante',   label: 'Visitante',      type: 'text', group: 'Jogo' },
-    { key: 'transmissao', label: 'Transmissão',    type: 'text', group: 'Jogo' },
     { key: 'coordenador_um',       label: 'Coordenador UM',      type: 'text', group: 'Funções' },
     { key: 'coordenador_um_valor', label: 'Coordenador UM ($)',  type: 'text', group: 'Funções' },
     { key: 'produtor_um',          label: 'Produtor UM',         type: 'text', group: 'Funções' },
