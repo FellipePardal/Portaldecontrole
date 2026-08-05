@@ -14,10 +14,11 @@ function FichaFuncoes({ row, cor, onClose, onSave }) {
     init[fn.key] = { tem: !naoTem(v), nome: naoTem(v) ? '' : v, valor: fn.valor ? (row[fn.valor] || '') : '' }
   })
   const [form, setForm] = useState(init)
+  const [obs, setObs] = useState(row.obs || '')
   const set = (k, patch) => setForm(prev => ({ ...prev, [k]: { ...prev[k], ...patch } }))
 
   const salvar = async () => {
-    const payload = {}
+    const payload = { obs: obs.trim() }
     FUNCOES.forEach(fn => {
       const f = form[fn.key]
       payload[fn.key] = f.tem ? f.nome.trim() : 'Não'
@@ -64,6 +65,11 @@ function FichaFuncoes({ row, cor, onClose, onSave }) {
               </div>
             )
           })}
+          <div className="eg-ficha-linha" style={{ alignItems: 'flex-start' }}>
+            <span className="eg-ficha-label" style={{ paddingTop: 8 }}>Observações</span>
+            <textarea className="eg-ficha-input" rows={2} value={obs} placeholder="Anotações do jogo (ex: CazéTV em campo)..."
+              style={{ resize: 'vertical' }} onChange={e => setObs(e.target.value)} />
+          </div>
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 16 }}>
             <button className="esc-limpar" onClick={onClose}>Cancelar</button>
             <button className="view-switch-add" style={{ background: cor, marginLeft: 0 }} onClick={salvar}>Salvar</button>
@@ -457,6 +463,7 @@ export default function EscalaGeralView() {
                         {[r.horario, r.cidade, r.estadio, r.fase_rodada].filter(Boolean).length > 0 && ' · '}
                         {[r.horario, r.cidade, r.estadio, r.fase_rodada].filter(Boolean).join(' · ')}
                       </p>
+                      {r.obs && <p className="esc-card-meta" style={{ fontStyle: 'italic' }}>📝 {r.obs}</p>}
                     </div>
                     <div className="esc-card-chips">
                       {mudo && <span className="esc-chip" title="Sem equipe escalada pela Livemode">Sem escala</span>}
