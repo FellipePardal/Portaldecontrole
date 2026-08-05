@@ -120,48 +120,56 @@ const finais = [...porChave.values()]
 const existentes = await (await fetch(`${URL}/rest/v1/brasileirao_jogos?select=*`, { headers: H })).json()
 const existPorChave = new Map(existentes.filter(r => r.mandante && r.visitante).map(r => [chave(r), r]))
 
+// SÓ colunas de função/operação entram no update (decisão 2026-08-05): os
+// campos do JOGO (rodada, dia, data, hora, times, estádio, cidade, padrão,
+// detentor, ppv) ficam como estão no Portal — servem apenas para o match.
+const COLUNAS_FUNCAO = new Set([
+  'um', 'sng_premiere', 'sng_host', 'gerador',
+  'supervisores_1', 'liveu_1', 'supervisores_2', 'liveu_2',
+  'dtv', 'op_vmix', 'op_audio', 'teleporto', 'satelite',
+  'service_start_gmt', 'abertura_brt', 'service_end_gmt', 'fechamento_brt',
+  'total_horas', 'banda', 'status', 'reserva', 'transponder', 'uplink', 'downlink',
+  'satelite_globo', 'status_g', 'reserva_g', 'transponder_g', 'uplink_g', 'downlink_g',
+  'aspecto', 'compressao', 'transmissao', 'modulacao', 'sr', 'fec', 'biss_code', 'ficha_jogo',
+])
+
 const updates = [], inserts = []
 for (const reg of finais) {
-  if (reg.dia) reg.dia = normalizarDia(reg.dia)
   const atual = existPorChave.get(chave(reg))
   if (atual) {
-    // Só o que mudou — e valor VAZIO da planilha nunca apaga o que o Portal já
-    // tem (o Portal é a matriz; a planilha completa, não zera).
-    const difs = Object.entries(reg).filter(([k, v]) => v !== '' && String(atual[k] ?? '') !== v)
+    // Só função/operação, só o que mudou — e valor VAZIO da planilha nunca
+    // apaga o que o Portal já tem (a planilha completa, não zera).
+    const difs = Object.entries(reg).filter(([k, v]) =>
+      COLUNAS_FUNCAO.has(k) && v !== '' && String(atual[k] ?? '') !== v)
     if (difs.length) updates.push({
       id: atual.id, reg: Object.fromEntries(difs),
       nome: `${reg.eu}ª ${reg.mandante} x ${reg.visitante}`,
       difs: difs.map(([k, v]) => `${k}: "${atual[k] ?? ''}" → "${v}"`),
     })
   } else {
+    // Jogo que não existe no Portal: NÃO inserimos (criaria dados de jogo);
+    // fica listado para criação manual, se for o caso.
     inserts.push(reg)
   }
 }
 
 console.log(`\n═══ ${APLICAR ? 'APLICANDO' : 'DRY-RUN'} ═══`)
 console.log(`Planilha: ${finais.length} jogos | Portal hoje: ${existentes.length} linhas`)
-console.log(`→ ${updates.length} updates (linhas já existentes, hub_jogo_id preservado)`)
-updates.slice(0, 6).forEach(u => console.log(`   ${u.nome}\n      ${u.difs.join('\n      ')}`))
-if (updates.length > 6) console.log(`   ... e mais ${updates.length - 6}`)
-console.log(`→ ${inserts.length} inserts (jogos novos no Portal; o Hub adota se houver placeholder)`)
+console.log(`→ ${updates.length} updates SÓ de funções/operação (campos do jogo intocados, hub_jogo_id preservado)`)
+updates.forEach((u, i) => console.log(`  ${String(i + 1).padStart(2)}. ${u.nome} → ${Object.keys(u.reg).join(', ')}`))
+console.log(`→ ${inserts.length} jogos da planilha SEM linha no Portal (NÃO serão criados — funções só entram em jogo existente)`)
 inserts.slice(0, 40).forEach(r => console.log(`   ${r.eu}ª ${r.mandante} x ${r.visitante} (${r.data})`))
 
 if (APLICAR) {
-  for (const u of updates) {
+  const alvo = ITENS ? updates.filter((_, i) => ITENS.has(i + 1)) : updates
+  for (const u of alvo) {
     const r = await fetch(`${URL}/rest/v1/brasileirao_jogos?id=eq.${u.id}`, {
       method: 'PATCH', headers: H,
       body: JSON.stringify({ ...u.reg, updated_at: new Date().toISOString() }),
     })
-    if (!r.ok) console.error(`Falha update ${u.reg.mandante} x ${u.reg.visitante}: ${r.status} ${await r.text()}`)
+    if (!r.ok) console.error(`Falha update ${u.nome}: ${r.status} ${await r.text()}`)
   }
-  if (inserts.length) {
-    const r = await fetch(`${URL}/rest/v1/brasileirao_jogos`, {
-      method: 'POST', headers: { ...H, Prefer: 'return=minimal' },
-      body: JSON.stringify(inserts.map(reg => ({ ...reg, updated_at: new Date().toISOString() }))),
-    })
-    if (!r.ok) console.error(`Falha inserts: ${r.status} ${await r.text()}`)
-  }
-  console.log('\nGravado.')
+  console.log(`\nGravado: ${alvo.length} updates. Nenhum jogo criado, nenhum campo de jogo alterado.`)
 } else {
-  console.log('\nNada gravado. Rode com --aplicar para gravar.')
+  console.log('\nNada gravado. Rode com --aplicar para gravar (ou --aplicar --itens 1,3,5-8 para um subconjunto).')
 }
