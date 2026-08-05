@@ -1,0 +1,317 @@
+import { useState, useMemo, useEffect, useRef } from 'react'
+import { supabase, isConfigured } from '../lib/supabase'
+import { getEscudoUrl } from '../lib/escudos'
+import { parseData } from '../lib/datas'
+
+// ─── ESCALA GERAL ─────────────────────────────────────────────────────────────
+// Todos os campeonatos numa aba só, em ordem cronológica (abre no dia de hoje).
+// Controla as 4 funções de UM/produção: Coordenador UM ($), Produtor UM ($),
+// Produtor de Campo e Monitoração — edição inline no card, igual à visão
+// Escala do Controle. Dados na tabela `escala_geral` (realtime ligado).
+
+const FUNCOES = [
+  { key: 'coordenador_um', label: 'Coordenador UM', valor: 'coordenador_um_valor' },
+  { key: 'produtor_um',    label: 'Produtor UM',    valor: 'produtor_um_valor' },
+  { key: 'produtor_campo', label: 'Produtor Campo' },
+  { key: 'monitoracao',    label: 'Monitoração' },
+]
+
+// Cor estável por campeonato (paleta fixa, atribuída por hash do nome)
+const PALETA = ['#65B32E', '#2563EB', '#D97706', '#DC2626', '#7C3AED', '#0D9488', '#DB2777', '#4D7C0F', '#B45309', '#475569']
+function corCampeonato(nome) {
+  let h = 0
+  for (const c of String(nome || '')) h = (h * 31 + c.charCodeAt(0)) >>> 0
+  return PALETA[h % PALETA.length]
+}
+
+function Escudo({ nome, size = 24 }) {
+  const url = getEscudoUrl(nome)
+  if (!url) return <span className="esc-escudo esc-escudo-fallback" style={{ width: size, height: size }}>{(nome || '?').slice(0, 1)}</span>
+  return <img className="esc-escudo" src={url} alt={nome} style={{ width: size, height: size }} loading="lazy" />
+}
+
+// Slot de função com nome (+ valor $ quando a função tem)
+function SlotPessoa({ row, fn, sugestoes, destaque, onSave }) {
+  const [aberto, setAberto] = useState(false)
+  const [nome, setNome] = useState('')
+  const [valor, setValor] = useState('')
+  const ref = useRef(null)
+
+  useEffect(() => {
+    if (!aberto) return
+    const fechar = e => { if (ref.current && !ref.current.contains(e.target)) setAberto(false) }
+    document.addEventListener('mousedown', fechar)
+    return () => document.removeEventListener('mousedown', fechar)
+  }, [aberto])
+
+  const atual = row[fn.key]
+  const atualValor = fn.valor ? row[fn.valor] : ''
+  const vazio = !atual || !String(atual).trim()
+  const abrir = () => { setNome(atual || ''); setValor(atualValor || ''); setAberto(a => !a) }
+  const salvar = (n, v) => {
+    const payload = { [fn.key]: n }
+    if (fn.valor) payload[fn.valor] = v
+    onSave(row.id, payload)
+    setAberto(false)
+  }
+
+  const texto = vazio ? 'Definir' : `${atual}${atualValor ? ` · ${atualValor}` : ''}`
+  return (
+    <div className={`esc-slot ${vazio ? 'esc-slot-vazio' : ''} ${destaque ? 'esc-slot-destaque' : ''}`} ref={ref}>
+      <button className="esc-slot-btn" onClick={abrir} title={`${fn.label}: ${texto}`}>
+        <span className="esc-slot-label">{fn.label}</span>
+        <span className="esc-slot-valor">{texto}</span>
+      </button>
+      {aberto && (
+        <div className="esc-slot-menu">
+          <div className="esc-slot-livre" style={{ borderTop: 'none', marginTop: 0 }}>
+            <input
+              autoFocus
+              value={nome}
+              placeholder="Nome..."
+              list={`eg-sug-${fn.key}`}
+              onChange={e => setNome(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') salvar(nome.trim(), valor.trim()) }}
+            />
+            {fn.valor && (
+              <input
+                value={valor}
+                placeholder="$"
+                style={{ flex: '0 0 64px' }}
+                onChange={e => setValor(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter') salvar(nome.trim(), valor.trim()) }}
+              />
+            )}
+            <button onClick={() => salvar(nome.trim(), valor.trim())}>OK</button>
+          </div>
+          <datalist id={`eg-sug-${fn.key}`}>
+            {sugestoes.map(s => <option key={s} value={s} />)}
+          </datalist>
+          {(sugestoes || []).slice(0, 8).map(s => (
+            <button key={s} className={`esc-slot-opcao ${s === atual ? 'is-atual' : ''}`} onClick={() => salvar(s, valor.trim())}>{s}</button>
+          ))}
+          {!vazio && <button className="esc-slot-limpar" onClick={() => salvar('', '')}>Limpar slot</button>}
+        </div>
+      )}
+    </div>
+  )
+}
+
+export default function EscalaGeralView() {
+  const [rows, setRows] = useState([])
+  const [loading, setLoading] = useState(isConfigured)
+  const [erro, setErro] = useState(null)
+
+  const [busca, setBusca] = useState('')
+  const [fCamp, setFCamp] = useState('')
+  const [fFuncao, setFFuncao] = useState('')
+  const [fPessoa, setFPessoa] = useState('')
+  const [soPendencias, setSoPendencias] = useState(false)
+  const [soFuturos, setSoFuturos] = useState(true)
+
+  useEffect(() => {
+    if (!isConfigured) { setLoading(false); return }
+    let cancelado = false
+    async function carregar() {
+      const { data, error } = await supabase.from('escala_geral').select('*')
+      if (cancelado) return
+      if (error) setErro(error.message)
+      else setRows(data || [])
+      setLoading(false)
+    }
+    carregar()
+    const canal = supabase
+      .channel('escala_geral_rt')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'escala_geral' }, carregar)
+      .subscribe()
+    return () => { cancelado = true; supabase.removeChannel(canal) }
+  }, [])
+
+  async function salvar(id, payload) {
+    // Otimista + persistência; realtime confirma na sequência
+    setRows(prev => prev.map(r => (r.id === id ? { ...r, ...payload } : r)))
+    const { error } = await supabase.from('escala_geral')
+      .update({ ...payload, updated_at: new Date().toISOString() })
+      .eq('id', id)
+    if (error) alert('Falha ao salvar: ' + error.message)
+  }
+
+  const norm = s => String(s || '').toLowerCase()
+  const campeonatos = useMemo(() => [...new Set(rows.map(r => r.campeonato).filter(Boolean))].sort(), [rows])
+
+  // Sugestões de nomes por função (todos os já usados)
+  const sugestoesPorFn = useMemo(() => {
+    const map = {}
+    FUNCOES.forEach(fn => {
+      const set = new Set()
+      rows.forEach(r => { const v = r[fn.key]; if (v && String(v).trim()) set.add(String(v).trim()) })
+      map[fn.key] = [...set].sort((a, b) => a.localeCompare(b))
+    })
+    return map
+  }, [rows])
+
+  const pessoas = useMemo(() => {
+    const set = new Set()
+    Object.values(sugestoesPorFn).forEach(lista => lista.forEach(p => set.add(p)))
+    return [...set].sort((a, b) => a.localeCompare(b))
+  }, [sugestoesPorFn])
+
+  const hoje0 = useMemo(() => { const h = new Date(); return new Date(h.getFullYear(), h.getMonth(), h.getDate()) }, [])
+
+  const filtrados = useMemo(() => rows.filter(r => {
+    if (fCamp && r.campeonato !== fCamp) return false
+    if (busca && !(norm(r.mandante).includes(norm(busca)) || norm(r.visitante).includes(norm(busca)) || norm(r.cidade).includes(norm(busca)))) return false
+    if (fPessoa && !FUNCOES.some(fn => norm(r[fn.key]).includes(norm(fPessoa)))) return false
+    if (soPendencias) {
+      const alvo = fFuncao ? FUNCOES.filter(fn => fn.key === fFuncao) : FUNCOES
+      if (!alvo.some(fn => !r[fn.key] || !String(r[fn.key]).trim())) return false
+    }
+    if (soFuturos) {
+      const d = parseData(r.data)
+      if (d && d < hoje0) return false
+    }
+    return true
+  }), [rows, busca, fCamp, fPessoa, fFuncao, soPendencias, soFuturos, hoje0])
+
+  // Agrupa por data, em ordem cronológica
+  const porData = useMemo(() => {
+    const map = new Map()
+    filtrados.forEach(r => {
+      const d = parseData(r.data)
+      const k = d ? d.toISOString().slice(0, 10) : 'zz-sem-data'
+      if (!map.has(k)) map.set(k, { label: r.data || 'Sem data', dia: r.dia || '', lista: [] })
+      map.get(k).lista.push(r)
+    })
+    map.forEach(g => g.lista.sort((a, b) => String(a.horario).localeCompare(String(b.horario))))
+    return [...map.entries()].sort((a, b) => a[0].localeCompare(b[0]))
+  }, [filtrados])
+
+  // Abre no primeiro dia >= hoje
+  const secRefs = useRef({})
+  const jaRolou = useRef(false)
+  useEffect(() => {
+    if (jaRolou.current || porData.length === 0 || !soFuturos) return
+    const hojeK = hoje0.toISOString().slice(0, 10)
+    const alvo = porData.find(([k]) => k >= hojeK)
+    const el = alvo && secRefs.current[alvo[0]]
+    if (!el) return
+    jaRolou.current = true
+    requestAnimationFrame(() => el.scrollIntoView({ behavior: 'smooth', block: 'start' }))
+  }, [porData.length]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const funcoesVisiveis = fFuncao ? FUNCOES.filter(fn => fn.key === fFuncao) : FUNCOES
+  const totalSlots = filtrados.length * FUNCOES.length
+  const slotsOk = filtrados.reduce((s, r) => s + FUNCOES.filter(fn => r[fn.key] && String(r[fn.key]).trim()).length, 0)
+  const filtroAtivo = busca || fCamp || fFuncao || fPessoa || soPendencias
+
+  if (erro) {
+    const semTabela = /escala_geral/.test(erro) || /does not exist|relation/.test(erro)
+    return (
+      <div style={{ padding: 60, textAlign: 'center' }}>
+        <p style={{ fontWeight: 700, marginBottom: 8 }}>{semTabela ? 'Tabela escala_geral ainda não existe' : 'Erro ao carregar'}</p>
+        <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>{semTabela ? 'Rode supabase_escala_geral.sql no SQL Editor do Supabase.' : erro}</p>
+      </div>
+    )
+  }
+  if (loading) return <div className="esc-vazio">Carregando escala geral...</div>
+
+  return (
+    <div className="esc-wrap">
+      <div className="esc-toolbar">
+        <input className="esc-busca" placeholder="🔍 Time ou cidade..." value={busca} onChange={e => setBusca(e.target.value)} />
+        <select value={fCamp} onChange={e => setFCamp(e.target.value)}>
+          <option value="">Todos campeonatos</option>
+          {campeonatos.map(c => <option key={c} value={c}>{c}</option>)}
+        </select>
+        <select value={fFuncao} onChange={e => setFFuncao(e.target.value)}>
+          <option value="">Todas funções</option>
+          {FUNCOES.map(fn => <option key={fn.key} value={fn.key}>{fn.label}</option>)}
+        </select>
+        <input className="esc-forn" list="eg-pessoas" placeholder="Pessoa..." value={fPessoa} onChange={e => setFPessoa(e.target.value)} />
+        <datalist id="eg-pessoas">
+          {pessoas.map(p => <option key={p} value={p} />)}
+        </datalist>
+        <button className={`esc-toggle-pend ${soPendencias ? 'is-on' : ''}`} onClick={() => setSoPendencias(p => !p)}>
+          ⚠ Só pendências
+        </button>
+        <button className={`esc-toggle-pend ${soFuturos ? 'is-on' : ''}`} style={{ borderColor: 'var(--border)', color: 'var(--text-muted)', background: soFuturos ? 'var(--bg-surface2)' : 'transparent' }}
+          onClick={() => setSoFuturos(p => !p)}>
+          A partir de hoje
+        </button>
+        {filtroAtivo && (
+          <button className="esc-limpar" onClick={() => { setBusca(''); setFCamp(''); setFFuncao(''); setFPessoa(''); setSoPendencias(false) }}>
+            Limpar ✕
+          </button>
+        )}
+        <div className="esc-resumo">
+          <strong>{filtrados.length}</strong> jogos ·{' '}
+          <strong style={{ color: totalSlots && slotsOk === totalSlots ? 'var(--green, #16a34a)' : undefined }}>{slotsOk}/{totalSlots}</strong>{' '}slots
+        </div>
+      </div>
+
+      {porData.length === 0 && <div className="esc-vazio">Nenhum jogo com esses filtros.</div>}
+
+      {porData.map(([k, grupo]) => (
+        <section key={k} className="esc-rodada" ref={el => { secRefs.current[k] = el }}>
+          <header className="esc-rodada-header">
+            <span className="esc-rodada-num" style={{ color: 'var(--text)', fontSize: 22, minWidth: 'auto' }}>{grupo.label}</span>
+            <div>
+              <p className="esc-rodada-titulo">{grupo.dia}</p>
+              <p className="esc-rodada-sub">{grupo.lista.length} {grupo.lista.length === 1 ? 'jogo' : 'jogos'}</p>
+            </div>
+          </header>
+
+          <div className="esc-cards">
+            {grupo.lista.map(r => {
+              const cor = corCampeonato(r.campeonato)
+              const preenchidos = FUNCOES.filter(fn => r[fn.key] && String(r[fn.key]).trim()).length
+              const pct = (preenchidos / FUNCOES.length) * 100
+              return (
+                <article key={r.id} className="esc-card" style={{ borderTopColor: cor }}>
+                  <header className="esc-card-header">
+                    <div className="esc-card-jogo">
+                      <div className="esc-card-times">
+                        <Escudo nome={r.mandante} />
+                        <span className="esc-card-nome">{r.mandante}</span>
+                        <span className="esc-card-x">×</span>
+                        <span className="esc-card-nome">{r.visitante}</span>
+                        <Escudo nome={r.visitante} />
+                      </div>
+                      <p className="esc-card-meta">
+                        {[r.horario, r.cidade, r.estadio, r.fase_rodada].filter(Boolean).join(' · ')}
+                      </p>
+                    </div>
+                    <div className="esc-card-chips">
+                      <span className="esc-chip" style={{ background: `${cor}18`, borderColor: `${cor}55`, color: cor, fontWeight: 700 }}>{r.campeonato}</span>
+                      {r.transmissao && <span className="esc-chip">{r.transmissao}</span>}
+                    </div>
+                  </header>
+
+                  <div className="esc-slots" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))' }}>
+                    {funcoesVisiveis.map(fn => (
+                      <SlotPessoa
+                        key={fn.key}
+                        row={r}
+                        fn={fn}
+                        sugestoes={sugestoesPorFn[fn.key] || []}
+                        destaque={!!fPessoa && norm(r[fn.key]).includes(norm(fPessoa))}
+                        onSave={salvar}
+                      />
+                    ))}
+                  </div>
+
+                  <footer className="esc-card-footer">
+                    <div className="esc-card-progresso">
+                      <span style={{ width: `${pct}%`, background: pct === 100 ? 'var(--green, #16a34a)' : cor }} />
+                    </div>
+                    <span className="esc-card-contagem">{preenchidos}/{FUNCOES.length}</span>
+                  </footer>
+                </article>
+              )
+            })}
+          </div>
+        </section>
+      ))}
+    </div>
+  )
+}

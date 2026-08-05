@@ -5,6 +5,7 @@ import Dashboard from './components/Dashboard'
 import JogosOverview from './components/JogosOverview'
 import HomeView from './components/HomeView'
 import FornecedoresPage from './components/FornecedoresPage'
+import EscalaGeralView from './components/EscalaGeralView'
 import NewCompetitionDialog from './components/NewCompetitionDialog'
 import { useTableData } from './hooks/useTableData'
 import { useCompetitionEvents } from './hooks/useCompetitionEvents'
@@ -100,6 +101,25 @@ export default function App() {
     )
   }
 
+  if (activeView === 'escala-geral') {
+    return (
+      <div className="app">
+        <Header
+          activeView="escala-geral"
+          onHomeClick={handleHomeClick}
+          onFornecedoresClick={handleFornecedoresClick}
+        />
+        <main className="main-content" style={{ paddingTop: 84 }}>
+          <div style={{ marginBottom: 16 }}>
+            <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text)' }}>Escala Geral</div>
+            <div style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 2 }}>Coordenador UM, Produtor UM, Produtor de Campo e Monitoração — todos os campeonatos</div>
+          </div>
+          <EscalaGeralView />
+        </main>
+      </div>
+    )
+  }
+
   if (activeView === 'fornecedores') {
     return (
       <div className="app">
@@ -131,7 +151,7 @@ export default function App() {
           onNewCompetition={() => setShowNewDialog(true)}
         />
         <main className="main-content main-content--home">
-          <HomeView competitions={competitions} onCompSelect={handleCompSelect} />
+          <HomeView competitions={competitions} onCompSelect={handleCompSelect} onEscalaGeral={() => setActiveView('escala-geral')} />
         </main>
         {showNewDialog && (
           <NewCompetitionDialog onClose={() => setShowNewDialog(false)} />
