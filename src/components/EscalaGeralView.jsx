@@ -2,6 +2,31 @@ import { useState, useMemo, useEffect, useRef } from 'react'
 import { supabase, isConfigured } from '../lib/supabase'
 import { getEscudoUrl } from '../lib/escudos'
 import { parseData } from '../lib/datas'
+import GameModal from './GameModal'
+
+// Ficha completa (GameModal genérico) — todos os campos da linha
+const FICHA_CONFIG = {
+  id: 'escala-geral',
+  accentColor: '#111111',
+  columns: [
+    { key: 'campeonato',  label: 'Campeonato',     type: 'text', group: 'Jogo' },
+    { key: 'fase_rodada', label: 'Fase / Rodada',  type: 'text', group: 'Jogo' },
+    { key: 'dia',         label: 'Dia',            type: 'text', group: 'Jogo' },
+    { key: 'data',        label: 'Data',           type: 'text', group: 'Jogo' },
+    { key: 'horario',     label: 'Horário',        type: 'text', group: 'Jogo' },
+    { key: 'cidade',      label: 'Cidade',         type: 'text', group: 'Jogo' },
+    { key: 'estadio',     label: 'Estádio',        type: 'text', group: 'Jogo' },
+    { key: 'mandante',    label: 'Mandante',       type: 'text', group: 'Jogo' },
+    { key: 'visitante',   label: 'Visitante',      type: 'text', group: 'Jogo' },
+    { key: 'transmissao', label: 'Transmissão',    type: 'text', group: 'Jogo' },
+    { key: 'coordenador_um',       label: 'Coordenador UM',      type: 'text', group: 'Funções' },
+    { key: 'coordenador_um_valor', label: 'Coordenador UM ($)',  type: 'text', group: 'Funções' },
+    { key: 'produtor_um',          label: 'Produtor UM',         type: 'text', group: 'Funções' },
+    { key: 'produtor_um_valor',    label: 'Produtor UM ($)',     type: 'text', group: 'Funções' },
+    { key: 'produtor_campo',       label: 'Produtor de Campo',   type: 'text', group: 'Funções' },
+    { key: 'monitoracao',          label: 'Monitoração',         type: 'text', group: 'Funções' },
+  ],
+}
 
 // ─── ESCALA GERAL ─────────────────────────────────────────────────────────────
 // Todos os campeonatos numa aba só, em ordem cronológica (abre no dia de hoje).
@@ -56,10 +81,12 @@ function Escudo({ nome, size = 24 }) {
   return <img className="esc-escudo" src={url} alt={nome} style={{ width: size, height: size }} loading="lazy" />
 }
 
-// Slot de função com nome (+ valor $ quando a função tem)
+// Slot de função com até DUAS pessoas ("Fulano / Ciclano") + valor $ quando a
+// função tem. O separador " / " é o mesmo da planilha original.
 function SlotPessoa({ row, fn, sugestoes, destaque, onSave }) {
   const [aberto, setAberto] = useState(false)
-  const [nome, setNome] = useState('')
+  const [nome1, setNome1] = useState('')
+  const [nome2, setNome2] = useState('')
   const [valor, setValor] = useState('')
   const ref = useRef(null)
 
@@ -73,13 +100,24 @@ function SlotPessoa({ row, fn, sugestoes, destaque, onSave }) {
   const atual = row[fn.key]
   const atualValor = fn.valor ? row[fn.valor] : ''
   const vazio = !atual || !String(atual).trim()
-  const abrir = () => { setNome(atual || ''); setValor(atualValor || ''); setAberto(a => !a) }
+  const abrir = () => {
+    const partes = String(atual || '').split('/').map(s => s.trim())
+    setNome1(partes[0] || '')
+    setNome2(partes.slice(1).join(' / ') || '')
+    setValor(atualValor || '')
+    setAberto(a => !a)
+  }
+  const montar = () => [nome1.trim(), nome2.trim()].filter(Boolean).join(' / ')
   const salvar = (n, v) => {
     const payload = { [fn.key]: n }
     if (fn.valor) payload[fn.valor] = v
     onSave(row.id, payload)
     setAberto(false)
   }
+  const salvarForm = () => salvar(montar(), valor.trim())
+  const aoEnter = e => { if (e.key === 'Enter') salvarForm() }
+  // Sugestão clicada preenche o primeiro campo vazio (1ª pessoa, senão 2ª)
+  const usarSugestao = s => { if (!nome1.trim()) setNome1(s); else setNome2(s) }
 
   const texto = vazio ? 'Definir' : `${atual}${atualValor ? ` · ${atualValor}` : ''}`
   return (
@@ -91,30 +129,25 @@ function SlotPessoa({ row, fn, sugestoes, destaque, onSave }) {
       {aberto && (
         <div className="esc-slot-menu">
           <div className="esc-slot-livre" style={{ borderTop: 'none', marginTop: 0 }}>
-            <input
-              autoFocus
-              value={nome}
-              placeholder="Nome..."
-              list={`eg-sug-${fn.key}`}
-              onChange={e => setNome(e.target.value)}
-              onKeyDown={e => { if (e.key === 'Enter') salvar(nome.trim(), valor.trim()) }}
-            />
+            <input autoFocus value={nome1} placeholder="1ª pessoa..." list={`eg-sug-${fn.key}`}
+              onChange={e => setNome1(e.target.value)} onKeyDown={aoEnter} />
+          </div>
+          <div className="esc-slot-livre" style={{ borderTop: 'none', marginTop: 0, paddingTop: 0 }}>
+            <input value={nome2} placeholder="2ª pessoa (opcional)" list={`eg-sug-${fn.key}`}
+              onChange={e => setNome2(e.target.value)} onKeyDown={aoEnter} />
+          </div>
+          <div className="esc-slot-livre" style={{ borderTop: 'none', marginTop: 0, paddingTop: 0 }}>
             {fn.valor && (
-              <input
-                value={valor}
-                placeholder="$"
-                style={{ flex: '0 0 64px' }}
-                onChange={e => setValor(e.target.value)}
-                onKeyDown={e => { if (e.key === 'Enter') salvar(nome.trim(), valor.trim()) }}
-              />
+              <input value={valor} placeholder="$" style={{ flex: '0 0 64px' }}
+                onChange={e => setValor(e.target.value)} onKeyDown={aoEnter} />
             )}
-            <button onClick={() => salvar(nome.trim(), valor.trim())}>OK</button>
+            <button style={{ flex: 1 }} onClick={salvarForm}>OK</button>
           </div>
           <datalist id={`eg-sug-${fn.key}`}>
             {sugestoes.map(s => <option key={s} value={s} />)}
           </datalist>
           {(sugestoes || []).slice(0, 8).map(s => (
-            <button key={s} className={`esc-slot-opcao ${s === atual ? 'is-atual' : ''}`} onClick={() => salvar(s, valor.trim())}>{s}</button>
+            <button key={s} className={`esc-slot-opcao ${s === atual ? 'is-atual' : ''}`} onClick={() => usarSugestao(s)}>{s}</button>
           ))}
           {!vazio && <button className="esc-slot-limpar" onClick={() => salvar('', '')}>Limpar slot</button>}
         </div>
@@ -134,6 +167,7 @@ export default function EscalaGeralView() {
   const [fPessoa, setFPessoa] = useState('')
   const [soPendencias, setSoPendencias] = useState(false)
   const [soFuturos, setSoFuturos] = useState(true)
+  const [ficha, setFicha] = useState(null) // linha aberta na ficha completa
 
   useEffect(() => {
     if (!isConfigured) { setLoading(false); return }
@@ -361,6 +395,7 @@ export default function EscalaGeralView() {
                       <span style={{ width: `${pct}%`, background: pct === 100 ? 'var(--green, #16a34a)' : cor }} />
                     </div>
                     <span className="esc-card-contagem">{preenchidos}/{FUNCOES.length}</span>
+                    <button className="esc-card-ficha" onClick={() => setFicha(r)}>Ficha completa →</button>
                   </footer>
                 </article>
               )
@@ -368,6 +403,17 @@ export default function EscalaGeralView() {
           </div>
         </section>
       ))}
+
+      {ficha && (
+        <GameModal
+          mode="edit"
+          row={ficha}
+          config={FICHA_CONFIG}
+          accentColor={estiloCampeonato(ficha.campeonato).cor}
+          onClose={() => setFicha(null)}
+          onSave={async formData => { await salvar(ficha.id, formData) }}
+        />
+      )}
     </div>
   )
 }

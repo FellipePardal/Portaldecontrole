@@ -14,6 +14,7 @@ const SECTION_META = {
   'Globo':          { icon: '05', color: '#9a8ad6', defaultOpen: false },
   'Tecnico':        { icon: '06', color: '#9a8ad6', defaultOpen: false },
   'Horarios':       { icon: '07', color: '#4fa3b8', defaultOpen: false },
+  'Funções':        { icon: '02', color: '#65B32E', defaultOpen: true },
 }
 const DEFAULT_COLOR = '#5e6373'
 
