@@ -129,7 +129,7 @@ function CredPill({ valor, onSelect }) {
   )
 }
 
-export default function EscalaView({ data, config, onEdit, onStatusChange, onSaveCampo }) {
+export default function EscalaView({ data, config, onEdit, onDelete, onStatusChange, onSaveCampo }) {
   const funcoes = useMemo(() => funcoesDaConfig(config), [config])
   const rodadaKey = config.columns?.some(c => c.key === 'eu') ? 'eu' : 'rod'
   const accent = config.accentColor || '#3b82f6'
@@ -336,6 +336,7 @@ export default function EscalaView({ data, config, onEdit, onStatusChange, onSav
                       </div>
                       <span className="esc-card-contagem">{preenchidos}/{funcoes.length}</span>
                       <button className="esc-card-ficha" onClick={() => onEdit(r)}>Ficha completa →</button>
+                      {onDelete && <button className="esc-card-ficha" title="Excluir jogo" onClick={() => onDelete(r)}>🗑</button>}
                     </footer>
                   </article>
                 )

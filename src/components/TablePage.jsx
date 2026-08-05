@@ -139,15 +139,24 @@ export default function TablePage({ config, novoJogoPedido = false, onNovoJogoCo
   }, [novoJogoPedido]) // eslint-disable-line react-hooks/exhaustive-deps
 
   async function handleDelete() {
-    if (confirmDelete) {
-      await deleteRow(confirmDelete.id)
-      setConfirmDelete(null)
+    if (!confirmDelete) return
+    await deleteRow(confirmDelete.id)
+    // Apaga também a linha irmã nos Periféricos (mesma partida) — sem isso o
+    // jogo excluído do Controle continuaria aparecendo na outra aba.
+    const par = config.isLegacy && PAR_PERIFERICO[config.tableName]
+    if (par && confirmDelete.hub_jogo_id && isConfigured) {
+      try {
+        await supabase.from(par.tabela).delete().eq('hub_jogo_id', String(confirmDelete.hub_jogo_id))
+      } catch (err) {
+        console.warn('[TablePage] Jogo excluído, mas falhou ao excluir a linha de periféricos:', err)
+      }
     }
+    setConfirmDelete(null)
   }
 
   const deleteMessage = confirmDelete
     ? (confirmDelete.mandante && confirmDelete.visitante
-      ? `Excluir o jogo "${confirmDelete.mandante} x ${confirmDelete.visitante}"?`
+      ? `Excluir o jogo "${confirmDelete.mandante} x ${confirmDelete.visitante}"? A linha correspondente nos Periféricos sai junto. (O jogo NÃO é removido do Hub Financeiro.)`
       : 'Excluir este registro?')
     : ''
 
@@ -199,6 +208,7 @@ VITE_SUPABASE_ANON_KEY=eyJ...`}
           data={data}
           config={config}
           onEdit={openEditModal}
+          onDelete={setConfirmDelete}
           onStatusChange={handleStatusChange}
           onSaveCampo={handleSaveCampo}
         />
