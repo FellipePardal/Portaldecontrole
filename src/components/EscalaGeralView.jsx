@@ -199,9 +199,12 @@ function SlotPessoa({ row, fn, sugestoes, destaque, mudo, onSave }) {
           <datalist id={`eg-sug-${fn.key}`}>
             {sugestoes.map(s => <option key={s} value={s} />)}
           </datalist>
-          {(sugestoes || []).slice(0, 8).map(s => (
-            <button key={s} className={`esc-slot-opcao ${s === atual ? 'is-atual' : ''}`} onClick={() => usarSugestao(s)}>{s}</button>
-          ))}
+          {(sugestoes || []).slice(0, 8).map(s => {
+            const escalado = String(atual || '').split('/').map(x => x.trim()).includes(s)
+            return (
+              <button key={s} className={`esc-slot-opcao ${escalado ? 'is-atual' : ''}`} onClick={() => usarSugestao(s)}>{s}</button>
+            )
+          })}
           {!desativado && <button className="esc-slot-opcao" onClick={() => salvar('Não', '')}>🚫 Não terá esta função</button>}
           {(!vazio || desativado) && <button className="esc-slot-limpar" onClick={() => salvar('', '')}>Limpar slot</button>}
         </div>
@@ -254,12 +257,17 @@ export default function EscalaGeralView() {
   const norm = s => String(s || '').toLowerCase()
   const campeonatos = useMemo(() => [...new Set(rows.map(r => r.campeonato).filter(Boolean))].sort(), [rows])
 
-  // Sugestões de nomes por função (todos os já usados)
+  // Sugestões de nomes por função: valores com "/" (dupla na mesma célula) são
+  // SEPARADOS em nomes individuais — a lista só tem pessoas, nunca duplas.
   const sugestoesPorFn = useMemo(() => {
     const map = {}
     FUNCOES.forEach(fn => {
       const set = new Set()
-      rows.forEach(r => { const v = r[fn.key]; if (v && String(v).trim()) set.add(String(v).trim()) })
+      rows.forEach(r => {
+        const v = r[fn.key]
+        if (!v || naoTem(v)) return
+        String(v).split('/').map(s => s.trim()).filter(Boolean).forEach(p => set.add(p))
+      })
       map[fn.key] = [...set].sort((a, b) => a.localeCompare(b))
     })
     return map
