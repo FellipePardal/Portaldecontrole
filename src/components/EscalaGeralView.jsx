@@ -2,21 +2,76 @@ import { useState, useMemo, useEffect, useRef } from 'react'
 import { supabase, isConfigured } from '../lib/supabase'
 import { getEscudoUrl } from '../lib/escudos'
 import { parseData } from '../lib/datas'
-import GameModal from './GameModal'
+// "Não" gravado na coluna da função = o jogo NÃO terá essa função (não é
+// pendência). Vazio = pendente. Qualquer outro texto = prestador definido.
+const naoTem = v => /^n[aã]o$/i.test(String(v || '').trim())
 
-// Ficha completa (GameModal genérico) — SÓ as funções e seus valores; os dados
-// do jogo não entram (edição deles fica fora do escopo desta aba).
-const FICHA_CONFIG = {
-  id: 'escala-geral',
-  accentColor: '#111111',
-  columns: [
-    { key: 'coordenador_um',       label: 'Coordenador UM',      type: 'text', group: 'Funções' },
-    { key: 'coordenador_um_valor', label: 'Coordenador UM ($)',  type: 'text', group: 'Funções' },
-    { key: 'produtor_um',          label: 'Produtor UM',         type: 'text', group: 'Funções' },
-    { key: 'produtor_um_valor',    label: 'Produtor UM ($)',     type: 'text', group: 'Funções' },
-    { key: 'produtor_campo',       label: 'Produtor de Campo',   type: 'text', group: 'Funções' },
-    { key: 'monitoracao',          label: 'Monitoração',         type: 'text', group: 'Funções' },
-  ],
+// Ficha completa: por função, Sim/Não + prestador (e $ quando a função tem)
+function FichaFuncoes({ row, cor, onClose, onSave }) {
+  const init = {}
+  FUNCOES.forEach(fn => {
+    const v = row[fn.key] || ''
+    init[fn.key] = { tem: !naoTem(v), nome: naoTem(v) ? '' : v, valor: fn.valor ? (row[fn.valor] || '') : '' }
+  })
+  const [form, setForm] = useState(init)
+  const set = (k, patch) => setForm(prev => ({ ...prev, [k]: { ...prev[k], ...patch } }))
+
+  const salvar = async () => {
+    const payload = {}
+    FUNCOES.forEach(fn => {
+      const f = form[fn.key]
+      payload[fn.key] = f.tem ? f.nome.trim() : 'Não'
+      if (fn.valor) payload[fn.valor] = f.tem ? f.valor.trim() : ''
+    })
+    await onSave(payload)
+    onClose()
+  }
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-panel" style={{ maxWidth: 560 }} onClick={e => e.stopPropagation()}>
+        <div className="modal-header">
+          <div className="modal-header-left">
+            <div className="modal-header-accent" style={{ background: cor }} />
+            <div>
+              <div className="modal-title">{row.mandante} × {row.visitante}</div>
+              <div className="modal-subtitle">{[row.campeonato, row.data, row.horario].filter(Boolean).join(' · ')}</div>
+            </div>
+          </div>
+          <button className="modal-close" onClick={onClose}>x</button>
+        </div>
+        <div className="modal-body" style={{ padding: '16px 20px' }}
+          onKeyDown={e => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) salvar() }}>
+          {FUNCOES.map(fn => {
+            const f = form[fn.key]
+            return (
+              <div key={fn.key} className="eg-ficha-linha">
+                <span className="eg-ficha-label">{fn.label}</span>
+                <div className="esc-eq-toggle" style={{ padding: 0, flex: '0 0 110px' }}>
+                  <button className={f.tem ? 'is-on' : ''} onClick={() => set(fn.key, { tem: true })}>Sim</button>
+                  <button className={!f.tem ? 'is-on is-off' : ''} onClick={() => set(fn.key, { tem: false })}>Não</button>
+                </div>
+                {f.tem ? (<>
+                  <input className="eg-ficha-input" value={f.nome} placeholder="Prestador(es)... (use / para dois)"
+                    onChange={e => set(fn.key, { nome: e.target.value })} />
+                  {fn.valor && (
+                    <input className="eg-ficha-input" style={{ flex: '0 0 72px' }} value={f.valor} placeholder="$"
+                      onChange={e => set(fn.key, { valor: e.target.value })} />
+                  )}
+                </>) : (
+                  <span className="eg-ficha-sem">sem esta função neste jogo</span>
+                )}
+              </div>
+            )
+          })}
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 16 }}>
+            <button className="esc-limpar" onClick={onClose}>Cancelar</button>
+            <button className="view-switch-add" style={{ background: cor, marginLeft: 0 }} onClick={salvar}>Salvar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
 }
 
 // ─── ESCALA GERAL ─────────────────────────────────────────────────────────────
@@ -95,9 +150,10 @@ function SlotPessoa({ row, fn, sugestoes, destaque, mudo, onSave }) {
 
   const atual = row[fn.key]
   const atualValor = fn.valor ? row[fn.valor] : ''
-  const vazio = !atual || !String(atual).trim()
+  const desativado = naoTem(atual) // "Não" = jogo não terá esta função
+  const vazio = !desativado && (!atual || !String(atual).trim())
   const abrir = () => {
-    const partes = String(atual || '').split('/').map(s => s.trim())
+    const partes = desativado ? [] : String(atual || '').split('/').map(s => s.trim())
     setNome1(partes[0] || '')
     setNome2(partes.slice(1).join(' / ') || '')
     setValor(atualValor || '')
@@ -115,9 +171,10 @@ function SlotPessoa({ row, fn, sugestoes, destaque, mudo, onSave }) {
   // Sugestão clicada preenche o primeiro campo vazio (1ª pessoa, senão 2ª)
   const usarSugestao = s => { if (!nome1.trim()) setNome1(s); else setNome2(s) }
 
-  const texto = vazio ? (mudo ? '—' : 'Definir') : `${atual}${atualValor ? ` · ${atualValor}` : ''}`
+  const texto = desativado ? 'Não' : vazio ? (mudo ? '—' : 'Definir') : `${atual}${atualValor ? ` · ${atualValor}` : ''}`
+  const classe = desativado ? 'esc-slot-off' : vazio ? (mudo ? 'esc-slot-off' : 'esc-slot-vazio') : ''
   return (
-    <div className={`esc-slot ${vazio ? (mudo ? 'esc-slot-off' : 'esc-slot-vazio') : ''} ${destaque ? 'esc-slot-destaque' : ''}`} ref={ref}>
+    <div className={`esc-slot ${classe} ${destaque ? 'esc-slot-destaque' : ''}`} ref={ref}>
       <button className="esc-slot-btn" onClick={abrir} title={`${fn.label}: ${texto}`}>
         <span className="esc-slot-label">{fn.label}</span>
         <span className="esc-slot-valor">{texto}</span>
@@ -145,7 +202,8 @@ function SlotPessoa({ row, fn, sugestoes, destaque, mudo, onSave }) {
           {(sugestoes || []).slice(0, 8).map(s => (
             <button key={s} className={`esc-slot-opcao ${s === atual ? 'is-atual' : ''}`} onClick={() => usarSugestao(s)}>{s}</button>
           ))}
-          {!vazio && <button className="esc-slot-limpar" onClick={() => salvar('', '')}>Limpar slot</button>}
+          {!desativado && <button className="esc-slot-opcao" onClick={() => salvar('Não', '')}>🚫 Não terá esta função</button>}
+          {(!vazio || desativado) && <button className="esc-slot-limpar" onClick={() => salvar('', '')}>Limpar slot</button>}
         </div>
       )}
     </div>
@@ -218,11 +276,12 @@ export default function EscalaGeralView() {
   const filtrados = useMemo(() => rows.filter(r => {
     if (fCamp && r.campeonato !== fCamp) return false
     if (busca && !(norm(r.mandante).includes(norm(busca)) || norm(r.visitante).includes(norm(busca)) || norm(r.cidade).includes(norm(busca)))) return false
-    if (fPessoa && !FUNCOES.some(fn => norm(r[fn.key]).includes(norm(fPessoa)))) return false
+    if (fPessoa && !FUNCOES.some(fn => !naoTem(r[fn.key]) && norm(r[fn.key]).includes(norm(fPessoa)))) return false
     if (soPendencias) {
       if (semEscala(r)) return false // YT Paulistão: não escala equipe, não é pendência
       const alvo = fFuncao ? FUNCOES.filter(fn => fn.key === fFuncao) : FUNCOES
-      if (!alvo.some(fn => !r[fn.key] || !String(r[fn.key]).trim())) return false
+      // Pendente = vazio; "Não" (função que o jogo não terá) não é pendência
+      if (!alvo.some(fn => !naoTem(r[fn.key]) && (!r[fn.key] || !String(r[fn.key]).trim()))) return false
     }
     if (soFuturos) {
       const d = parseData(r.data)
@@ -258,9 +317,12 @@ export default function EscalaGeralView() {
   }, [porData.length]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const funcoesVisiveis = fFuncao ? FUNCOES.filter(fn => fn.key === fFuncao) : FUNCOES
+  // Contadores: só funções ATIVAS (marcadas "Não" ficam fora do denominador)
+  const ativasDe = r => FUNCOES.filter(fn => !naoTem(r[fn.key]))
+  const okDe = r => ativasDe(r).filter(fn => r[fn.key] && String(r[fn.key]).trim())
   const comEscala = filtrados.filter(r => !semEscala(r))
-  const totalSlots = comEscala.length * FUNCOES.length
-  const slotsOk = comEscala.reduce((s, r) => s + FUNCOES.filter(fn => r[fn.key] && String(r[fn.key]).trim()).length, 0)
+  const totalSlots = comEscala.reduce((s, r) => s + ativasDe(r).length, 0)
+  const slotsOk = comEscala.reduce((s, r) => s + okDe(r).length, 0)
   const filtroAtivo = busca || fCamp || fFuncao || fPessoa || soPendencias
 
   // Contagem por campeonato para a legenda (respeita "A partir de hoje").
@@ -367,8 +429,9 @@ export default function EscalaGeralView() {
             {grupo.lista.map(r => {
               const { cor } = estiloCampeonato(r.campeonato)
               const mudo = semEscala(r)
-              const preenchidos = FUNCOES.filter(fn => r[fn.key] && String(r[fn.key]).trim()).length
-              const pct = (preenchidos / FUNCOES.length) * 100
+              const ativas = ativasDe(r).length
+              const preenchidos = okDe(r).length
+              const pct = ativas ? (preenchidos / ativas) * 100 : 100
               return (
                 <article key={r.id} className="esc-card eg-card" style={{ borderTopColor: cor, borderLeft: `4px solid ${cor}` }}>
                   <header className="esc-card-header">
@@ -412,7 +475,7 @@ export default function EscalaGeralView() {
                       <div className="esc-card-progresso">
                         <span style={{ width: `${pct}%`, background: pct === 100 ? 'var(--green, #16a34a)' : cor }} />
                       </div>
-                      <span className="esc-card-contagem">{preenchidos}/{FUNCOES.length}</span>
+                      <span className="esc-card-contagem">{preenchidos}/{ativas}</span>
                     </>)}
                     {mudo && <span className="esc-card-contagem" style={{ flex: 1 }}>sem equipe escalada</span>}
                     <button className="esc-card-ficha" onClick={() => setFicha(r)}>Ficha completa →</button>
@@ -425,13 +488,11 @@ export default function EscalaGeralView() {
       ))}
 
       {ficha && (
-        <GameModal
-          mode="edit"
+        <FichaFuncoes
           row={ficha}
-          config={FICHA_CONFIG}
-          accentColor={estiloCampeonato(ficha.campeonato).cor}
+          cor={estiloCampeonato(ficha.campeonato).cor}
           onClose={() => setFicha(null)}
-          onSave={async formData => { await salvar(ficha.id, formData) }}
+          onSave={async payload => { await salvar(ficha.id, payload) }}
         />
       )}
     </div>
