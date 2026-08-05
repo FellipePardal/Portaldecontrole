@@ -3518,3 +3518,30 @@ body {
 }
 .esc-eq-toggle button.is-on { background: var(--lm-green-bg, #EAF5E2); color: #3F7619; border-color: rgba(101,179,46,0.45); }
 .esc-eq-toggle button.is-on.is-off { background: var(--bg-surface2); color: var(--text-muted); border-color: var(--border); }
+
+/* Escala Geral: identidade por campeonato (badge + legenda clicável) */
+.eg-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 0 6px; border-radius: 6px; color: #fff; font-weight: 800;
+  letter-spacing: 0.04em; flex-shrink: 0; line-height: 1;
+  box-shadow: inset 0 -1px 0 rgba(0,0,0,0.18);
+}
+.eg-legend {
+  display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 4px;
+}
+.eg-legend-chip {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 5px 10px 5px 6px; border-radius: 9px;
+  background: var(--bg-card); border: 1.5px solid var(--border);
+  color: var(--text-muted); font-size: 12px; font-weight: 600;
+  cursor: pointer; font-family: inherit; transition: all 0.13s;
+}
+.eg-legend-chip:hover { border-color: var(--text-dim); }
+.eg-legend-chip.is-on { font-weight: 700; }
+.eg-legend-nome { white-space: nowrap; }
+.eg-legend-count {
+  font-size: 10.5px; font-weight: 700; color: var(--text-dim);
+  background: var(--bg-surface2); border-radius: 5px; padding: 1px 6px;
+  font-variant-numeric: tabular-nums;
+}
+.eg-card { border-top-width: 1px !important; }

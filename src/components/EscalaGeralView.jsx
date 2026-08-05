@@ -16,12 +16,38 @@ const FUNCOES = [
   { key: 'monitoracao',    label: 'Monitoração' },
 ]
 
-// Cor estável por campeonato (paleta fixa, atribuída por hash do nome)
+// Identidade visual por campeonato: sigla + cor FIXAS para os conhecidos
+// (cores estáveis = memória visual; o hash é só fallback para nomes novos).
+const CAMP_ESTILO = {
+  'copinha 26':        { sigla: 'COP', cor: '#EA580C' },
+  'paulistão 26':      { sigla: 'PAU', cor: '#DC2626' },
+  'brasileirão 26':    { sigla: 'BRA', cor: '#16A34A' },
+  'br26':              { sigla: 'BR26', cor: '#0D9488' },
+  'mm br26':           { sigla: 'MM', cor: '#7C3AED' },
+  'série b 26':        { sigla: 'SÉB', cor: '#2563EB' },
+  'série b':           { sigla: 'SÉB', cor: '#2563EB' },
+  'paulistão f 26':    { sigla: 'PAF', cor: '#DB2777' },
+  'pfem 26':           { sigla: 'PFE', cor: '#9333EA' },
+  'media day':         { sigla: 'MD', cor: '#475569' },
+  'host broadcast':    { sigla: 'HB', cor: '#B45309' },
+}
 const PALETA = ['#65B32E', '#2563EB', '#D97706', '#DC2626', '#7C3AED', '#0D9488', '#DB2777', '#4D7C0F', '#B45309', '#475569']
-function corCampeonato(nome) {
+function estiloCampeonato(nome) {
+  const conhecido = CAMP_ESTILO[String(nome || '').trim().toLowerCase()]
+  if (conhecido) return conhecido
   let h = 0
   for (const c of String(nome || '')) h = (h * 31 + c.charCodeAt(0)) >>> 0
-  return PALETA[h % PALETA.length]
+  const sigla = String(nome || '?').split(/\s+/).map(p => p[0]).join('').slice(0, 3).toUpperCase()
+  return { sigla, cor: PALETA[h % PALETA.length] }
+}
+
+function BadgeCamp({ nome, size = 26 }) {
+  const { sigla, cor } = estiloCampeonato(nome)
+  return (
+    <span className="eg-badge" style={{ background: cor, width: 'auto', minWidth: size, height: size, fontSize: sigla.length > 3 ? 9 : 10 }} title={nome}>
+      {sigla}
+    </span>
+  )
 }
 
 function Escudo({ nome, size = 24 }) {
@@ -215,14 +241,40 @@ export default function EscalaGeralView() {
   }
   if (loading) return <div className="esc-vazio">Carregando escala geral...</div>
 
+  // Contagem por campeonato para a legenda (respeita "A partir de hoje")
+  const contagemCamp = useMemo(() => {
+    const map = {}
+    rows.forEach(r => {
+      if (soFuturos) { const d = parseData(r.data); if (d && d < hoje0) return }
+      map[r.campeonato] = (map[r.campeonato] || 0) + 1
+    })
+    return map
+  }, [rows, soFuturos, hoje0])
+
   return (
     <div className="esc-wrap">
+      {/* Legenda de campeonatos — clicável (filtra) */}
+      <div className="eg-legend">
+        {campeonatos
+          .slice()
+          .sort((a, b) => (contagemCamp[b] || 0) - (contagemCamp[a] || 0))
+          .map(c => {
+            const { cor } = estiloCampeonato(c)
+            const ativo = fCamp === c
+            return (
+              <button key={c} className={`eg-legend-chip ${ativo ? 'is-on' : ''}`}
+                style={ativo ? { background: `${cor}15`, borderColor: cor, color: cor } : undefined}
+                onClick={() => setFCamp(ativo ? '' : c)}>
+                <BadgeCamp nome={c} size={20} />
+                <span className="eg-legend-nome">{c}</span>
+                <span className="eg-legend-count">{contagemCamp[c] || 0}</span>
+              </button>
+            )
+          })}
+      </div>
+
       <div className="esc-toolbar">
         <input className="esc-busca" placeholder="🔍 Time ou cidade..." value={busca} onChange={e => setBusca(e.target.value)} />
-        <select value={fCamp} onChange={e => setFCamp(e.target.value)}>
-          <option value="">Todos campeonatos</option>
-          {campeonatos.map(c => <option key={c} value={c}>{c}</option>)}
-        </select>
         <select value={fFuncao} onChange={e => setFFuncao(e.target.value)}>
           <option value="">Todas funções</option>
           {FUNCOES.map(fn => <option key={fn.key} value={fn.key}>{fn.label}</option>)}
@@ -263,14 +315,15 @@ export default function EscalaGeralView() {
 
           <div className="esc-cards">
             {grupo.lista.map(r => {
-              const cor = corCampeonato(r.campeonato)
+              const { cor } = estiloCampeonato(r.campeonato)
               const preenchidos = FUNCOES.filter(fn => r[fn.key] && String(r[fn.key]).trim()).length
               const pct = (preenchidos / FUNCOES.length) * 100
               return (
-                <article key={r.id} className="esc-card" style={{ borderTopColor: cor }}>
+                <article key={r.id} className="esc-card eg-card" style={{ borderTopColor: cor, borderLeft: `4px solid ${cor}` }}>
                   <header className="esc-card-header">
                     <div className="esc-card-jogo">
                       <div className="esc-card-times">
+                        <BadgeCamp nome={r.campeonato} />
                         <Escudo nome={r.mandante} />
                         <span className="esc-card-nome">{r.mandante}</span>
                         <span className="esc-card-x">×</span>
@@ -278,11 +331,12 @@ export default function EscalaGeralView() {
                         <Escudo nome={r.visitante} />
                       </div>
                       <p className="esc-card-meta">
+                        <span style={{ color: cor, fontWeight: 700 }}>{r.campeonato}</span>
+                        {[r.horario, r.cidade, r.estadio, r.fase_rodada].filter(Boolean).length > 0 && ' · '}
                         {[r.horario, r.cidade, r.estadio, r.fase_rodada].filter(Boolean).join(' · ')}
                       </p>
                     </div>
                     <div className="esc-card-chips">
-                      <span className="esc-chip" style={{ background: `${cor}18`, borderColor: `${cor}55`, color: cor, fontWeight: 700 }}>{r.campeonato}</span>
                       {r.transmissao && <span className="esc-chip">{r.transmissao}</span>}
                     </div>
                   </header>
