@@ -32,6 +32,10 @@ const FUNCOES = [
   { key: 'monitoracao',    label: 'Monitoração' },
 ]
 
+// Jogos "YT Paulistão" não têm equipe escalada pela Livemode — não contam como
+// pendência nem entram nos contadores (os slots seguem editáveis, mas neutros).
+const semEscala = r => /^yt\s*paulist/i.test(String(r?.transmissao || '').trim())
+
 // Identidade visual por campeonato: sigla + cor FIXAS para os conhecidos
 // (cores estáveis = memória visual; o hash é só fallback para nomes novos).
 const CAMP_ESTILO = {
@@ -74,7 +78,8 @@ function Escudo({ nome, size = 24 }) {
 
 // Slot de função com até DUAS pessoas ("Fulano / Ciclano") + valor $ quando a
 // função tem. O separador " / " é o mesmo da planilha original.
-function SlotPessoa({ row, fn, sugestoes, destaque, onSave }) {
+// `mudo`: slot vazio sem o alerta âmbar (jogos que não escalam equipe).
+function SlotPessoa({ row, fn, sugestoes, destaque, mudo, onSave }) {
   const [aberto, setAberto] = useState(false)
   const [nome1, setNome1] = useState('')
   const [nome2, setNome2] = useState('')
@@ -110,9 +115,9 @@ function SlotPessoa({ row, fn, sugestoes, destaque, onSave }) {
   // Sugestão clicada preenche o primeiro campo vazio (1ª pessoa, senão 2ª)
   const usarSugestao = s => { if (!nome1.trim()) setNome1(s); else setNome2(s) }
 
-  const texto = vazio ? 'Definir' : `${atual}${atualValor ? ` · ${atualValor}` : ''}`
+  const texto = vazio ? (mudo ? '—' : 'Definir') : `${atual}${atualValor ? ` · ${atualValor}` : ''}`
   return (
-    <div className={`esc-slot ${vazio ? 'esc-slot-vazio' : ''} ${destaque ? 'esc-slot-destaque' : ''}`} ref={ref}>
+    <div className={`esc-slot ${vazio ? (mudo ? 'esc-slot-off' : 'esc-slot-vazio') : ''} ${destaque ? 'esc-slot-destaque' : ''}`} ref={ref}>
       <button className="esc-slot-btn" onClick={abrir} title={`${fn.label}: ${texto}`}>
         <span className="esc-slot-label">{fn.label}</span>
         <span className="esc-slot-valor">{texto}</span>
@@ -215,6 +220,7 @@ export default function EscalaGeralView() {
     if (busca && !(norm(r.mandante).includes(norm(busca)) || norm(r.visitante).includes(norm(busca)) || norm(r.cidade).includes(norm(busca)))) return false
     if (fPessoa && !FUNCOES.some(fn => norm(r[fn.key]).includes(norm(fPessoa)))) return false
     if (soPendencias) {
+      if (semEscala(r)) return false // YT Paulistão: não escala equipe, não é pendência
       const alvo = fFuncao ? FUNCOES.filter(fn => fn.key === fFuncao) : FUNCOES
       if (!alvo.some(fn => !r[fn.key] || !String(r[fn.key]).trim())) return false
     }
@@ -252,8 +258,9 @@ export default function EscalaGeralView() {
   }, [porData.length]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const funcoesVisiveis = fFuncao ? FUNCOES.filter(fn => fn.key === fFuncao) : FUNCOES
-  const totalSlots = filtrados.length * FUNCOES.length
-  const slotsOk = filtrados.reduce((s, r) => s + FUNCOES.filter(fn => r[fn.key] && String(r[fn.key]).trim()).length, 0)
+  const comEscala = filtrados.filter(r => !semEscala(r))
+  const totalSlots = comEscala.length * FUNCOES.length
+  const slotsOk = comEscala.reduce((s, r) => s + FUNCOES.filter(fn => r[fn.key] && String(r[fn.key]).trim()).length, 0)
   const filtroAtivo = busca || fCamp || fFuncao || fPessoa || soPendencias
 
   // Contagem por campeonato para a legenda (respeita "A partir de hoje").
@@ -359,6 +366,7 @@ export default function EscalaGeralView() {
           <div className="esc-cards">
             {grupo.lista.map(r => {
               const { cor } = estiloCampeonato(r.campeonato)
+              const mudo = semEscala(r)
               const preenchidos = FUNCOES.filter(fn => r[fn.key] && String(r[fn.key]).trim()).length
               const pct = (preenchidos / FUNCOES.length) * 100
               return (
@@ -380,6 +388,7 @@ export default function EscalaGeralView() {
                       </p>
                     </div>
                     <div className="esc-card-chips">
+                      {mudo && <span className="esc-chip" title="Sem equipe escalada pela Livemode">Sem escala</span>}
                       {r.transmissao && <span className="esc-chip">{r.transmissao}</span>}
                     </div>
                   </header>
@@ -392,16 +401,20 @@ export default function EscalaGeralView() {
                         fn={fn}
                         sugestoes={sugestoesPorFn[fn.key] || []}
                         destaque={!!fPessoa && norm(r[fn.key]).includes(norm(fPessoa))}
+                        mudo={mudo}
                         onSave={salvar}
                       />
                     ))}
                   </div>
 
                   <footer className="esc-card-footer">
-                    <div className="esc-card-progresso">
-                      <span style={{ width: `${pct}%`, background: pct === 100 ? 'var(--green, #16a34a)' : cor }} />
-                    </div>
-                    <span className="esc-card-contagem">{preenchidos}/{FUNCOES.length}</span>
+                    {!mudo && (<>
+                      <div className="esc-card-progresso">
+                        <span style={{ width: `${pct}%`, background: pct === 100 ? 'var(--green, #16a34a)' : cor }} />
+                      </div>
+                      <span className="esc-card-contagem">{preenchidos}/{FUNCOES.length}</span>
+                    </>)}
+                    {mudo && <span className="esc-card-contagem" style={{ flex: 1 }}>sem equipe escalada</span>}
                     <button className="esc-card-ficha" onClick={() => setFicha(r)}>Ficha completa →</button>
                   </footer>
                 </article>
