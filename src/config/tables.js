@@ -1,5 +1,19 @@
 export const STATUS_OPTIONS = ['Confirmado', 'Reservado', 'Pendente', 'Cancelado', 'Em andamento', 'Aguardando', 'Alteração']
 
+// Estados do credenciamento (vive nas tabelas de periféricos; a aba Controle
+// espelha e edita via linha irmã ligada pelo hub_jogo_id)
+export const CRED_OPTIONS = ['Enviado', 'Pendente', 'Alteração']
+export function getCredClass(v) {
+  const map = { 'Enviado': 'status-confirmado', 'Pendente': 'status-pendente', 'Alteração': 'status-em-andamento' }
+  return map[v] || 'status-pendente'
+}
+
+// Controle → tabela de periféricos irmã (mesma partida, ligada por hub_jogo_id)
+export const PAR_PERIFERICO = {
+  brasileirao_jogos:        { tabela: 'perifericos_brasileirao',  rodadaDe: 'eu',  rodadaPara: 'rod' },
+  paulistao_feminino_jogos: { tabela: 'perifericos_paulistao',    rodadaDe: 'rod', rodadaPara: 'rod' },
+}
+
 export function getStatusClass(s) {
   const map = {
     'Confirmado': 'status-confirmado',
@@ -155,7 +169,7 @@ const perifericoBrRawColumns = [
   { key: 'cidade', label: 'Cidade', type: 'text', width: 120, group: 'Jogo' },
   { key: 'padrao', label: 'Padrão', type: 'select', options: PADROES, width: 100, group: 'Jogo' },
   { key: 'detentor', label: 'Detentor', type: 'select', options: DETENTORES, width: 140, group: 'Jogo' },
-  { key: 'credenciamento', label: 'Credenciamento', type: 'text', width: 150, group: 'Jogo' },
+  { key: 'credenciamento', label: 'Credenciamento', type: 'select', options: CRED_OPTIONS, width: 150, group: 'Jogo' },
 
   // Group: Equipamentos (simnao + fornecedor condicional)
   { key: 'drone', label: 'Drone', type: 'simnao', linkedFields: ['fornecedor_drone'], width: 100, group: 'Equipamentos' },

@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect, useRef } from 'react'
 import { getEscudoUrl } from '../lib/escudos'
-import { STATUS_OPTIONS, getStatusClass } from '../config/tables'
+import { supabase, isConfigured } from '../lib/supabase'
+import { STATUS_OPTIONS, getStatusClass, CRED_OPTIONS, getCredClass, PAR_PERIFERICO } from '../config/tables'
 import { compararPorData, rodadaAtual } from '../lib/datas'
 
 // ─── VISÃO ESCALA ─────────────────────────────────────────────────────────────
@@ -97,6 +98,37 @@ function StatusPill({ row, onStatusChange }) {
   )
 }
 
+// Selo de credenciamento no card do Controle — o dado vive na linha irmã de
+// PERIFÉRICOS (mesma partida, hub_jogo_id); vazio conta como Pendente.
+function CredPill({ valor, onSelect }) {
+  const [aberto, setAberto] = useState(false)
+  const ref = useRef(null)
+  useEffect(() => {
+    if (!aberto) return
+    const fechar = e => { if (ref.current && !ref.current.contains(e.target)) setAberto(false) }
+    document.addEventListener('mousedown', fechar)
+    return () => document.removeEventListener('mousedown', fechar)
+  }, [aberto])
+  const v = valor && String(valor).trim() ? valor : 'Pendente'
+  return (
+    <div className="esc-status" ref={ref}>
+      <button className={`status-badge ${getCredClass(v)}`} title="Credenciamento" onClick={() => setAberto(a => !a)}>
+        🎫 {v}
+      </button>
+      {aberto && (
+        <div className="esc-slot-menu esc-status-menu">
+          {CRED_OPTIONS.map(op => (
+            <button key={op} className={`esc-slot-opcao ${op === v ? 'is-atual' : ''}`}
+              onClick={() => { onSelect(op); setAberto(false) }}>
+              <span className={`status-dot ${getCredClass(op)}`} /> {op}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function EscalaView({ data, config, onEdit, onStatusChange, onSaveCampo }) {
   const funcoes = useMemo(() => funcoesDaConfig(config), [config])
   const rodadaKey = config.columns?.some(c => c.key === 'eu') ? 'eu' : 'rod'
@@ -110,6 +142,36 @@ export default function EscalaView({ data, config, onEdit, onStatusChange, onSav
   const [soPendencias, setSoPendencias] = useState(false)
 
   const jogos = useMemo(() => (data || []).filter(r => r.mandante || r.visitante), [data])
+
+  // Credenciamento: espelho da tabela de periféricos irmã, por hub_jogo_id
+  const parPerif = PAR_PERIFERICO[config.tableName]
+  const [credPorHub, setCredPorHub] = useState(new Map())
+  useEffect(() => {
+    if (!parPerif || !isConfigured) return
+    let cancelado = false
+    async function carregar() {
+      const { data: rows, error } = await supabase.from(parPerif.tabela).select('id, hub_jogo_id, credenciamento')
+      if (error || cancelado) return
+      setCredPorHub(new Map((rows || []).filter(r => r.hub_jogo_id).map(r => [String(r.hub_jogo_id), r])))
+    }
+    carregar()
+    const canal = supabase
+      .channel(`cred_${parPerif.tabela}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: parPerif.tabela }, carregar)
+      .subscribe()
+    return () => { cancelado = true; supabase.removeChannel(canal) }
+  }, [parPerif?.tabela])
+
+  async function salvarCred(perifRow, valor) {
+    await supabase.from(parPerif.tabela)
+      .update({ credenciamento: valor, updated_at: new Date().toISOString() })
+      .eq('id', perifRow.id)
+    setCredPorHub(prev => {
+      const next = new Map(prev)
+      next.set(String(perifRow.hub_jogo_id), { ...perifRow, credenciamento: valor })
+      return next
+    })
+  }
 
   const rodadas = useMemo(() =>
     [...new Set(jogos.map(r => r[rodadaKey]).filter(Boolean))]
@@ -247,6 +309,10 @@ export default function EscalaView({ data, config, onEdit, onStatusChange, onSav
                       <div className="esc-card-chips">
                         {r.padrao && <span className="esc-chip esc-chip-padrao">{r.padrao}</span>}
                         {r.detentor && <span className="esc-chip">{r.detentor}</span>}
+                        {(() => {
+                          const perif = r.hub_jogo_id ? credPorHub.get(String(r.hub_jogo_id)) : null
+                          return perif ? <CredPill valor={perif.credenciamento} onSelect={v => salvarCred(perif, v)} /> : null
+                        })()}
                         <StatusPill row={r} onStatusChange={onStatusChange} />
                       </div>
                     </header>

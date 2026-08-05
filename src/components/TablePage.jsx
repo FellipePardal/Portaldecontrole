@@ -9,16 +9,12 @@ import GameModal from './GameModal'
 import ConfirmDialog from './ConfirmDialog'
 import PerifericosCards from './PerifericosCards'
 import EscalaView, { funcoesDaConfig } from './EscalaView'
+import { PAR_PERIFERICO } from '../config/tables'
 
 const DEFAULT_FILTERS = { search: '', status: '', dateFrom: '', dateTo: '', rodada: '', detentor: '', estadio: '', um: '' }
 
-// Controle → tabela de periféricos irmã. Um jogo criado no Controle vira uma
-// linha também nos Periféricos (mesma partida, escala de equipamentos vazia) —
-// sem isso as duas abas divergem, cada uma com um conjunto de jogos.
-const PAR_PERIFERICO = {
-  brasileirao_jogos:        { tabela: 'perifericos_brasileirao',  rodadaDe: 'eu',  rodadaPara: 'rod' },
-  paulistao_feminino_jogos: { tabela: 'perifericos_paulistao',    rodadaDe: 'rod', rodadaPara: 'rod' },
-}
+// Um jogo criado no Controle vira uma linha também nos Periféricos (mesma
+// partida, escala de equipamentos vazia) — sem isso as duas abas divergem.
 const CAMPOS_JOGO = ['dia', 'data', 'hora_brt', 'mandante', 'visitante', 'estadio', 'cidade', 'padrao', 'detentor']
 
 async function replicarParaPerifericos(config, formData) {
