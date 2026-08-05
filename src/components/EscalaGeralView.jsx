@@ -230,6 +230,18 @@ export default function EscalaGeralView() {
   const slotsOk = filtrados.reduce((s, r) => s + FUNCOES.filter(fn => r[fn.key] && String(r[fn.key]).trim()).length, 0)
   const filtroAtivo = busca || fCamp || fFuncao || fPessoa || soPendencias
 
+  // Contagem por campeonato para a legenda (respeita "A partir de hoje").
+  // ATENÇÃO: precisa vir ANTES dos returns condicionais abaixo — hook depois
+  // de return condicional muda a contagem de hooks entre renders e crasha.
+  const contagemCamp = useMemo(() => {
+    const map = {}
+    rows.forEach(r => {
+      if (soFuturos) { const d = parseData(r.data); if (d && d < hoje0) return }
+      map[r.campeonato] = (map[r.campeonato] || 0) + 1
+    })
+    return map
+  }, [rows, soFuturos, hoje0])
+
   if (erro) {
     const semTabela = /escala_geral/.test(erro) || /does not exist|relation/.test(erro)
     return (
@@ -240,16 +252,6 @@ export default function EscalaGeralView() {
     )
   }
   if (loading) return <div className="esc-vazio">Carregando escala geral...</div>
-
-  // Contagem por campeonato para a legenda (respeita "A partir de hoje")
-  const contagemCamp = useMemo(() => {
-    const map = {}
-    rows.forEach(r => {
-      if (soFuturos) { const d = parseData(r.data); if (d && d < hoje0) return }
-      map[r.campeonato] = (map[r.campeonato] || 0) + 1
-    })
-    return map
-  }, [rows, soFuturos, hoje0])
 
   return (
     <div className="esc-wrap">
