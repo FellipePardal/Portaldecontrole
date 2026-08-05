@@ -1,4 +1,5 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
+import { supabase, isConfigured } from '../lib/supabase'
 import { useTableData } from '../hooks/useTableData'
 import { useCompetitionEvents } from '../hooks/useCompetitionEvents'
 import StatsCards from './StatsCards'
@@ -11,9 +12,31 @@ import EscalaView, { funcoesDaConfig } from './EscalaView'
 
 const DEFAULT_FILTERS = { search: '', status: '', dateFrom: '', dateTo: '', rodada: '', detentor: '', estadio: '', um: '' }
 
-export default function TablePage({ config }) {
+// Controle → tabela de periféricos irmã. Um jogo criado no Controle vira uma
+// linha também nos Periféricos (mesma partida, escala de equipamentos vazia) —
+// sem isso as duas abas divergem, cada uma com um conjunto de jogos.
+const PAR_PERIFERICO = {
+  brasileirao_jogos:        { tabela: 'perifericos_brasileirao',  rodadaDe: 'eu',  rodadaPara: 'rod' },
+  paulistao_feminino_jogos: { tabela: 'perifericos_paulistao',    rodadaDe: 'rod', rodadaPara: 'rod' },
+}
+const CAMPOS_JOGO = ['dia', 'data', 'hora_brt', 'mandante', 'visitante', 'estadio', 'cidade', 'padrao', 'detentor']
+
+async function replicarParaPerifericos(config, formData) {
+  const par = config.isLegacy && PAR_PERIFERICO[config.tableName]
+  if (!par || !isConfigured || !formData?.mandante) return
+  try {
+    const desc = { [par.rodadaPara]: formData[par.rodadaDe] || '', updated_at: new Date().toISOString() }
+    CAMPOS_JOGO.forEach(c => { if (formData[c] != null) desc[c] = formData[c] })
+    const { error } = await supabase.from(par.tabela).insert([desc])
+    if (error) console.warn('[TablePage] Jogo criado, mas falhou a réplica em periféricos:', error.message)
+  } catch (err) {
+    console.warn('[TablePage] Jogo criado, mas falhou a réplica em periféricos:', err)
+  }
+}
+
+export default function TablePage({ config, novoJogoTick = 0 }) {
   if (config.id?.startsWith('periferico')) {
-    return <PerifericosCards config={config} />
+    return <PerifericosCards config={config} novoJogoTick={novoJogoTick} />
   }
 
   const legacy = useTableData(config.isLegacy ? config.tableName : null)
@@ -107,10 +130,16 @@ export default function TablePage({ config }) {
   async function handleSave(formData) {
     if (modal.mode === 'add') {
       await addRow(formData)
+      await replicarParaPerifericos(config, formData)
     } else {
       await updateRow(modal.row.id, formData)
     }
   }
+
+  // Botão "Novo Jogo" do header aponta para cá
+  useEffect(() => {
+    if (novoJogoTick > 0) openAddModal()
+  }, [novoJogoTick])
 
   async function handleDelete() {
     if (confirmDelete) {
@@ -165,11 +194,6 @@ VITE_SUPABASE_ANON_KEY=eyJ...`}
               {l}
             </button>
           ))}
-          {view === 'escala' && (
-            <button className="view-switch-add" style={{ background: config.accentColor }} onClick={openAddModal}>
-              + Novo Jogo
-            </button>
-          )}
         </div>
       )}
 

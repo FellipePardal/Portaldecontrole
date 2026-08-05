@@ -100,7 +100,7 @@ function SlotEquip({ row, eq, destaque, onSave }) {
   )
 }
 
-export default function PerifericosCards({ config }) {
+export default function PerifericosCards({ config, novoJogoTick = 0 }) {
   const { data, loading, error, addRow, updateRow, deleteRow } = useTableData(config.tableName)
   const accent = config.accentColor
 
@@ -165,6 +165,11 @@ export default function PerifericosCards({ config }) {
   async function handleSaveCampos(id, payload) {
     await updateRow(id, payload)
   }
+
+  // Botão "Novo Jogo" do header aponta para cá
+  useEffect(() => {
+    if (novoJogoTick > 0) setModal({ open: true, mode: 'add', row: null })
+  }, [novoJogoTick])
   async function handleSave(formData) {
     if (modal.mode === 'add') await addRow(formData)
     else await updateRow(modal.row.id, formData)
@@ -223,9 +228,6 @@ export default function PerifericosCards({ config }) {
           <strong>{filtrados.length}</strong> jogos ·{' '}
           <strong style={{ color: totAtivos && totOk === totAtivos ? 'var(--green, #16a34a)' : undefined }}>{totOk}/{totAtivos}</strong>{' '}equipamentos
         </div>
-        <button className="view-switch-add" style={{ background: accent, marginLeft: 0 }} onClick={() => setModal({ open: true, mode: 'add', row: null })}>
-          + Novo
-        </button>
       </div>
 
       {porRodada.length === 0 && <div className="esc-vazio">Nenhum jogo com esses filtros.</div>}

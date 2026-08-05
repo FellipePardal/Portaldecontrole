@@ -1,4 +1,4 @@
-export default function Header({ activeView, onHomeClick, onFornecedoresClick, onNewCompetition }) {
+export default function Header({ activeView, onHomeClick, onFornecedoresClick, onNewCompetition, onNewJogo, accentColor }) {
   return (
     <header className="header">
       <div className="logo-area" onClick={onHomeClick} style={{ cursor: 'pointer' }} title="Início">
@@ -34,7 +34,16 @@ export default function Header({ activeView, onHomeClick, onFornecedoresClick, o
           Fornecedores
         </button>
 
-        {onNewCompetition && (
+        {/* Dentro de um campeonato o botão do header cria JOGO; na Home cria campeonato. */}
+        {onNewJogo ? (
+          <button className="header-new-btn" onClick={onNewJogo} title="Novo jogo"
+            style={accentColor ? { background: accentColor, borderColor: accentColor, color: '#fff' } : undefined}>
+            <svg viewBox="0 0 16 16" fill="none" width="13" height="13">
+              <path d="M8 2v12M2 8h12" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+            </svg>
+            Novo Jogo
+          </button>
+        ) : onNewCompetition && (
           <button className="header-new-btn" onClick={onNewCompetition} title="Novo campeonato">
             <svg viewBox="0 0 16 16" fill="none" width="13" height="13">
               <path d="M8 2v12M2 8h12" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>

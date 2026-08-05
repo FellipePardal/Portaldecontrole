@@ -49,6 +49,8 @@ export default function App() {
   const [activeComp,    setActiveComp]    = useState(null)
   const [activeSection, setActiveSection] = useState(null)
   const [showNewDialog, setShowNewDialog] = useState(false)
+  // Sinal para a página da seção abrir o modal de novo jogo (botão do header)
+  const [novoJogoTick,  setNovoJogoTick]  = useState(0)
 
   useEffect(() => {
     if (competitions.length === 0) return
@@ -166,6 +168,8 @@ export default function App() {
     )
   }
 
+  const secaoTemJogos = section && !section.isOverview && !section.isDashboard
+
   return (
     <div className="app">
       <Header
@@ -173,6 +177,8 @@ export default function App() {
         onHomeClick={handleHomeClick}
         onFornecedoresClick={handleFornecedoresClick}
         onNewCompetition={() => setShowNewDialog(true)}
+        onNewJogo={secaoTemJogos ? () => setNovoJogoTick(t => t + 1) : undefined}
+        accentColor={competition.accentColor}
       />
 
       <div className="sub-tabs-bar">
@@ -204,7 +210,7 @@ export default function App() {
         ) : section.isDashboard ? (
           <DashboardWrapper key={section.id} config={section.config} />
         ) : (
-          <TablePage key={section.id} config={section.config} />
+          <TablePage key={section.id} config={section.config} novoJogoTick={novoJogoTick} />
         )}
       </main>
 
