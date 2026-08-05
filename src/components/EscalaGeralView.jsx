@@ -159,6 +159,7 @@ export default function EscalaGeralView() {
   const [soPendencias, setSoPendencias] = useState(false)
   const [soFuturos, setSoFuturos] = useState(true)
   const [ficha, setFicha] = useState(null) // linha aberta na ficha completa
+  const [legendaAberta, setLegendaAberta] = useState(false) // campeonatos ocultos por padrão
 
   useEffect(() => {
     if (!isConfigured) { setLoading(false); return }
@@ -280,9 +281,24 @@ export default function EscalaGeralView() {
 
   return (
     <div className="esc-wrap">
-      {/* Legenda de campeonatos — clicável (filtra) */}
+      {/* Campeonatos ocultos por padrão; o botão abre a legenda clicável */}
       <div className="eg-legend">
-        {campeonatos
+        <button className={`eg-legend-chip ${legendaAberta ? 'is-on' : ''}`} onClick={() => setLegendaAberta(a => !a)}>
+          🏆 Campeonatos {legendaAberta ? '▴' : '▾'}
+        </button>
+        {/* Com filtro ativo, o chip do campeonato escolhido fica visível mesmo fechado */}
+        {!legendaAberta && fCamp && (() => {
+          const { cor } = estiloCampeonato(fCamp)
+          return (
+            <button className="eg-legend-chip is-on" style={{ background: `${cor}15`, borderColor: cor, color: cor }}
+              onClick={() => setFCamp('')}>
+              <BadgeCamp nome={fCamp} size={20} />
+              <span className="eg-legend-nome">{fCamp}</span>
+              <span>✕</span>
+            </button>
+          )
+        })()}
+        {legendaAberta && campeonatos
           .slice()
           .sort((a, b) => (contagemCamp[b] || 0) - (contagemCamp[a] || 0))
           .map(c => {
