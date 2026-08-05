@@ -100,7 +100,7 @@ function SlotEquip({ row, eq, destaque, onSave }) {
   )
 }
 
-export default function PerifericosCards({ config, novoJogoTick = 0 }) {
+export default function PerifericosCards({ config, novoJogoPedido = false, onNovoJogoConsumido = () => {} }) {
   const { data, loading, error, addRow, updateRow, deleteRow } = useTableData(config.tableName)
   const accent = config.accentColor
 
@@ -166,10 +166,11 @@ export default function PerifericosCards({ config, novoJogoTick = 0 }) {
     await updateRow(id, payload)
   }
 
-  // Botão "Novo Jogo" do header aponta para cá
+  // Botão "Novo Jogo" do header aponta para cá; consumir o pedido evita
+  // reabrir o modal ao navegar de volta para a aba.
   useEffect(() => {
-    if (novoJogoTick > 0) setModal({ open: true, mode: 'add', row: null })
-  }, [novoJogoTick])
+    if (novoJogoPedido) { setModal({ open: true, mode: 'add', row: null }); onNovoJogoConsumido() }
+  }, [novoJogoPedido]) // eslint-disable-line react-hooks/exhaustive-deps
   async function handleSave(formData) {
     if (modal.mode === 'add') await addRow(formData)
     else await updateRow(modal.row.id, formData)

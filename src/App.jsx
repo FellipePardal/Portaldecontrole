@@ -49,8 +49,8 @@ export default function App() {
   const [activeComp,    setActiveComp]    = useState(null)
   const [activeSection, setActiveSection] = useState(null)
   const [showNewDialog, setShowNewDialog] = useState(false)
-  // Sinal para a página da seção abrir o modal de novo jogo (botão do header)
-  const [novoJogoTick,  setNovoJogoTick]  = useState(0)
+  // Pedido de novo jogo vindo do header; a página da seção consome e abre o modal
+  const [novoJogoPedido, setNovoJogoPedido] = useState(false)
 
   useEffect(() => {
     if (competitions.length === 0) return
@@ -169,6 +169,14 @@ export default function App() {
   }
 
   const secaoTemJogos = section && !section.isOverview && !section.isDashboard
+  const secaoJogosPadrao = competition.sections.find(s => !s.isOverview && !s.isDashboard)
+
+  // Botão do header em QUALQUER aba: se a aba atual não tem cadastro de jogo
+  // (Visão Geral, Dashboard), pula para a primeira que tem e abre o modal lá.
+  const handleNovoJogo = secaoJogosPadrao ? () => {
+    if (!secaoTemJogos) setActiveSection(secaoJogosPadrao.id)
+    setNovoJogoPedido(true)
+  } : undefined
 
   return (
     <div className="app">
@@ -177,7 +185,7 @@ export default function App() {
         onHomeClick={handleHomeClick}
         onFornecedoresClick={handleFornecedoresClick}
         onNewCompetition={() => setShowNewDialog(true)}
-        onNewJogo={secaoTemJogos ? () => setNovoJogoTick(t => t + 1) : undefined}
+        onNewJogo={handleNovoJogo}
         accentColor={competition.accentColor}
       />
 
@@ -210,7 +218,8 @@ export default function App() {
         ) : section.isDashboard ? (
           <DashboardWrapper key={section.id} config={section.config} />
         ) : (
-          <TablePage key={section.id} config={section.config} novoJogoTick={novoJogoTick} />
+          <TablePage key={section.id} config={section.config}
+            novoJogoPedido={novoJogoPedido} onNovoJogoConsumido={() => setNovoJogoPedido(false)} />
         )}
       </main>
 

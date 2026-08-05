@@ -34,9 +34,9 @@ async function replicarParaPerifericos(config, formData) {
   }
 }
 
-export default function TablePage({ config, novoJogoTick = 0 }) {
+export default function TablePage({ config, novoJogoPedido = false, onNovoJogoConsumido = () => {} }) {
   if (config.id?.startsWith('periferico')) {
-    return <PerifericosCards config={config} novoJogoTick={novoJogoTick} />
+    return <PerifericosCards config={config} novoJogoPedido={novoJogoPedido} onNovoJogoConsumido={onNovoJogoConsumido} />
   }
 
   const legacy = useTableData(config.isLegacy ? config.tableName : null)
@@ -136,10 +136,11 @@ export default function TablePage({ config, novoJogoTick = 0 }) {
     }
   }
 
-  // Botão "Novo Jogo" do header aponta para cá
+  // Botão "Novo Jogo" do header aponta para cá; consumir o pedido evita
+  // reabrir o modal ao navegar de volta para a aba.
   useEffect(() => {
-    if (novoJogoTick > 0) openAddModal()
-  }, [novoJogoTick])
+    if (novoJogoPedido) { openAddModal(); onNovoJogoConsumido() }
+  }, [novoJogoPedido]) // eslint-disable-line react-hooks/exhaustive-deps
 
   async function handleDelete() {
     if (confirmDelete) {
