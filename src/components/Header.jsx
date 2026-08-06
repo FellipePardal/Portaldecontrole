@@ -1,4 +1,4 @@
-export default function Header({ activeView, onHomeClick, onFornecedoresClick, onEscalaGeralClick, onNewCompetition, onNewJogo, accentColor }) {
+export default function Header({ activeView, onHomeClick, onFornecedoresClick, onEscalaGeralClick, onUsuariosClick, onSair, onNewCompetition, onNewJogo, accentColor }) {
   return (
     <header className="header">
       <div className="logo-area" onClick={onHomeClick} style={{ cursor: 'pointer' }} title="Início">
@@ -45,6 +45,20 @@ export default function Header({ activeView, onHomeClick, onFornecedoresClick, o
           Fornecedores
         </button>
 
+        {onUsuariosClick && (
+          <button
+            className={`header-nav-btn${activeView === 'usuarios' ? ' header-nav-active' : ''}`}
+            onClick={onUsuariosClick}
+            title="Usuários do Portal"
+          >
+            <svg viewBox="0 0 16 16" fill="none" width="14" height="14">
+              <circle cx="8" cy="5.5" r="2.6" stroke="currentColor" strokeWidth="1.4"/>
+              <path d="M2.8 13.5c.7-2.4 2.8-3.7 5.2-3.7s4.5 1.3 5.2 3.7" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+            </svg>
+            Usuários
+          </button>
+        )}
+
         {/* Dentro de um campeonato o botão do header cria JOGO; na Home cria campeonato. */}
         {onNewJogo ? (
           <button className="header-new-btn" onClick={onNewJogo} title="Novo jogo"
@@ -60,6 +74,15 @@ export default function Header({ activeView, onHomeClick, onFornecedoresClick, o
               <path d="M8 2v12M2 8h12" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
             </svg>
             Novo
+          </button>
+        )}
+
+        {onSair && (
+          <button className="header-nav-btn" onClick={onSair} title="Sair">
+            <svg viewBox="0 0 16 16" fill="none" width="14" height="14">
+              <path d="M6 2H3.5A1.5 1.5 0 002 3.5v9A1.5 1.5 0 003.5 14H6M10.5 11l3-3-3-3M13.5 8H6" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            Sair
           </button>
         )}
       </div>

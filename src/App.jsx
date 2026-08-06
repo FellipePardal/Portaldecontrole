@@ -7,9 +7,23 @@ import HomeView from './components/HomeView'
 import FornecedoresPage from './components/FornecedoresPage'
 import EscalaGeralView from './components/EscalaGeralView'
 import NewCompetitionDialog from './components/NewCompetitionDialog'
+import LoginGate, { PendentePortal } from './components/LoginGate'
+import UsuariosPortal from './components/UsuariosPortal'
+import { supabase, isConfigured } from './lib/supabase'
 import { useTableData } from './hooks/useTableData'
 import { useCompetitionEvents } from './hooks/useCompetitionEvents'
 import { useCompetitions } from './hooks/useCompetitions'
+
+// Garante o perfil do Portal (nasce 'pendente'; admin aprova depois).
+// Também cobre quem já tem conta do Hub: primeiro login aqui = pendente.
+async function ensurePortalProfile(user) {
+  const { data } = await supabase.from('portal_profiles').select('role').eq('id', user.id).maybeSingle()
+  if (data) return data.role
+  const nome = user.user_metadata?.nome || user.user_metadata?.full_name || ''
+  const { error } = await supabase.from('portal_profiles').insert([{ id: user.id, nome, email: user.email, role: 'pendente' }])
+  if (error && error.code !== '23505') console.warn('[auth] falha ao criar portal_profile:', error.message)
+  return 'pendente'
+}
 
 function cleanComp(label) {
   if (!label) return ''
@@ -53,6 +67,41 @@ export default function App() {
   // Pedido de novo jogo vindo do header; a página da seção consome e abre o modal
   const [novoJogoPedido, setNovoJogoPedido] = useState(false)
 
+  // ── Autenticação (Fase 1 de segurança) ────────────────────────────────────
+  const [user, setUser] = useState(null)
+  const [portalRole, setPortalRole] = useState(null)
+  const [authLoading, setAuthLoading] = useState(isConfigured)
+
+  useEffect(() => {
+    if (!isConfigured) return
+    let mounted = true
+    // IMPORTANTE: nenhuma chamada supabase DIRETO dentro do callback — o client
+    // segura um lock de auth enquanto ele roda e a query espera o mesmo lock
+    // (deadlock que travou o Hub em 08/2026). setTimeout(0) solta o lock antes.
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!mounted) return
+      if (session?.user) {
+        const u = session.user
+        if (u.app_metadata?.provider === 'google' && !u.email?.endsWith('@livemode.com')) {
+          setTimeout(() => supabase.auth.signOut(), 0)
+          setUser(null); setPortalRole(null); setAuthLoading(false)
+          return
+        }
+        setUser(u)
+        setAuthLoading(false)
+        setTimeout(async () => {
+          const role = await ensurePortalProfile(u).catch(() => 'pendente')
+          if (mounted) setPortalRole(role)
+        }, 0)
+      } else {
+        setUser(null); setPortalRole(null); setAuthLoading(false)
+      }
+    })
+    return () => { mounted = false; subscription.unsubscribe() }
+  }, [])
+
+  const sair = () => supabase.auth.signOut()
+
   useEffect(() => {
     if (competitions.length === 0) return
     const stillExists = competitions.find(c => c.id === activeComp)
@@ -84,6 +133,27 @@ export default function App() {
     setActiveView('fornecedores')
   }
 
+  // ── Gate de autenticação (antes de qualquer tela interna) ─────────────────
+  // Rotas públicas por hash (ex.: #escala/<token>, Fase 2) passam por fora.
+  if (isConfigured) {
+    if (authLoading) {
+      return (
+        <div className="bootstrap-loader">
+          <div className="skeleton-cell" style={{ width: 200, height: 14 }} />
+        </div>
+      )
+    }
+    if (!user) return <LoginGate />
+    if (portalRole === null) {
+      return (
+        <div className="bootstrap-loader">
+          <div className="skeleton-cell" style={{ width: 200, height: 14 }} />
+        </div>
+      )
+    }
+    if (portalRole === 'pendente') return <PendentePortal email={user.email} onSair={sair} />
+  }
+
   if (compsLoading && competitions.length === 0) {
     return (
       <div className="bootstrap-loader">
@@ -101,6 +171,28 @@ export default function App() {
     )
   }
 
+  if (activeView === 'usuarios' && portalRole === 'admin') {
+    return (
+      <div className="app">
+        <Header
+          activeView="usuarios"
+          onHomeClick={handleHomeClick}
+          onFornecedoresClick={handleFornecedoresClick}
+          onEscalaGeralClick={() => setActiveView('escala-geral')}
+          onUsuariosClick={portalRole === 'admin' ? () => setActiveView('usuarios') : undefined}
+          onSair={isConfigured ? sair : undefined}
+        />
+        <main className="main-content" style={{ paddingTop: 84 }}>
+          <div style={{ marginBottom: 16 }}>
+            <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text)' }}>Usuários do Portal</div>
+            <div style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 2 }}>Aprove cadastros e gerencie papéis de acesso</div>
+          </div>
+          <UsuariosPortal meuId={user?.id} />
+        </main>
+      </div>
+    )
+  }
+
   if (activeView === 'escala-geral') {
     return (
       <div className="app">
@@ -109,6 +201,8 @@ export default function App() {
           onHomeClick={handleHomeClick}
           onFornecedoresClick={handleFornecedoresClick}
           onEscalaGeralClick={() => setActiveView('escala-geral')}
+          onUsuariosClick={portalRole === 'admin' ? () => setActiveView('usuarios') : undefined}
+          onSair={isConfigured ? sair : undefined}
         />
         <main className="main-content" style={{ paddingTop: 84 }}>
           <div style={{ marginBottom: 16 }}>
@@ -129,6 +223,8 @@ export default function App() {
           onHomeClick={handleHomeClick}
           onFornecedoresClick={handleFornecedoresClick}
           onEscalaGeralClick={() => setActiveView('escala-geral')}
+          onUsuariosClick={portalRole === 'admin' ? () => setActiveView('usuarios') : undefined}
+          onSair={isConfigured ? sair : undefined}
           onNewCompetition={() => setShowNewDialog(true)}
         />
         <main className="main-content" style={{ paddingTop: 84 }}>
@@ -151,6 +247,8 @@ export default function App() {
           onHomeClick={handleHomeClick}
           onFornecedoresClick={handleFornecedoresClick}
           onEscalaGeralClick={() => setActiveView('escala-geral')}
+          onUsuariosClick={portalRole === 'admin' ? () => setActiveView('usuarios') : undefined}
+          onSair={isConfigured ? sair : undefined}
           onNewCompetition={() => setShowNewDialog(true)}
         />
         <main className="main-content main-content--home">
@@ -171,6 +269,8 @@ export default function App() {
           onHomeClick={handleHomeClick}
           onFornecedoresClick={handleFornecedoresClick}
           onEscalaGeralClick={() => setActiveView('escala-geral')}
+          onUsuariosClick={portalRole === 'admin' ? () => setActiveView('usuarios') : undefined}
+          onSair={isConfigured ? sair : undefined}
           onNewCompetition={() => setShowNewDialog(true)}
         />
         <main className="main-content" style={{ paddingTop: 84 }}>
@@ -209,6 +309,8 @@ export default function App() {
         onHomeClick={handleHomeClick}
         onFornecedoresClick={handleFornecedoresClick}
           onEscalaGeralClick={() => setActiveView('escala-geral')}
+          onUsuariosClick={portalRole === 'admin' ? () => setActiveView('usuarios') : undefined}
+          onSair={isConfigured ? sair : undefined}
         onNewCompetition={() => setShowNewDialog(true)}
         onNewJogo={handleNovoJogo}
         accentColor={competition.accentColor}
