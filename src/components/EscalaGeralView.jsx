@@ -140,7 +140,8 @@ function Escudo({ nome, size = 24 }) {
 // Slot de função com até DUAS pessoas ("Fulano / Ciclano") + valor $ quando a
 // função tem. O separador " / " é o mesmo da planilha original.
 // `mudo`: slot vazio sem o alerta âmbar (jogos que não escalam equipe).
-function SlotPessoa({ row, fn, sugestoes, destaque, mudo, onSave }) {
+// `conf`: confirmação de presença vinda do link externo (✓ confirmado / ✗ recusado).
+function SlotPessoa({ row, fn, sugestoes, destaque, mudo, conf, onSave }) {
   const [aberto, setAberto] = useState(false)
   const [nome1, setNome1] = useState('')
   const [nome2, setNome2] = useState('')
@@ -181,8 +182,16 @@ function SlotPessoa({ row, fn, sugestoes, destaque, mudo, onSave }) {
   const classe = desativado ? 'esc-slot-off' : vazio ? (mudo ? 'esc-slot-off' : 'esc-slot-vazio') : ''
   return (
     <div className={`esc-slot ${classe} ${destaque ? 'esc-slot-destaque' : ''}`} ref={ref}>
-      <button className="esc-slot-btn" onClick={abrir} title={`${fn.label}: ${texto}`}>
-        <span className="esc-slot-label">{fn.label}</span>
+      <button className="esc-slot-btn" onClick={abrir}
+        title={`${fn.label}: ${texto}${conf ? ` — ${conf.status === 'confirmado' ? 'presença confirmada' : 'recusou'}${conf.obs ? ` ("${conf.obs}")` : ''}` : ''}`}>
+        <span className="esc-slot-label">
+          {fn.label}
+          {conf && !vazio && !desativado && (
+            <span className={`eg-conf ${conf.status === 'confirmado' ? 'eg-conf-ok' : 'eg-conf-nao'}`}>
+              {conf.status === 'confirmado' ? '✓' : '✗'}
+            </span>
+          )}
+        </span>
         <span className="esc-slot-valor">{texto}</span>
       </button>
       {aberto && (
@@ -259,6 +268,25 @@ export default function EscalaGeralView() {
       .eq('id', id)
     if (error) alert('Falha ao salvar: ' + error.message)
   }
+
+  // Confirmações de presença dos links externos → ✓/✗ nos slots, ao vivo
+  const [confirmacoes, setConfirmacoes] = useState(new Map())
+  useEffect(() => {
+    if (!isConfigured) return
+    let cancelado = false
+    async function carregarConfs() {
+      const { data } = await supabase.from('escala_confirmacoes')
+        .select('jogo_ref, funcao, status, obs').eq('origem', 'escala_geral')
+      if (cancelado || !data) return
+      setConfirmacoes(new Map(data.map(c => [`${c.jogo_ref}|${c.funcao}`, c])))
+    }
+    carregarConfs()
+    const canal = supabase
+      .channel('escala_geral_confs')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'escala_confirmacoes' }, carregarConfs)
+      .subscribe()
+    return () => { cancelado = true; supabase.removeChannel(canal) }
+  }, [])
 
   const norm = s => String(s || '').toLowerCase()
   const campeonatos = useMemo(() => [...new Set(rows.map(r => r.campeonato).filter(Boolean))].sort(), [rows])
@@ -480,6 +508,7 @@ export default function EscalaGeralView() {
                         sugestoes={sugestoesPorFn[fn.key] || []}
                         destaque={!!fPessoa && norm(r[fn.key]).includes(norm(fPessoa))}
                         mudo={mudo}
+                        conf={confirmacoes.get(`${r.id}|${fn.label}`)}
                         onSave={salvar}
                       />
                     ))}

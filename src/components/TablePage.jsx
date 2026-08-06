@@ -14,8 +14,13 @@ import { PAR_PERIFERICO } from '../config/tables'
 const DEFAULT_FILTERS = { search: '', status: '', dateFrom: '', dateTo: '', rodada: '', detentor: '', estadio: '', um: '' }
 
 // Um jogo criado no Controle vira uma linha também nos Periféricos (mesma
-// partida, escala de equipamentos vazia) — sem isso as duas abas divergem.
+// partida, escala de equipamentos vazia) e na ESCALA GERAL (funções de UM/
+// produção) — sem isso as abas divergem, cada uma com um conjunto de jogos.
 const CAMPOS_JOGO = ['dia', 'data', 'hora_brt', 'mandante', 'visitante', 'estadio', 'cidade', 'padrao', 'detentor']
+const CAMP_ESCALA_GERAL = {
+  brasileirao_jogos: 'Brasileirão 26',
+  paulistao_feminino_jogos: 'Paulistão F 26',
+}
 
 async function replicarParaPerifericos(config, formData) {
   const par = config.isLegacy && PAR_PERIFERICO[config.tableName]
@@ -27,6 +32,24 @@ async function replicarParaPerifericos(config, formData) {
     if (error) console.warn('[TablePage] Jogo criado, mas falhou a réplica em periféricos:', error.message)
   } catch (err) {
     console.warn('[TablePage] Jogo criado, mas falhou a réplica em periféricos:', err)
+  }
+  // Escala Geral: mesma partida, funções vazias (integração Fase 4)
+  const camp = CAMP_ESCALA_GERAL[config.tableName]
+  if (!camp) return
+  try {
+    const eg = {
+      campeonato: camp,
+      fase_rodada: formData[par.rodadaDe] ? `Rodada ${formData[par.rodadaDe]}` : '',
+      dia: formData.dia || '', data: formData.data || '', horario: formData.hora_brt || '',
+      cidade: formData.cidade || '', estadio: formData.estadio || '',
+      mandante: formData.mandante || '', visitante: formData.visitante || '',
+      transmissao: formData.detentor || '',
+      updated_at: new Date().toISOString(),
+    }
+    const { error } = await supabase.from('escala_geral').insert([eg])
+    if (error) console.warn('[TablePage] Jogo criado, mas falhou a réplica na Escala Geral:', error.message)
+  } catch (err) {
+    console.warn('[TablePage] Jogo criado, mas falhou a réplica na Escala Geral:', err)
   }
 }
 

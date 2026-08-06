@@ -9,6 +9,8 @@ import EscalaGeralView from './components/EscalaGeralView'
 import NewCompetitionDialog from './components/NewCompetitionDialog'
 import LoginGate, { PendentePortal } from './components/LoginGate'
 import UsuariosPortal from './components/UsuariosPortal'
+import LinksExternosView from './components/LinksExternosView'
+import EscalaPrestador from './components/EscalaPrestador'
 import { supabase, isConfigured } from './lib/supabase'
 import { useTableData } from './hooks/useTableData'
 import { useCompetitionEvents } from './hooks/useCompetitionEvents'
@@ -133,8 +135,11 @@ export default function App() {
     setActiveView('fornecedores')
   }
 
+  // ── Rota PÚBLICA por hash: escala do prestador (token é a chave) ───────────
+  const escalaMatch = window.location.hash.match(/^#escala\/([0-9a-fA-F-]{36})$/)
+  if (escalaMatch) return <EscalaPrestador token={escalaMatch[1]} />
+
   // ── Gate de autenticação (antes de qualquer tela interna) ─────────────────
-  // Rotas públicas por hash (ex.: #escala/<token>, Fase 2) passam por fora.
   if (isConfigured) {
     if (authLoading) {
       return (
@@ -171,6 +176,29 @@ export default function App() {
     )
   }
 
+  if (activeView === 'links') {
+    return (
+      <div className="app">
+        <Header
+          activeView="links"
+          onHomeClick={handleHomeClick}
+          onFornecedoresClick={handleFornecedoresClick}
+          onEscalaGeralClick={() => setActiveView('escala-geral')}
+          onLinksClick={() => setActiveView('links')}
+          onUsuariosClick={portalRole === 'admin' ? () => setActiveView('usuarios') : undefined}
+          onSair={isConfigured ? sair : undefined}
+        />
+        <main className="main-content" style={{ paddingTop: 84 }}>
+          <div style={{ marginBottom: 16 }}>
+            <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text)' }}>Links externos</div>
+            <div style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 2 }}>Cada prestador/empresa recebe um link com a própria escala e confirma presença por ele</div>
+          </div>
+          <LinksExternosView />
+        </main>
+      </div>
+    )
+  }
+
   if (activeView === 'usuarios' && portalRole === 'admin') {
     return (
       <div className="app">
@@ -179,6 +207,7 @@ export default function App() {
           onHomeClick={handleHomeClick}
           onFornecedoresClick={handleFornecedoresClick}
           onEscalaGeralClick={() => setActiveView('escala-geral')}
+          onLinksClick={() => setActiveView('links')}
           onUsuariosClick={portalRole === 'admin' ? () => setActiveView('usuarios') : undefined}
           onSair={isConfigured ? sair : undefined}
         />
@@ -201,6 +230,7 @@ export default function App() {
           onHomeClick={handleHomeClick}
           onFornecedoresClick={handleFornecedoresClick}
           onEscalaGeralClick={() => setActiveView('escala-geral')}
+          onLinksClick={() => setActiveView('links')}
           onUsuariosClick={portalRole === 'admin' ? () => setActiveView('usuarios') : undefined}
           onSair={isConfigured ? sair : undefined}
         />
@@ -223,6 +253,7 @@ export default function App() {
           onHomeClick={handleHomeClick}
           onFornecedoresClick={handleFornecedoresClick}
           onEscalaGeralClick={() => setActiveView('escala-geral')}
+          onLinksClick={() => setActiveView('links')}
           onUsuariosClick={portalRole === 'admin' ? () => setActiveView('usuarios') : undefined}
           onSair={isConfigured ? sair : undefined}
           onNewCompetition={() => setShowNewDialog(true)}
@@ -247,6 +278,7 @@ export default function App() {
           onHomeClick={handleHomeClick}
           onFornecedoresClick={handleFornecedoresClick}
           onEscalaGeralClick={() => setActiveView('escala-geral')}
+          onLinksClick={() => setActiveView('links')}
           onUsuariosClick={portalRole === 'admin' ? () => setActiveView('usuarios') : undefined}
           onSair={isConfigured ? sair : undefined}
           onNewCompetition={() => setShowNewDialog(true)}
@@ -269,6 +301,7 @@ export default function App() {
           onHomeClick={handleHomeClick}
           onFornecedoresClick={handleFornecedoresClick}
           onEscalaGeralClick={() => setActiveView('escala-geral')}
+          onLinksClick={() => setActiveView('links')}
           onUsuariosClick={portalRole === 'admin' ? () => setActiveView('usuarios') : undefined}
           onSair={isConfigured ? sair : undefined}
           onNewCompetition={() => setShowNewDialog(true)}
@@ -309,6 +342,7 @@ export default function App() {
         onHomeClick={handleHomeClick}
         onFornecedoresClick={handleFornecedoresClick}
           onEscalaGeralClick={() => setActiveView('escala-geral')}
+          onLinksClick={() => setActiveView('links')}
           onUsuariosClick={portalRole === 'admin' ? () => setActiveView('usuarios') : undefined}
           onSair={isConfigured ? sair : undefined}
         onNewCompetition={() => setShowNewDialog(true)}

@@ -7,6 +7,8 @@
 //
 // Uso: node scripts/importar_planilha_controle.mjs <csv1> <csv2...>   (dry-run)
 //      node scripts/importar_planilha_controle.mjs --aplicar <csvs...>
+//      node scripts/importar_planilha_controle.mjs --tabela paulistao_feminino_jogos <csvs...>
+// Obs.: com o RLS ligado (2026-08-06), rode com SUPABASE_SERVICE_KEY no ambiente.
 
 const URL = process.env.SUPABASE_URL || 'https://buubjnddzsadzcumrvdt.supabase.co'
 const KEY = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ1dWJqbmRkenNhZHpjdW1ydmR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ2MjQ3OTUsImV4cCI6MjA5MDIwMDc5NX0.mMEoVzmgdT1nHj1TLUWfhXzd4tcnzFad-HtF6TKPMw4'
@@ -25,13 +27,20 @@ const ITENS = itensArg ? new Set(
       return [parseInt(p)]
     }).filter(Number.isFinite)
 ) : null
-const arquivos = process.argv.slice(2).filter((a, i, arr) => a !== '--aplicar' && !a.startsWith('--itens') && !(arr[i - 1]?.startsWith('--itens') && /^[\d,\-]+$/.test(a)))
+// --tabela: brasileirao_jogos (padrão, rodada em 'eu') ou paulistao_feminino_jogos (rodada em 'rod')
+const tabelaArg = process.argv.indexOf('--tabela')
+const TABELA = tabelaArg >= 0 ? process.argv[tabelaArg + 1] : 'brasileirao_jogos'
+const COL_RODADA = TABELA === 'brasileirao_jogos' ? 'eu' : 'rod'
+const arquivos = process.argv.slice(2).filter((a, i, arr) =>
+  a !== '--aplicar' && !a.startsWith('--itens') && !a.startsWith('--tabela')
+  && !(arr[i - 1]?.startsWith('--itens') && /^[\d,\-]+$/.test(a))
+  && arr[i - 1] !== '--tabela')
 if (arquivos.length === 0) { console.error('Passe os caminhos dos CSVs.'); process.exit(1) }
 
 // Cabeçalho da planilha (normalizado) → coluna do Portal
 const norm = s => String(s || '').trim().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/\s+/g, ' ')
 const MAPA = {
-  'rodada': 'eu', 'dia': 'dia', 'data': 'data', 'hora (brt)': 'hora_brt',
+  'rodada': COL_RODADA, 'dia': 'dia', 'data': 'data', 'hora (brt)': 'hora_brt',
   'mandante': 'mandante', 'visitante': 'visitante', 'estadio': 'estadio', 'cidade': 'cidade',
   'padrao': 'padrao', 'detentor': 'detentor', 'ppv': 'ppv', 'um': 'um',
   'sng premiere': 'sng_premiere', 'sng host': 'sng_host', 'gerador': 'gerador',
@@ -117,7 +126,7 @@ if (duplicados.length) console.log(`\nPares repetidos entre as partes (a 2ª ven
 const finais = [...porChave.values()]
 
 // Linhas existentes no Portal
-const existentes = await (await fetch(`${URL}/rest/v1/brasileirao_jogos?select=*`, { headers: H })).json()
+const existentes = await (await fetch(`${URL}/rest/v1/${TABELA}?select=*`, { headers: H })).json()
 const existPorChave = new Map(existentes.filter(r => r.mandante && r.visitante).map(r => [chave(r), r]))
 
 // SÓ colunas de função/operação entram no update (decisão 2026-08-05): os
@@ -163,7 +172,7 @@ inserts.slice(0, 40).forEach(r => console.log(`   ${r.eu}ª ${r.mandante} x ${r.
 if (APLICAR) {
   const alvo = ITENS ? updates.filter((_, i) => ITENS.has(i + 1)) : updates
   for (const u of alvo) {
-    const r = await fetch(`${URL}/rest/v1/brasileirao_jogos?id=eq.${u.id}`, {
+    const r = await fetch(`${URL}/rest/v1/${TABELA}?id=eq.${u.id}`, {
       method: 'PATCH', headers: H,
       body: JSON.stringify({ ...u.reg, updated_at: new Date().toISOString() }),
     })

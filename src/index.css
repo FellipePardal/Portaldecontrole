@@ -3609,3 +3609,53 @@ body {
   color: var(--text); font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit;
 }
 .pl-btn-google:hover { background: var(--bg-hover); }
+
+/* ============================================================
+   Página pública do prestador (#escala/<token>)
+   ============================================================ */
+.ep-wrap { max-width: 640px; margin: 0 auto; padding: 20px 16px 60px; }
+.ep-header { display: flex; align-items: center; gap: 12px; margin-bottom: 22px; }
+.ep-header h1 { font-size: 18px; font-weight: 800; color: var(--text); margin: 0; }
+.ep-header p { font-size: 12.5px; color: var(--text-muted); margin: 3px 0 0; }
+.ep-secao { font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-dim); margin: 18px 0 10px; }
+.ep-vazio { color: var(--text-muted); font-size: 14px; padding: 30px 0; text-align: center; }
+.ep-card {
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px;
+  padding: 14px 16px; margin-bottom: 12px; transition: border-color 0.2s;
+}
+.ep-card.ep-ok  { border-color: rgba(101,179,46,0.55); }
+.ep-card.ep-nao { border-color: rgba(220,38,38,0.4); opacity: 0.85; }
+.ep-card-top { display: flex; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+.ep-funcao { font-size: 10.5px; font-weight: 800; letter-spacing: 0.07em; text-transform: uppercase; color: #65B32E; }
+.ep-camp { font-size: 11px; font-weight: 600; color: var(--text-dim); }
+.ep-times { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 700; color: var(--text); flex-wrap: wrap; }
+.ep-x { color: var(--text-dim); font-weight: 400; }
+.ep-meta { font-size: 12px; color: var(--text-muted); margin: 6px 0 0; }
+.ep-acoes { display: flex; gap: 8px; margin-top: 12px; }
+.ep-btn {
+  flex: 1; padding: 10px; border-radius: 9px; font-size: 13.5px; font-weight: 700;
+  cursor: pointer; font-family: inherit; border: 1.5px solid var(--border);
+  background: var(--bg-surface); color: var(--text-muted); transition: all 0.15s;
+}
+.ep-btn:disabled { opacity: 0.6; cursor: wait; }
+.ep-btn-sim.is-on, .ep-btn-sim:hover { background: var(--lm-green-bg, #EAF5E2); color: #3F7619; border-color: rgba(101,179,46,0.6); }
+.ep-btn-nao.is-on, .ep-btn-nao:hover { background: #FBE8E5; color: #8E2A1E; border-color: #EBB6AE; }
+.ep-obs { display: flex; gap: 6px; margin-top: 8px; }
+.ep-obs input {
+  flex: 1; padding: 9px 12px; border: 1px solid var(--border); border-radius: 8px;
+  font-size: 13px; font-family: inherit; outline: none;
+}
+.ep-obs .ep-btn { flex: 0 0 auto; padding: 9px 16px; }
+.ep-status { font-size: 12px; font-weight: 600; margin: 10px 0 0; }
+.ep-status-ok { color: #3F7619; }
+.ep-status-nao { color: #8E2A1E; }
+.ep-passados { margin-top: 20px; }
+.ep-passados summary { font-size: 13px; font-weight: 700; color: var(--text-muted); cursor: pointer; margin-bottom: 10px; }
+
+/* Indicador de confirmação nos slots da Escala Geral */
+.eg-conf {
+  display: inline-block; margin-left: 5px; font-size: 10px; font-weight: 900;
+  vertical-align: 1px;
+}
+.eg-conf-ok  { color: #16a34a; }
+.eg-conf-nao { color: #DC2626; }

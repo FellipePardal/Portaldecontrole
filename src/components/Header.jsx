@@ -1,4 +1,4 @@
-export default function Header({ activeView, onHomeClick, onFornecedoresClick, onEscalaGeralClick, onUsuariosClick, onSair, onNewCompetition, onNewJogo, accentColor }) {
+export default function Header({ activeView, onHomeClick, onFornecedoresClick, onEscalaGeralClick, onLinksClick, onUsuariosClick, onSair, onNewCompetition, onNewJogo, accentColor }) {
   return (
     <header className="header">
       <div className="logo-area" onClick={onHomeClick} style={{ cursor: 'pointer' }} title="Início">
@@ -44,6 +44,19 @@ export default function Header({ activeView, onHomeClick, onFornecedoresClick, o
           </svg>
           Fornecedores
         </button>
+
+        {onLinksClick && (
+          <button
+            className={`header-nav-btn${activeView === 'links' ? ' header-nav-active' : ''}`}
+            onClick={onLinksClick}
+            title="Links externos de prestadores"
+          >
+            <svg viewBox="0 0 16 16" fill="none" width="14" height="14">
+              <path d="M6.5 9.5a3 3 0 004.2.3l2-2a3 3 0 00-4.2-4.2l-1 1M9.5 6.5a3 3 0 00-4.2-.3l-2 2a3 3 0 004.2 4.2l1-1" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+            </svg>
+            Links
+          </button>
+        )}
 
         {onUsuariosClick && (
           <button
