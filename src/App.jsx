@@ -104,6 +104,15 @@ export default function App() {
 
   const sair = () => supabase.auth.signOut()
 
+  // Hash reativo: sem isso, abrir/mudar #escala/<token> numa aba já carregada
+  // não troca a página (o hash só era lido na primeira renderização).
+  const [hash, setHash] = useState(window.location.hash)
+  useEffect(() => {
+    const onHash = () => setHash(window.location.hash)
+    window.addEventListener('hashchange', onHash)
+    return () => window.removeEventListener('hashchange', onHash)
+  }, [])
+
   useEffect(() => {
     if (competitions.length === 0) return
     const stillExists = competitions.find(c => c.id === activeComp)
@@ -136,7 +145,7 @@ export default function App() {
   }
 
   // ── Rota PÚBLICA por hash: escala do prestador (token é a chave) ───────────
-  const escalaMatch = window.location.hash.match(/^#escala\/([0-9a-fA-F-]{36})$/)
+  const escalaMatch = hash.match(/^#escala\/([0-9a-fA-F-]{36})$/)
   if (escalaMatch) return <EscalaPrestador token={escalaMatch[1]} />
 
   // ── Gate de autenticação (antes de qualquer tela interna) ─────────────────
