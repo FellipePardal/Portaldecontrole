@@ -1,4 +1,6 @@
-export default function Header({ activeView, onHomeClick, onFornecedoresClick, onEscalaGeralClick, onLinksClick, onUsuariosClick, onSair, onNewCompetition, onNewJogo, accentColor }) {
+import PresencaBar from './PresencaBar'
+
+export default function Header({ activeView, onHomeClick, onFornecedoresClick, onEscalaGeralClick, onLinksClick, onUsuariosClick, onSair, onNewCompetition, onNewJogo, accentColor, user, userNome, viewLabel }) {
   return (
     <header className="header">
       <div className="logo-area" onClick={onHomeClick} style={{ cursor: 'pointer' }} title="Início">
@@ -11,6 +13,7 @@ export default function Header({ activeView, onHomeClick, onFornecedoresClick, o
       </div>
 
       <div className="header-actions">
+        {user && <PresencaBar user={user} nome={userNome} viewLabel={viewLabel} />}
         <button
           className={`header-nav-btn${activeView === 'home' ? ' header-nav-active' : ''}`}
           onClick={onHomeClick}

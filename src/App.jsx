@@ -103,6 +103,7 @@ export default function App() {
   }, [])
 
   const sair = () => supabase.auth.signOut()
+  const userNome = user?.user_metadata?.nome || user?.user_metadata?.full_name || user?.email?.split('@')[0] || ''
 
   // Hash reativo: sem isso, abrir/mudar #escala/<token> numa aba já carregada
   // não troca a página (o hash só era lido na primeira renderização).
@@ -190,6 +191,7 @@ export default function App() {
       <div className="app">
         <Header
           activeView="links"
+          user={user} userNome={userNome} viewLabel={'Links externos'}
           onHomeClick={handleHomeClick}
           onFornecedoresClick={handleFornecedoresClick}
           onEscalaGeralClick={() => setActiveView('escala-geral')}
@@ -213,6 +215,7 @@ export default function App() {
       <div className="app">
         <Header
           activeView="usuarios"
+          user={user} userNome={userNome} viewLabel={'Usuários'}
           onHomeClick={handleHomeClick}
           onFornecedoresClick={handleFornecedoresClick}
           onEscalaGeralClick={() => setActiveView('escala-geral')}
@@ -236,6 +239,7 @@ export default function App() {
       <div className="app">
         <Header
           activeView="escala-geral"
+          user={user} userNome={userNome} viewLabel={'Escala Geral'}
           onHomeClick={handleHomeClick}
           onFornecedoresClick={handleFornecedoresClick}
           onEscalaGeralClick={() => setActiveView('escala-geral')}
@@ -259,6 +263,7 @@ export default function App() {
       <div className="app">
         <Header
           activeView="fornecedores"
+          user={user} userNome={userNome} viewLabel={'Fornecedores'}
           onHomeClick={handleHomeClick}
           onFornecedoresClick={handleFornecedoresClick}
           onEscalaGeralClick={() => setActiveView('escala-geral')}
@@ -284,6 +289,7 @@ export default function App() {
       <div className="app">
         <Header
           activeView="home"
+          user={user} userNome={userNome} viewLabel={'Início'}
           onHomeClick={handleHomeClick}
           onFornecedoresClick={handleFornecedoresClick}
           onEscalaGeralClick={() => setActiveView('escala-geral')}
@@ -307,6 +313,7 @@ export default function App() {
       <div className="app">
         <Header
           activeView="comp"
+          user={user} userNome={userNome} viewLabel={'Portal'}
           onHomeClick={handleHomeClick}
           onFornecedoresClick={handleFornecedoresClick}
           onEscalaGeralClick={() => setActiveView('escala-geral')}
@@ -348,6 +355,7 @@ export default function App() {
     <div className="app">
       <Header
         activeView="comp"
+          user={user} userNome={userNome} viewLabel={cleanComp(competition.label)}
         onHomeClick={handleHomeClick}
         onFornecedoresClick={handleFornecedoresClick}
           onEscalaGeralClick={() => setActiveView('escala-geral')}
