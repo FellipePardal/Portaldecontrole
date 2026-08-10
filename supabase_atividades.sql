@@ -59,6 +59,10 @@ BEGIN
     CASE TG_OP WHEN 'INSERT' THEN 'criou' WHEN 'UPDATE' THEN 'editou' ELSE 'excluiu' END,
     TG_TABLE_NAME, rot, mudados
   );
+  -- Retenção: ~2% das gravações limpam o que passou de 60 dias (barato com o índice)
+  IF random() < 0.02 THEN
+    DELETE FROM portal_atividades WHERE created_at < NOW() - INTERVAL '60 days';
+  END IF;
   RETURN NULL;
 END $$;
 
