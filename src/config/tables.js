@@ -219,6 +219,7 @@ const paulistaoFemRawColumns = [
   // Group: Equipe Técnica
   { key: 'um', label: 'UM', type: 'select', options: UMS, width: 150, group: 'Equipe Técnica' },
   { key: 'gerador', label: 'Gerador', type: 'select', options: SNG_OPTIONS, width: 130, group: 'Equipe Técnica' },
+  { key: 'sng', label: 'SNG', type: 'select', options: SNG_OPTIONS, width: 140, group: 'Equipe Técnica' },
   { key: 'dslr', label: 'DSLR', type: 'text', width: 100, group: 'Equipe Técnica' },
   { key: 'refcam', label: 'RefCam', type: 'text', width: 100, group: 'Equipe Técnica' },
   { key: 'drone', label: 'Drone', type: 'text', width: 100, group: 'Equipe Técnica' },

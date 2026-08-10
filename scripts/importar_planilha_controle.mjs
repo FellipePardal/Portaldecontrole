@@ -10,11 +10,26 @@
 //      node scripts/importar_planilha_controle.mjs --tabela paulistao_feminino_jogos <csvs...>
 // Obs.: com o RLS ligado (2026-08-06), rode com SUPABASE_SERVICE_KEY no ambiente.
 
+// Com o RLS (2026-08-06), a chave anon não lê nem escreve mais. O caminho
+// preferido é conexão DIRETA ao Postgres via variáveis padrão do pg
+// (PGHOST/PGUSER/PGPASSWORD/PGDATABASE); REST fica como fallback se houver
+// SUPABASE_SERVICE_KEY no ambiente.
 const URL = process.env.SUPABASE_URL || 'https://buubjnddzsadzcumrvdt.supabase.co'
-const KEY = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ1dWJqbmRkenNhZHpjdW1ydmR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ2MjQ3OTUsImV4cCI6MjA5MDIwMDc5NX0.mMEoVzmgdT1nHj1TLUWfhXzd4tcnzFad-HtF6TKPMw4'
+const KEY = process.env.SUPABASE_SERVICE_KEY || ''
 const H = { apikey: KEY, Authorization: `Bearer ${KEY}`, 'Content-Type': 'application/json' }
 
 import { readFileSync } from 'fs'
+
+let db = null
+if (process.env.PGHOST) {
+  const pg = (await import('pg')).default
+  db = new pg.Client({ ssl: { rejectUnauthorized: false } })
+  await db.connect()
+  console.log('(conexão direta ao Postgres)')
+} else if (!KEY) {
+  console.error('Defina PGHOST/PGUSER/PGPASSWORD (conexão direta) ou SUPABASE_SERVICE_KEY.')
+  process.exit(1)
+}
 
 const APLICAR = process.argv.includes('--aplicar')
 // --itens 1,2,7-9 : aplica/mostra só os itens dessa numeração (a do dry-run)
@@ -46,8 +61,13 @@ const MAPA = {
   'sng premiere': 'sng_premiere', 'sng host': 'sng_host', 'gerador': 'gerador',
   'supervisores_1': 'supervisores_1', 'liveu_1': 'liveu_1',
   'supervisores_2': 'supervisores_2', 'liveu_2': 'liveu_2',
-  'dtv': 'dtv', 'op vmix': 'op_vmix', 'op audio': 'op_audio',
+  'dtv': 'dtv', 'op vmix': 'op_vmix', 'op. vmix': 'op_vmix', 'op audio': 'op_audio',
   'teleporto': 'teleporto', 'satelite': 'satelite',
+  // Cabeçalhos exclusivos da planilha do Paulistão F
+  'sng': 'sng', 'supervisor um host': 'supervisor_um_host',
+  'drone': 'drone', 'dslr': 'dslr', 'earcam': 'refcam', 'grua': 'grua',
+  'coordenador': 'coordenador', 'audio 1/2': 'audio_1_2', 'audio 3/4': 'audio_3_4',
+  'credenciamento': null, // vive nos Periféricos, não no Controle — ignorada aqui
   'service start (gmt )': 'service_start_gmt', 'service start (gmt)': 'service_start_gmt',
   'abertura (brt)': 'abertura_brt', 'service end (gmt)': 'service_end_gmt',
   'fechamento (brt)': 'fechamento_brt', 'total de horas': 'total_horas', 'banda': 'banda',
@@ -126,15 +146,19 @@ if (duplicados.length) console.log(`\nPares repetidos entre as partes (a 2ª ven
 const finais = [...porChave.values()]
 
 // Linhas existentes no Portal
-const existentes = await (await fetch(`${URL}/rest/v1/${TABELA}?select=*`, { headers: H })).json()
+const existentes = db
+  ? (await db.query(`SELECT * FROM ${TABELA}`)).rows
+  : await (await fetch(`${URL}/rest/v1/${TABELA}?select=*`, { headers: H })).json()
 const existPorChave = new Map(existentes.filter(r => r.mandante && r.visitante).map(r => [chave(r), r]))
 
 // SÓ colunas de função/operação entram no update (decisão 2026-08-05): os
 // campos do JOGO (rodada, dia, data, hora, times, estádio, cidade, padrão,
 // detentor, ppv) ficam como estão no Portal — servem apenas para o match.
 const COLUNAS_FUNCAO = new Set([
-  'um', 'sng_premiere', 'sng_host', 'gerador',
+  'um', 'sng_premiere', 'sng_host', 'sng', 'gerador',
   'supervisores_1', 'liveu_1', 'supervisores_2', 'liveu_2',
+  'supervisor_um_host', 'coordenador', 'drone', 'dslr', 'refcam', 'grua',
+  'audio_1_2', 'audio_3_4',
   'dtv', 'op_vmix', 'op_audio', 'teleporto', 'satelite',
   'service_start_gmt', 'abertura_brt', 'service_end_gmt', 'fechamento_brt',
   'total_horas', 'banda', 'status', 'reserva', 'transponder', 'uplink', 'downlink',
@@ -172,13 +196,21 @@ inserts.slice(0, 40).forEach(r => console.log(`   ${r.eu}ª ${r.mandante} x ${r.
 if (APLICAR) {
   const alvo = ITENS ? updates.filter((_, i) => ITENS.has(i + 1)) : updates
   for (const u of alvo) {
-    const r = await fetch(`${URL}/rest/v1/${TABELA}?id=eq.${u.id}`, {
-      method: 'PATCH', headers: H,
-      body: JSON.stringify({ ...u.reg, updated_at: new Date().toISOString() }),
-    })
-    if (!r.ok) console.error(`Falha update ${u.nome}: ${r.status} ${await r.text()}`)
+    const reg = { ...u.reg, updated_at: new Date().toISOString() }
+    if (db) {
+      const cols = Object.keys(reg)
+      const sets = cols.map((c, i) => `"${c}" = $${i + 2}`).join(', ')
+      try { await db.query(`UPDATE ${TABELA} SET ${sets} WHERE id = $1`, [u.id, ...cols.map(c => reg[c])]) }
+      catch (e) { console.error(`Falha update ${u.nome}: ${e.message}`) }
+    } else {
+      const r = await fetch(`${URL}/rest/v1/${TABELA}?id=eq.${u.id}`, {
+        method: 'PATCH', headers: H, body: JSON.stringify(reg),
+      })
+      if (!r.ok) console.error(`Falha update ${u.nome}: ${r.status} ${await r.text()}`)
+    }
   }
   console.log(`\nGravado: ${alvo.length} updates. Nenhum jogo criado, nenhum campo de jogo alterado.`)
 } else {
   console.log('\nNada gravado. Rode com --aplicar para gravar (ou --aplicar --itens 1,3,5-8 para um subconjunto).')
 }
+if (db) await db.end()
