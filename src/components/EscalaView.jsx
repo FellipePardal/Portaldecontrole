@@ -3,6 +3,8 @@ import { getEscudoUrl } from '../lib/escudos'
 import { supabase, isConfigured } from '../lib/supabase'
 import { STATUS_OPTIONS, getStatusClass, CRED_OPTIONS, getCredClass, PAR_PERIFERICO } from '../config/tables'
 import { compararPorData, rodadaAtual } from '../lib/datas'
+import { useHubFornecedores, getColumnPredicate } from '../hooks/useHubFornecedores'
+import FornecedorPicker from './FornecedorPicker'
 
 // ─── VISÃO ESCALA ─────────────────────────────────────────────────────────────
 // A aba Controle em formato "prancheta": um card por jogo, com os slots de
@@ -27,7 +29,7 @@ function Escudo({ nome, size = 26 }) {
 }
 
 // Slot de função: chip clicável que abre menu de opções / input livre.
-function SlotFuncao({ jogo, col, valor, destaque, onSave }) {
+function SlotFuncao({ jogo, col, valor, destaque, fornecedores, onSave }) {
   const [aberto, setAberto] = useState(false)
   const [texto, setTexto] = useState('')
   const ref = useRef(null)
@@ -42,6 +44,7 @@ function SlotFuncao({ jogo, col, valor, destaque, onSave }) {
   const vazio = !valor || !String(valor).trim()
   const abrir = () => { setTexto(valor || ''); setAberto(a => !a) }
   const salvar = v => { onSave(jogo.id, col.key, v); setAberto(false) }
+  const ehFornecedor = !!getColumnPredicate(col.key)
 
   return (
     <div className={`esc-slot ${vazio ? 'esc-slot-vazio' : ''} ${destaque ? 'esc-slot-destaque' : ''}`} ref={ref}>
@@ -51,19 +54,34 @@ function SlotFuncao({ jogo, col, valor, destaque, onSave }) {
       </button>
       {aberto && (
         <div className="esc-slot-menu">
-          {(col.options || []).map(op => (
-            <button key={op} className={`esc-slot-opcao ${op === valor ? 'is-atual' : ''}`} onClick={() => salvar(op)}>{op}</button>
-          ))}
-          <div className="esc-slot-livre">
-            <input
-              autoFocus={!col.options?.length}
-              value={texto}
-              placeholder="Outro nome..."
-              onChange={e => setTexto(e.target.value)}
-              onKeyDown={e => { if (e.key === 'Enter') salvar(texto.trim()) }}
-            />
-            <button onClick={() => salvar(texto.trim())}>OK</button>
-          </div>
+          {ehFornecedor ? (
+            // Coluna de fornecedor: picker da base compartilhada com o Hub
+            <div className="esc-slot-livre" style={{ borderTop: 'none', marginTop: 0 }}>
+              <FornecedorPicker
+                value={texto}
+                onChange={setTexto}
+                colKey={col.key}
+                fornecedores={fornecedores}
+                autoFocus compact
+                onEnter={() => salvar(texto.trim())}
+              />
+              <button onClick={() => salvar(texto.trim())}>OK</button>
+            </div>
+          ) : (<>
+            {(col.options || []).map(op => (
+              <button key={op} className={`esc-slot-opcao ${op === valor ? 'is-atual' : ''}`} onClick={() => salvar(op)}>{op}</button>
+            ))}
+            <div className="esc-slot-livre">
+              <input
+                autoFocus={!col.options?.length}
+                value={texto}
+                placeholder="Outro nome..."
+                onChange={e => setTexto(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter') salvar(texto.trim()) }}
+              />
+              <button onClick={() => salvar(texto.trim())}>OK</button>
+            </div>
+          </>)}
           {!vazio && <button className="esc-slot-limpar" onClick={() => salvar('')}>Limpar slot</button>}
         </div>
       )}
@@ -130,6 +148,7 @@ function CredPill({ valor, onSelect }) {
 }
 
 export default function EscalaView({ data, config, onEdit, onDelete, onStatusChange, onSaveCampo }) {
+  const { fornecedores: hubFornecedores } = useHubFornecedores()
   const funcoes = useMemo(() => funcoesDaConfig(config), [config])
   const rodadaKey = config.columns?.some(c => c.key === 'eu') ? 'eu' : 'rod'
   const accent = config.accentColor || '#3b82f6'
@@ -331,6 +350,7 @@ export default function EscalaView({ data, config, onEdit, onDelete, onStatusCha
                           col={f}
                           valor={r[f.key]}
                           destaque={!!fFornecedor && norm(r[f.key]).includes(norm(fFornecedor))}
+                          fornecedores={hubFornecedores}
                           onSave={onSaveCampo}
                         />
                       ))}

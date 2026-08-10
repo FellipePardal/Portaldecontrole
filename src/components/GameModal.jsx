@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
 import { getStatusClass, STATUS_OPTIONS } from '../config/tables'
 import { getCustomOptions, addCustomOption } from '../hooks/useCustomOptions'
-import { useHubFornecedores, getApelidosForColumn } from '../hooks/useHubFornecedores'
+import { useHubFornecedores, getApelidosForColumn, getColumnPredicate } from '../hooks/useHubFornecedores'
+import FornecedorPicker from './FornecedorPicker'
 
 const EXCLUDED = new Set(['id', 'created_at', 'updated_at'])
 
@@ -183,6 +184,15 @@ function FormSection({ group, cols, formData, onSet, accentColor, hubFornecedore
                       onClick={() => onSet(col.key, 'Não')}
                     ><span className="simnao-icon">✕</span>Não</button>
                   </div>
+                ) : getColumnPredicate(col.key) ? (
+                  // Coluna de fornecedor/prestador: picker da base compartilhada
+                  <FornecedorPicker
+                    value={value}
+                    onChange={v => onSet(col.key, v)}
+                    colKey={col.key}
+                    fornecedores={hubFornecedores}
+                    placeholder={`${col.label}...`}
+                  />
                 ) : col.type === 'select' ? (
                   <SelectWithAdd col={col} value={value} onSet={onSet} accentColor={accentColor} hubFornecedores={hubFornecedores} />
                 ) : col.type === 'url' ? (

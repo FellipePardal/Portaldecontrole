@@ -2,12 +2,14 @@ import { useState, useMemo, useEffect, useRef } from 'react'
 import { supabase, isConfigured } from '../lib/supabase'
 import { getEscudoUrl } from '../lib/escudos'
 import { parseData } from '../lib/datas'
+import { useHubFornecedores } from '../hooks/useHubFornecedores'
+import FornecedorPicker from './FornecedorPicker'
 // "Não" gravado na coluna da função = o jogo NÃO terá essa função (não é
 // pendência). Vazio = pendente. Qualquer outro texto = prestador definido.
 const naoTem = v => /^n[aã]o$/i.test(String(v || '').trim())
 
 // Ficha completa: por função, Sim/Não + prestador (e $ quando a função tem)
-function FichaFuncoes({ row, cor, onClose, onSave }) {
+function FichaFuncoes({ row, cor, fornecedores, onClose, onSave }) {
   const init = {}
   FUNCOES.forEach(fn => {
     const v = row[fn.key] || ''
@@ -53,8 +55,9 @@ function FichaFuncoes({ row, cor, onClose, onSave }) {
                   <button className={!f.tem ? 'is-on is-off' : ''} onClick={() => set(fn.key, { tem: false })}>Não</button>
                 </div>
                 {f.tem ? (<>
-                  <input className="eg-ficha-input" value={f.nome} placeholder="Prestador(es)... (use / para dois)"
-                    onChange={e => set(fn.key, { nome: e.target.value })} />
+                  <FornecedorPicker value={f.nome} onChange={v => set(fn.key, { nome: v })}
+                    colKey={fn.key} fornecedores={fornecedores}
+                    placeholder="Prestador(es)... (use / para dois)" />
                   {fn.valor && (
                     <input className="eg-ficha-input" style={{ flex: '0 0 72px' }} value={f.valor} placeholder="$"
                       onChange={e => set(fn.key, { valor: e.target.value })} />
@@ -141,7 +144,7 @@ function Escudo({ nome, size = 24 }) {
 // função tem. O separador " / " é o mesmo da planilha original.
 // `mudo`: slot vazio sem o alerta âmbar (jogos que não escalam equipe).
 // `conf`: confirmação de presença vinda do link externo (✓ confirmado / ✗ recusado).
-function SlotPessoa({ row, fn, sugestoes, destaque, mudo, conf, onSave }) {
+function SlotPessoa({ row, fn, fornecedores, destaque, mudo, conf, onSave }) {
   const [aberto, setAberto] = useState(false)
   const [nome1, setNome1] = useState('')
   const [nome2, setNome2] = useState('')
@@ -176,7 +179,6 @@ function SlotPessoa({ row, fn, sugestoes, destaque, mudo, conf, onSave }) {
   const salvarForm = () => salvar(montar(), valor.trim())
   const aoEnter = e => { if (e.key === 'Enter') salvarForm() }
   // Sugestão clicada preenche o primeiro campo vazio (1ª pessoa, senão 2ª)
-  const usarSugestao = s => { if (!nome1.trim()) setNome1(s); else setNome2(s) }
 
   const texto = desativado ? 'Não' : vazio ? (mudo ? '—' : 'Definir') : `${atual}${atualValor ? ` · ${atualValor}` : ''}`
   const classe = desativado ? 'esc-slot-off' : vazio ? (mudo ? 'esc-slot-off' : 'esc-slot-vazio') : ''
@@ -197,12 +199,14 @@ function SlotPessoa({ row, fn, sugestoes, destaque, mudo, conf, onSave }) {
       {aberto && (
         <div className="esc-slot-menu">
           <div className="esc-slot-livre" style={{ borderTop: 'none', marginTop: 0 }}>
-            <input autoFocus value={nome1} placeholder="1ª pessoa..." list={`eg-sug-${fn.key}`}
-              onChange={e => setNome1(e.target.value)} onKeyDown={aoEnter} />
+            <FornecedorPicker value={nome1} onChange={setNome1} colKey={fn.key}
+              fornecedores={fornecedores} placeholder="1ª pessoa..." autoFocus compact
+              onEnter={salvarForm} />
           </div>
           <div className="esc-slot-livre" style={{ borderTop: 'none', marginTop: 0, paddingTop: 0 }}>
-            <input value={nome2} placeholder="2ª pessoa (opcional)" list={`eg-sug-${fn.key}`}
-              onChange={e => setNome2(e.target.value)} onKeyDown={aoEnter} />
+            <FornecedorPicker value={nome2} onChange={setNome2} colKey={fn.key}
+              fornecedores={fornecedores} placeholder="2ª pessoa (opcional)" compact
+              onEnter={salvarForm} />
           </div>
           <div className="esc-slot-livre" style={{ borderTop: 'none', marginTop: 0, paddingTop: 0 }}>
             {fn.valor && (
@@ -211,15 +215,6 @@ function SlotPessoa({ row, fn, sugestoes, destaque, mudo, conf, onSave }) {
             )}
             <button style={{ flex: 1 }} onClick={salvarForm}>OK</button>
           </div>
-          <datalist id={`eg-sug-${fn.key}`}>
-            {sugestoes.map(s => <option key={s} value={s} />)}
-          </datalist>
-          {(sugestoes || []).slice(0, 8).map(s => {
-            const escalado = String(atual || '').split('/').map(x => x.trim()).includes(s)
-            return (
-              <button key={s} className={`esc-slot-opcao ${escalado ? 'is-atual' : ''}`} onClick={() => usarSugestao(s)}>{s}</button>
-            )
-          })}
           {!desativado && <button className="esc-slot-opcao" onClick={() => salvar('Não', '')}>🚫 Não terá esta função</button>}
           {(!vazio || desativado) && <button className="esc-slot-limpar" onClick={() => salvar('', '')}>Limpar slot</button>}
         </div>
@@ -229,6 +224,7 @@ function SlotPessoa({ row, fn, sugestoes, destaque, mudo, conf, onSave }) {
 }
 
 export default function EscalaGeralView() {
+  const { fornecedores: hubFornecedores } = useHubFornecedores()
   const [rows, setRows] = useState([])
   const [loading, setLoading] = useState(isConfigured)
   const [erro, setErro] = useState(null)
@@ -511,7 +507,7 @@ export default function EscalaGeralView() {
                         key={fn.key}
                         row={r}
                         fn={fn}
-                        sugestoes={sugestoesPorFn[fn.key] || []}
+                        fornecedores={hubFornecedores}
                         destaque={!!fPessoa && norm(r[fn.key]).includes(norm(fPessoa))}
                         mudo={mudo}
                         conf={confirmacoes.get(`${r.id}|${fn.label}`)}
@@ -548,6 +544,7 @@ export default function EscalaGeralView() {
       {ficha && (
         <FichaFuncoes
           row={ficha}
+          fornecedores={hubFornecedores}
           cor={estiloCampeonato(ficha.campeonato).cor}
           onClose={() => setFicha(null)}
           onSave={async payload => { await salvar(ficha.id, payload) }}

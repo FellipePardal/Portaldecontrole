@@ -26,6 +26,20 @@ const MATCH = {
   fornecedor_trilho:       f => /trilho|especial/i.test(f.funcao),
   fornecedor_carrinho:     f => /carrinho/i.test(f.funcao),
   fornecedor_clipcam:      f => /clip[ ]?cam|especial/i.test(f.funcao),
+  // Controle do Paulistão F (colunas próprias)
+  sng:                     f => /\bSNG\b/i.test(f.funcao),
+  supervisor_um_host:      f => /supervisor/i.test(f.funcao),
+  coordenador:             f => /coordenador/i.test(f.funcao),
+  dslr:                    f => /\bDSLR\b/i.test(f.funcao),
+  refcam:                  f => /ref[ ]?cam/i.test(f.funcao),
+  drone:                   f => /\bDrone\b/i.test(f.funcao),
+  minidrone:               f => /mini[ ]?drone/i.test(f.funcao),
+  grua:                    f => /\bGrua\b/i.test(f.funcao),
+  // Escala Geral (funções de UM/produção)
+  coordenador_um:          f => /coordenador/i.test(f.funcao),
+  produtor_um:             f => /produtor/i.test(f.funcao),
+  produtor_campo:          f => /produtor/i.test(f.funcao),
+  monitoracao:             f => /monitora/i.test(f.funcao),
 }
 
 export function useHubFornecedores() {
@@ -76,4 +90,59 @@ export function getApelidosForColumn(colKey, fornecedores) {
 // Retorna o predicado de match para uma coluna (para usar com FornecedorAutocomplete).
 export function getColumnPredicate(colKey) {
   return MATCH[colKey] || null
+}
+
+// Vocabulário de função sugerido por coluna (pré-preenche o cadastro rápido)
+export const FUNCAO_DA_COLUNA = {
+  um: 'UM', sng_premiere: 'SNG', sng_host: 'SNG', sng: 'SNG', gerador: 'Gerador',
+  supervisores_1: 'Supervisor', supervisores_2: 'Supervisor', supervisor_um_host: 'Supervisor',
+  liveu_1: 'LiveU', liveu_2: 'LiveU', dtv: 'DTV', op_vmix: 'Vmix', op_audio: 'Áudio',
+  teleporto: 'Teleporto', coordenador: 'Coordenador', coordenador_um: 'Coordenador UM',
+  produtor_um: 'Produtor UM', produtor_campo: 'Produtor de Campo', monitoracao: 'Monitoração',
+  fornecedor_drone: 'Drone', drone: 'Drone', fornecedor_minidrone: 'Minidrone', minidrone: 'Minidrone',
+  fornecedor_dslr: 'DSLR', dslr: 'DSLR', fornecedor_grua: 'Grua', grua: 'Grua',
+  fornecedor_goalcam: 'Goalcam', fornecedor_trilho: 'Trilho', fornecedor_carrinho: 'Carrinho',
+  fornecedor_clipcam: 'ClipCam', refcam: 'RefCam',
+}
+
+const normNome = s => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
+  .replace(/[^a-z0-9 ]/g, ' ').replace(/\s+/g, ' ').trim()
+
+// O nome está cadastrado na base? (aceita "A / B" — checa cada segmento)
+export function estaCadastrado(valor, fornecedores) {
+  if (!valor || !String(valor).trim()) return true // vazio não é "não cadastrado"
+  const norms = new Set(fornecedores.map(f => normNome(f.apelido)))
+  return String(valor).split('/').map(s => s.trim()).filter(Boolean).every(seg => {
+    if (/^n[aã]o$|^sim$/i.test(seg)) return true
+    // ignora anotações: "(H)", "- Record", "cobre"
+    const base = seg.replace(/\s*\([^)]*\)\s*/g, ' ')
+      .replace(/[\s-]+(record news|record|youtube|yt|premiere|cazetv|amazon|tnt|hbo)$/i, '')
+      .replace(/\s+cobre$/i, '').trim()
+    return norms.has(normNome(base))
+  })
+}
+
+// Cadastro rápido na base COMPARTILHADA (app_state.fornecedores do Hub).
+// Releitura antes de gravar (mesma técnica do createPersistedSetter do Hub);
+// se o apelido já existir (normalizado), retorna o existente sem duplicar.
+export async function cadastrarFornecedor({ apelido, funcao, tipo }) {
+  const nome = String(apelido || '').trim()
+  if (!nome) throw new Error('Apelido vazio')
+  const { data, error } = await supabase.from('app_state').select('value').eq('key', 'fornecedores').single()
+  if (error) throw error
+  const base = Array.isArray(data?.value) ? data.value : []
+  const existente = base.find(f => normNome(f.apelido) === normNome(nome))
+  if (existente) return existente
+  const novo = {
+    id: Date.now(), apelido: nome, razaoSocial: '', cnpj: '',
+    funcao: String(funcao || '').trim(), area: 'Operações',
+    tipo: tipo === 'Fornecedor' ? 'Fornecedor' : 'Prestador',
+    nome: '', telefone: '', email: '', cpf: '', rg: '',
+    origem: 'portal-quick-add',
+  }
+  const { error: e2 } = await supabase.from('app_state')
+    .update({ value: [...base, novo], updated_at: new Date().toISOString() })
+    .eq('key', 'fornecedores')
+  if (e2) throw e2
+  return novo
 }

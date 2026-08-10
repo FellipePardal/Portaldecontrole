@@ -54,30 +54,6 @@ const PADROES = ['B1', 'B2']
 
 const DETENTORES = ['CazeTV/Record', 'AmazonPrime', 'Globo', 'SporTV', 'Band', 'DAZN']
 
-const UMS = ['Multvideo', 'PW Video', 'CromaMix', 'TVClube', 'Kapta Filmes', 'Conecta']
-
-const SNG_OPTIONS = ['Conecta', 'Cromamix', 'Mineiro', 'PW', 'LocLine', 'No Break', 'Kiyoshi', 'Estrutura Globo']
-
-const SUPERVISORES = [
-  'Rafael Gusmão / 21 98038-6887',
-  'Anderson Fernandes / 71 8805-2446',
-  'Julio Fornazari / 11 98433-9323',
-  'Alexandre Dumas / 11 94166-8766',
-  'Paulo Brito Jr / 11 94041-2580',
-  'Lucas Rodrigues',
-  'Flavio Brandão',
-  'Ricardo Milsoni',
-  'Paulo Brito',
-]
-
-const DTV_OPTIONS = ['Marquinhos', 'Carlão', 'Verdes Mares']
-
-const OP_VMIX_OPTIONS = ['Guilherme Sanches', 'Adalberto Godoy', 'Pedro Souza', 'Helamã Hyrum']
-
-const OP_AUDIO_OPTIONS = ['Op. da Produtora', 'Fabricio', 'Cavalheiro']
-
-const TELEPORTO_OPTIONS = ['LM Assunção']
-
 const SATELITE_OPTIONS = ['Amz3', 'SES-6', 'Star One C2', 'Intelsat']
 
 // ============================================================
@@ -98,21 +74,21 @@ const brasileiraoRawColumns = [
 
   // Group: Equipe Técnica
   { key: 'ppv', label: 'PPV', type: 'text', width: 80, group: 'Equipe Técnica' },
-  { key: 'um', label: 'UM', type: 'select', options: UMS, width: 150, group: 'Equipe Técnica' },
+  { key: 'um', label: 'UM', type: 'text', width: 150, group: 'Equipe Técnica' },
   { key: 'nome_numero', label: 'Nome/N°', type: 'text', width: 130, group: 'Equipe Técnica' },
-  { key: 'sng_premiere', label: 'SNG Premiere', type: 'select', options: SNG_OPTIONS, width: 150, group: 'Equipe Técnica' },
-  { key: 'sng_host', label: 'SNG Host', type: 'select', options: SNG_OPTIONS, width: 145, group: 'Equipe Técnica' },
-  { key: 'gerador', label: 'Gerador', type: 'select', options: SNG_OPTIONS, width: 130, group: 'Equipe Técnica' },
-  { key: 'supervisores_1', label: 'Supervisores 1', type: 'select', options: SUPERVISORES, width: 220, group: 'Equipe Técnica' },
+  { key: 'sng_premiere', label: 'SNG Premiere', type: 'text', width: 150, group: 'Equipe Técnica' },
+  { key: 'sng_host', label: 'SNG Host', type: 'text', width: 145, group: 'Equipe Técnica' },
+  { key: 'gerador', label: 'Gerador', type: 'text', width: 130, group: 'Equipe Técnica' },
+  { key: 'supervisores_1', label: 'Supervisores 1', type: 'text', width: 220, group: 'Equipe Técnica' },
   { key: 'liveu_1', label: 'LiveU 1', type: 'text', width: 130, group: 'Equipe Técnica' },
-  { key: 'supervisores_2', label: 'Supervisores 2', type: 'select', options: SUPERVISORES, width: 220, group: 'Equipe Técnica' },
-  { key: 'liveu_2', label: 'LiveU 2', type: 'select', options: SUPERVISORES, width: 220, group: 'Equipe Técnica' },
-  { key: 'dtv', label: 'DTV', type: 'select', options: DTV_OPTIONS, width: 140, group: 'Equipe Técnica' },
-  { key: 'op_vmix', label: 'Op Vmix', type: 'select', options: OP_VMIX_OPTIONS, width: 160, group: 'Equipe Técnica' },
-  { key: 'op_audio', label: 'Op Audio', type: 'select', options: OP_AUDIO_OPTIONS, width: 160, group: 'Equipe Técnica' },
+  { key: 'supervisores_2', label: 'Supervisores 2', type: 'text', width: 220, group: 'Equipe Técnica' },
+  { key: 'liveu_2', label: 'LiveU 2', type: 'text', width: 220, group: 'Equipe Técnica' },
+  { key: 'dtv', label: 'DTV', type: 'text', width: 140, group: 'Equipe Técnica' },
+  { key: 'op_vmix', label: 'Op Vmix', type: 'text', width: 160, group: 'Equipe Técnica' },
+  { key: 'op_audio', label: 'Op Audio', type: 'text', width: 160, group: 'Equipe Técnica' },
 
   // Group: Transmissão
-  { key: 'teleporto', label: 'Teleporto', type: 'select', options: TELEPORTO_OPTIONS, width: 140, group: 'Transmissão' },
+  { key: 'teleporto', label: 'Teleporto', type: 'text', width: 140, group: 'Transmissão' },
   { key: 'satelite', label: 'Satélite', type: 'select', options: SATELITE_OPTIONS, width: 140, group: 'Transmissão' },
   { key: 'service_start_gmt', label: 'Service Start (GMT)', type: 'text', width: 170, group: 'Transmissão' },
   { key: 'abertura_brt', label: 'Abertura (BRT)', type: 'text', width: 145, group: 'Transmissão' },
@@ -217,9 +193,9 @@ const paulistaoFemRawColumns = [
   { key: 'detentor', label: 'Detentor', type: 'select', options: DETENTORES, width: 140, group: 'Jogo' },
 
   // Group: Equipe Técnica
-  { key: 'um', label: 'UM', type: 'select', options: UMS, width: 150, group: 'Equipe Técnica' },
-  { key: 'gerador', label: 'Gerador', type: 'select', options: SNG_OPTIONS, width: 130, group: 'Equipe Técnica' },
-  { key: 'sng', label: 'SNG', type: 'select', options: SNG_OPTIONS, width: 140, group: 'Equipe Técnica' },
+  { key: 'um', label: 'UM', type: 'text', width: 150, group: 'Equipe Técnica' },
+  { key: 'gerador', label: 'Gerador', type: 'text', width: 130, group: 'Equipe Técnica' },
+  { key: 'sng', label: 'SNG', type: 'text', width: 140, group: 'Equipe Técnica' },
   { key: 'dslr', label: 'DSLR', type: 'text', width: 100, group: 'Equipe Técnica' },
   { key: 'refcam', label: 'RefCam', type: 'text', width: 100, group: 'Equipe Técnica' },
   { key: 'drone', label: 'Drone', type: 'text', width: 100, group: 'Equipe Técnica' },
@@ -227,11 +203,11 @@ const paulistaoFemRawColumns = [
   { key: 'supervisor_um_host', label: 'Supervisor UM Host', type: 'text', width: 180, group: 'Equipe Técnica' },
   { key: 'grua', label: 'Grua', type: 'text', width: 100, group: 'Equipe Técnica' },
   { key: 'coordenador', label: 'Coordenador', type: 'text', width: 130, group: 'Equipe Técnica' },
-  { key: 'dtv', label: 'DTV', type: 'select', options: DTV_OPTIONS, width: 140, group: 'Equipe Técnica' },
-  { key: 'op_vmix', label: 'Op. Vmix', type: 'select', options: OP_VMIX_OPTIONS, width: 160, group: 'Equipe Técnica' },
+  { key: 'dtv', label: 'DTV', type: 'text', width: 140, group: 'Equipe Técnica' },
+  { key: 'op_vmix', label: 'Op. Vmix', type: 'text', width: 160, group: 'Equipe Técnica' },
 
   // Group: Transmissão
-  { key: 'teleporto', label: 'Teleporto', type: 'select', options: TELEPORTO_OPTIONS, width: 140, group: 'Transmissão' },
+  { key: 'teleporto', label: 'Teleporto', type: 'text', width: 140, group: 'Transmissão' },
   { key: 'satelite', label: 'Satélite', type: 'select', options: SATELITE_OPTIONS, width: 140, group: 'Transmissão' },
   { key: 'status', label: 'Status', type: 'select', options: STATUS_OPTIONS, width: 135, statusColor: true, group: 'Transmissão' },
   { key: 'reserva', label: 'Reserva', type: 'text', width: 100, group: 'Transmissão' },

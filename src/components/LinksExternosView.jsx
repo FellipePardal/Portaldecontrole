@@ -1,6 +1,8 @@
 import { useState, useEffect, useMemo } from 'react'
 import { supabase } from '../lib/supabase'
 import ConfirmDialog from './ConfirmDialog'
+import FornecedorPicker from './FornecedorPicker'
+import { useHubFornecedores } from '../hooks/useHubFornecedores'
 
 // ─── LINKS EXTERNOS (gestão interna) ─────────────────────────────────────────
 // Gera o link tokenizado de cada prestador (pessoa, da Escala Geral) ou
@@ -10,13 +12,12 @@ import ConfirmDialog from './ConfirmDialog'
 const naoTem = v => /^n[aã]o$/i.test(String(v || '').trim())
 
 export default function LinksExternosView() {
+  const { fornecedores: hubFornecedores } = useHubFornecedores()
   const [links, setLinks] = useState([])
   const [confs, setConfs] = useState([])
   const [loading, setLoading] = useState(true)
   const [nome, setNome] = useState('')
   const [tipo, setTipo] = useState('pessoa')
-  const [pessoas, setPessoas] = useState([])
-  const [empresas, setEmpresas] = useState([])
   const [aberto, setAberto] = useState(null) // link_id expandido
   const [excluir, setExcluir] = useState(null)
   const [copiado, setCopiado] = useState(null)
@@ -29,24 +30,8 @@ export default function LinksExternosView() {
     setLinks(l || []); setConfs(c || []); setLoading(false)
   }
 
-  // Sugestões: pessoas das 4 funções da Escala Geral; empresas do Controle/Periféricos
-  async function carregarSugestoes() {
-    const setP = new Set(), setE = new Set()
-    const add = (set, v) => { if (v && !naoTem(v)) String(v).split('/').map(s => s.trim()).filter(Boolean).forEach(p => set.add(p)) }
-    const { data: eg } = await supabase.from('escala_geral').select('coordenador_um, produtor_um, produtor_campo, monitoracao')
-    ;(eg || []).forEach(r => ['coordenador_um', 'produtor_um', 'produtor_campo', 'monitoracao'].forEach(c => add(setP, r[c])))
-    const { data: br } = await supabase.from('brasileirao_jogos').select('um, sng_premiere, sng_host, gerador, teleporto')
-    ;(br || []).forEach(r => ['um', 'sng_premiere', 'sng_host', 'gerador', 'teleporto'].forEach(c => add(setE, r[c])))
-    const { data: pf } = await supabase.from('paulistao_feminino_jogos').select('um, gerador, teleporto')
-    ;(pf || []).forEach(r => ['um', 'gerador', 'teleporto'].forEach(c => add(setE, r[c])))
-    const { data: pb } = await supabase.from('perifericos_brasileirao').select('fornecedor_drone, fornecedor_minidrone, fornecedor_dslr, fornecedor_grua, fornecedor_goalcam, fornecedor_trilho, fornecedor_carrinho, fornecedor_clipcam')
-    ;(pb || []).forEach(r => Object.values(r).forEach(v => add(setE, v)))
-    setPessoas([...setP].sort((a, b) => a.localeCompare(b)))
-    setEmpresas([...setE].sort((a, b) => a.localeCompare(b)))
-  }
-
   useEffect(() => {
-    carregar(); carregarSugestoes()
+    carregar()
     const canal = supabase
       .channel('links_externos_rt')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'escala_confirmacoes' }, carregar)
@@ -101,13 +86,15 @@ export default function LinksExternosView() {
           <option value="pessoa">Pessoa (Escala Geral)</option>
           <option value="empresa">Empresa (Controle/Periféricos)</option>
         </select>
-        <input className="esc-busca" style={{ flex: 1, maxWidth: 340 }} list="le-sugestoes"
-          value={nome} placeholder={tipo === 'pessoa' ? 'Nome do prestador...' : 'Nome da empresa...'}
-          onChange={e => setNome(e.target.value)}
-          onKeyDown={e => { if (e.key === 'Enter') criar() }} />
-        <datalist id="le-sugestoes">
-          {(tipo === 'pessoa' ? pessoas : empresas).map(s => <option key={s} value={s} />)}
-        </datalist>
+        <div style={{ flex: 1, maxWidth: 340 }}>
+          <FornecedorPicker
+            value={nome} onChange={setNome}
+            fornecedores={hubFornecedores}
+            filtro={tipo === 'pessoa' ? (f => f.tipo === 'Prestador') : (f => f.tipo === 'Fornecedor')}
+            placeholder={tipo === 'pessoa' ? 'Nome do prestador...' : 'Nome da empresa...'}
+            onEnter={criar}
+          />
+        </div>
         <button className="view-switch-add" style={{ background: '#65B32E', marginLeft: 0 }} onClick={criar}>
           + Gerar link
         </button>

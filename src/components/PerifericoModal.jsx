@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { getEscudoUrl } from '../lib/escudos'
 import { useHubFornecedores, getColumnPredicate } from '../hooks/useHubFornecedores'
-import FornecedorAutocomplete from './FornecedorAutocomplete'
+import FornecedorPicker from './FornecedorPicker'
 
 const EQUIPAMENTOS = [
   { key: 'drone',     label: 'Drone',     fornecedor: 'fornecedor_drone' },
@@ -136,13 +136,12 @@ export default function PerifericoModal({ row, mode, accentColor, onClose, onSav
                           />
                         )}
                         <div className="pm-forn">
-                          <FornecedorAutocomplete
+                          <FornecedorPicker
                             value={data[eq.fornecedor] || ''}
                             onChange={v => set(eq.fornecedor, v)}
+                            colKey={eq.fornecedor}
                             fornecedores={hubFornecedores}
-                            filterPred={getColumnPredicate(eq.fornecedor)}
                             placeholder="Fornecedor"
-                            accentColor={accentColor}
                           />
                         </div>
                       </div>

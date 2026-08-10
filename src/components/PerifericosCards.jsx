@@ -4,6 +4,8 @@ import PerifericoModal from './PerifericoModal'
 import ConfirmDialog from './ConfirmDialog'
 import { getEscudoUrl } from '../lib/escudos'
 import { compararPorData, rodadaAtual } from '../lib/datas'
+import { useHubFornecedores } from '../hooks/useHubFornecedores'
+import FornecedorPicker from './FornecedorPicker'
 
 // ─── PERIFÉRICOS — mesma estrutura da visão Escala do Controle ───────────────
 // Cards por jogo agrupados por rodada (abre na rodada atual), slots de
@@ -29,7 +31,7 @@ function Escudo({ nome, size = 26 }) {
 }
 
 // Slot de equipamento: Sim/Não + fornecedor (+ qtde no DSLR), tudo inline.
-function SlotEquip({ row, eq, destaque, onSave }) {
+function SlotEquip({ row, eq, destaque, fornecedores, onSave }) {
   const [aberto, setAberto] = useState(false)
   const [forn, setForn] = useState('')
   const [qtde, setQtde] = useState('')
@@ -76,12 +78,13 @@ function SlotEquip({ row, eq, destaque, onSave }) {
             <button className={!ativo ? 'is-on is-off' : ''} onClick={salvarNao}>Não</button>
           </div>
           <div className="esc-slot-livre">
-            <input
-              autoFocus
+            <FornecedorPicker
               value={forn}
-              placeholder="Fornecedor..."
-              onChange={e => setForn(e.target.value)}
-              onKeyDown={e => { if (e.key === 'Enter') salvarSim() }}
+              onChange={setForn}
+              colKey={eq.fornecedor}
+              fornecedores={fornecedores}
+              autoFocus compact
+              onEnter={salvarSim}
             />
             {eq.qtde && (
               <input
@@ -102,6 +105,7 @@ function SlotEquip({ row, eq, destaque, onSave }) {
 
 export default function PerifericosCards({ config, novoJogoPedido = false, onNovoJogoConsumido = () => {} }) {
   const { data, loading, error, addRow, updateRow, deleteRow } = useTableData(config.tableName)
+  const { fornecedores: hubFornecedores } = useHubFornecedores()
   const accent = config.accentColor
 
   const [busca, setBusca] = useState('')
@@ -284,6 +288,7 @@ export default function PerifericosCards({ config, novoJogoPedido = false, onNov
                           row={r}
                           eq={eq}
                           destaque={!!fFornecedor && norm(r[eq.fornecedor]).includes(norm(fFornecedor))}
+                          fornecedores={hubFornecedores}
                           onSave={handleSaveCampos}
                         />
                       ))}
