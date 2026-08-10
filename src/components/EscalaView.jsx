@@ -285,6 +285,12 @@ export default function EscalaView({ data, config, onEdit, onDelete, onStatusCha
                 <p className="esc-rodada-sub">{lista.length} {lista.length === 1 ? 'jogo' : 'jogos'} · {ok}/{tot} slots definidos</p>
               </div>
               <div className="esc-rodada-barra"><span style={{ width: `${tot ? (ok / tot) * 100 : 0}%`, background: accent }} /></div>
+              {lista.some(r => !r.escala_publicada) && (
+                <button className="eg-pub-lote" title="Publica a escala de todos os jogos da rodada — eles passam a aparecer nos links dos prestadores"
+                  onClick={() => lista.filter(r => !r.escala_publicada).forEach(r => onSaveCampo(r.id, 'escala_publicada', true))}>
+                  📢 Publicar rodada
+                </button>
+              )}
             </header>
 
             <div className="esc-cards">
@@ -335,6 +341,14 @@ export default function EscalaView({ data, config, onEdit, onDelete, onStatusCha
                         <span style={{ width: `${pct}%`, background: pct === 100 ? 'var(--green, #16a34a)' : accent }} />
                       </div>
                       <span className="esc-card-contagem">{preenchidos}/{funcoes.length}</span>
+                      <button
+                        className={`eg-pub ${r.escala_publicada ? 'is-on' : ''}`}
+                        title={r.escala_publicada
+                          ? 'Escala publicada — visível nos links dos prestadores. Clique para voltar a rascunho.'
+                          : 'Rascunho — invisível para os prestadores. Clique para publicar.'}
+                        onClick={() => onSaveCampo(r.id, 'escala_publicada', !r.escala_publicada)}>
+                        {r.escala_publicada ? '✓ Publicada' : 'Rascunho'}
+                      </button>
                       <button className="esc-card-ficha" onClick={() => onEdit(r)}>Ficha completa →</button>
                       {onDelete && <button className="esc-card-ficha" title="Excluir jogo" onClick={() => onDelete(r)}>🗑</button>}
                     </footer>

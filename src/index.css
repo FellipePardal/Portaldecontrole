@@ -3659,3 +3659,22 @@ body {
 }
 .eg-conf-ok  { color: #16a34a; }
 .eg-conf-nao { color: #DC2626; }
+
+/* Escala publicada vs rascunho */
+.eg-pub {
+  padding: 3px 10px; border-radius: 6px; font-size: 10.5px; font-weight: 700;
+  border: 1.5px dashed var(--border); background: var(--bg-surface);
+  color: var(--text-dim); cursor: pointer; font-family: inherit;
+  letter-spacing: 0.03em; transition: all 0.15s; white-space: nowrap;
+}
+.eg-pub:hover { border-color: var(--text-dim); }
+.eg-pub.is-on {
+  border-style: solid; border-color: rgba(101,179,46,0.5);
+  background: var(--lm-green-bg, #EAF5E2); color: #3F7619;
+}
+.eg-pub-lote {
+  margin-left: auto; padding: 6px 14px; border-radius: 8px; font-size: 12px;
+  font-weight: 700; border: none; background: #65B32E; color: #fff;
+  cursor: pointer; font-family: inherit; white-space: nowrap;
+}
+.eg-pub-lote:hover { opacity: 0.9; }

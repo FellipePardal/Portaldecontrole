@@ -294,6 +294,14 @@ export default function PerifericosCards({ config, novoJogoPedido = false, onNov
                         <span style={{ width: `${pct}%`, background: pct === 100 && ativos ? 'var(--green, #16a34a)' : accent }} />
                       </div>
                       <span className="esc-card-contagem">{okCount}/{ativos || 0}</span>
+                      <button
+                        className={`eg-pub ${r.escala_publicada ? 'is-on' : ''}`}
+                        title={r.escala_publicada
+                          ? 'Escala publicada — visível nos links dos prestadores. Clique para voltar a rascunho.'
+                          : 'Rascunho — invisível para os prestadores. Clique para publicar.'}
+                        onClick={() => handleSaveCampos(r.id, { escala_publicada: !r.escala_publicada })}>
+                        {r.escala_publicada ? '✓ Publicada' : 'Rascunho'}
+                      </button>
                       <button className="esc-card-ficha" onClick={() => setModal({ open: true, mode: 'edit', row: r })}>Ficha completa →</button>
                       <button className="esc-card-ficha" title="Excluir" onClick={() => setConfirmDelete(r)}>🗑</button>
                     </footer>

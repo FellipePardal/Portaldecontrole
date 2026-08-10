@@ -465,6 +465,12 @@ export default function EscalaGeralView() {
               <p className="esc-rodada-titulo">{grupo.dia}</p>
               <p className="esc-rodada-sub">{grupo.lista.length} {grupo.lista.length === 1 ? 'jogo' : 'jogos'}</p>
             </div>
+            {grupo.lista.some(r => !r.escala_publicada) && (
+              <button className="eg-pub-lote" title="Publica a escala de todos os jogos deste dia — eles passam a aparecer nos links dos prestadores"
+                onClick={() => grupo.lista.filter(r => !r.escala_publicada).forEach(r => salvar(r.id, { escala_publicada: true }))}>
+                📢 Publicar dia
+              </button>
+            )}
           </header>
 
           <div className="esc-cards">
@@ -522,6 +528,14 @@ export default function EscalaGeralView() {
                       <span className="esc-card-contagem">{preenchidos}/{ativas}</span>
                     </>)}
                     {mudo && <span className="esc-card-contagem" style={{ flex: 1 }}>sem equipe escalada</span>}
+                    <button
+                      className={`eg-pub ${r.escala_publicada ? 'is-on' : ''}`}
+                      title={r.escala_publicada
+                        ? 'Escala publicada — visível nos links dos prestadores. Clique para voltar a rascunho.'
+                        : 'Rascunho — invisível para os prestadores. Clique para publicar.'}
+                      onClick={() => salvar(r.id, { escala_publicada: !r.escala_publicada })}>
+                      {r.escala_publicada ? '✓ Publicada' : 'Rascunho'}
+                    </button>
                     <button className="esc-card-ficha" onClick={() => setFicha(r)}>Ficha completa →</button>
                   </footer>
                 </article>
