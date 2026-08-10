@@ -51,16 +51,18 @@ function agruparFeed(feed) {
 
 // Consolida as mudanças de um grupo: por campo, o "de" mais antigo e o "para"
 // mais novo (se a pessoa mexeu 3x no mesmo campo, mostra o efeito líquido).
+// Campo que voltou ao valor original NÃO some — vira "alterado e revertido"
+// (para auditoria, saber que mexeram importa tanto quanto o que ficou).
 function mudancasDoGrupo(grupo) {
   const porCampo = {}
   for (const item of [...grupo.itens].reverse()) { // do mais antigo ao mais novo
     if (!item.mudancas) continue
     for (const [campo, m] of Object.entries(item.mudancas)) {
-      if (!porCampo[campo]) porCampo[campo] = { de: m.de, para: m.para }
-      else porCampo[campo].para = m.para
+      if (!porCampo[campo]) porCampo[campo] = { de: m.de, para: m.para, passouPor: [m.para] }
+      else { porCampo[campo].para = m.para; porCampo[campo].passouPor.push(m.para) }
     }
   }
-  return Object.entries(porCampo).filter(([, m]) => m.de !== m.para)
+  return Object.entries(porCampo).map(([campo, m]) => [campo, { ...m, revertido: m.de === m.para }])
 }
 
 export default function PresencaBar({ user, nome, viewLabel }) {
@@ -185,9 +187,15 @@ export default function PresencaBar({ user, nome, viewLabel }) {
                       {mudancas.map(([campo, m]) => (
                         <div key={campo} className="pb-dif">
                           <span className="pb-dif-campo">{nomeCampo(campo)}</span>
-                          <span className="pb-dif-de">{m.de || '(vazio)'}</span>
-                          <span className="pb-dif-seta">→</span>
-                          <span className="pb-dif-para">{m.para || '(vazio)'}</span>
+                          {m.revertido ? (
+                            <span className="pb-dif-rev" title={`Passou por: ${m.passouPor.map(v => v || '(vazio)').join(' → ')}`}>
+                              ↩ alterado e revertido (segue "{m.de || '(vazio)'}")
+                            </span>
+                          ) : (<>
+                            <span className="pb-dif-de">{m.de || '(vazio)'}</span>
+                            <span className="pb-dif-seta">→</span>
+                            <span className="pb-dif-para">{m.para || '(vazio)'}</span>
+                          </>)}
                         </div>
                       ))}
                     </div>
