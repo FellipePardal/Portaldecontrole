@@ -3727,3 +3727,24 @@ body {
 }
 .hd-menu .header-nav-btn { justify-content: flex-start; width: 100%; }
 .hd-menu-sep { height: 1px; background: var(--border); margin: 4px 6px; }
+
+/* Histórico de alterações v2: ponto, busca e diffs de→para */
+.pb-dot {
+  position: absolute; top: 2px; right: 2px; width: 8px; height: 8px;
+  border-radius: 50%; background: #DC2626; border: 1.5px solid var(--bg-card);
+}
+.pb-busca {
+  width: 100%; box-sizing: border-box; margin: 0 0 8px; padding: 8px 10px;
+  border: 1px solid var(--border); border-radius: 8px; font-size: 12.5px;
+  font-family: inherit; outline: none; background: var(--bg-input); color: var(--text);
+}
+.pb-seta { color: var(--text-dim); font-size: 11px; padding-top: 4px; }
+.pb-difs {
+  margin-left: 35px; border-left: 2px solid var(--border);
+  padding: 2px 0 2px 10px; display: flex; flex-direction: column; gap: 3px;
+}
+.pb-dif { display: flex; align-items: baseline; gap: 6px; font-size: 12px; flex-wrap: wrap; }
+.pb-dif-campo { font-weight: 700; color: var(--text-muted); min-width: 90px; }
+.pb-dif-de { color: #8E2A1E; text-decoration: line-through; text-decoration-color: rgba(142,42,30,0.5); }
+.pb-dif-seta { color: var(--text-dim); }
+.pb-dif-para { color: #3F7619; font-weight: 600; }
