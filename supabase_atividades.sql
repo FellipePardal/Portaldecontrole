@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS portal_atividades (
   tabela TEXT NOT NULL,
   rotulo TEXT,                   -- "Mandante x Visitante" (ou nome do link)
   campos TEXT[],                 -- colunas alteradas (updates)
+  mudancas JSONB,                -- {campo: {de, para}} — valores antes/depois
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 CREATE INDEX IF NOT EXISTS idx_atividades_data ON portal_atividades(created_at DESC);
