@@ -1,6 +1,79 @@
+import { useState, useEffect, useRef } from 'react'
 import PresencaBar from './PresencaBar'
 
+// Header enxuto: presença + ação principal (Novo Jogo) sempre visíveis; a
+// navegação (Início, Escala Geral, Fornecedores, Links, Usuários, Sair) vive
+// no menu ☰. A preferência "menu fixo aberto" fica no navegador.
 export default function Header({ activeView, onHomeClick, onFornecedoresClick, onEscalaGeralClick, onLinksClick, onUsuariosClick, onSair, onNewCompetition, onNewJogo, accentColor, user, userNome, viewLabel }) {
+  const [expandido, setExpandido] = useState(() => {
+    try { return localStorage.getItem('header_expandido') === '1' } catch { return false }
+  })
+  const [menuAberto, setMenuAberto] = useState(false)
+  const menuRef = useRef(null)
+
+  const alternarExpandido = () => {
+    setExpandido(e => {
+      const novo = !e
+      try { localStorage.setItem('header_expandido', novo ? '1' : '0') } catch { /* sem storage */ }
+      return novo
+    })
+    setMenuAberto(false)
+  }
+
+  useEffect(() => {
+    if (!menuAberto) return
+    const fechar = e => { if (menuRef.current && !menuRef.current.contains(e.target)) setMenuAberto(false) }
+    document.addEventListener('mousedown', fechar)
+    return () => document.removeEventListener('mousedown', fechar)
+  }, [menuAberto])
+
+  const ITENS = [
+    { key: 'home', label: 'Início', onClick: onHomeClick, icon: (
+      <svg viewBox="0 0 16 16" fill="none" width="14" height="14">
+        <path d="M2 6.5L8 2l6 4.5V14a1 1 0 01-1 1H3a1 1 0 01-1-1V6.5z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"/>
+        <path d="M6 15V9h4v6" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"/>
+      </svg>
+    ) },
+    { key: 'escala-geral', label: 'Escala Geral', onClick: onEscalaGeralClick, icon: (
+      <svg viewBox="0 0 16 16" fill="none" width="14" height="14">
+        <rect x="2" y="2" width="12" height="12" rx="1.5" stroke="currentColor" strokeWidth="1.4"/>
+        <path d="M5 5.5h6M5 8h6M5 10.5h3.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+      </svg>
+    ) },
+    { key: 'fornecedores', label: 'Fornecedores', onClick: onFornecedoresClick, icon: (
+      <svg viewBox="0 0 16 16" fill="none" width="14" height="14">
+        <rect x="2" y="4" width="12" height="9" rx="1.5" stroke="currentColor" strokeWidth="1.4"/>
+        <path d="M5 4V3a1 1 0 011-1h4a1 1 0 011 1v1" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"/>
+        <path d="M5 8h6M5 10.5h4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+      </svg>
+    ) },
+    onLinksClick && { key: 'links', label: 'Links', onClick: onLinksClick, icon: (
+      <svg viewBox="0 0 16 16" fill="none" width="14" height="14">
+        <path d="M6.5 9.5a3 3 0 004.2.3l2-2a3 3 0 00-4.2-4.2l-1 1M9.5 6.5a3 3 0 00-4.2-.3l-2 2a3 3 0 004.2 4.2l1-1" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+      </svg>
+    ) },
+    onUsuariosClick && { key: 'usuarios', label: 'Usuários', onClick: onUsuariosClick, icon: (
+      <svg viewBox="0 0 16 16" fill="none" width="14" height="14">
+        <circle cx="8" cy="5.5" r="2.6" stroke="currentColor" strokeWidth="1.4"/>
+        <path d="M2.8 13.5c.7-2.4 2.8-3.7 5.2-3.7s4.5 1.3 5.2 3.7" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+      </svg>
+    ) },
+    onSair && { key: 'sair', label: 'Sair', onClick: onSair, icon: (
+      <svg viewBox="0 0 16 16" fill="none" width="14" height="14">
+        <path d="M6 2H3.5A1.5 1.5 0 002 3.5v9A1.5 1.5 0 003.5 14H6M10.5 11l3-3-3-3M13.5 8H6" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+      </svg>
+    ) },
+  ].filter(Boolean)
+
+  const botaoNav = it => (
+    <button key={it.key}
+      className={`header-nav-btn${activeView === it.key ? ' header-nav-active' : ''}`}
+      onClick={() => { setMenuAberto(false); it.onClick() }}>
+      {it.icon}
+      {it.label}
+    </button>
+  )
+
   return (
     <header className="header">
       <div className="logo-area" onClick={onHomeClick} style={{ cursor: 'pointer' }} title="Início">
@@ -14,68 +87,11 @@ export default function Header({ activeView, onHomeClick, onFornecedoresClick, o
 
       <div className="header-actions">
         {user && <PresencaBar user={user} nome={userNome} viewLabel={viewLabel} />}
-        <button
-          className={`header-nav-btn${activeView === 'home' ? ' header-nav-active' : ''}`}
-          onClick={onHomeClick}
-        >
-          <svg viewBox="0 0 16 16" fill="none" width="14" height="14">
-            <path d="M2 6.5L8 2l6 4.5V14a1 1 0 01-1 1H3a1 1 0 01-1-1V6.5z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"/>
-            <path d="M6 15V9h4v6" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"/>
-          </svg>
-          Início
-        </button>
 
-        <button
-          className={`header-nav-btn${activeView === 'escala-geral' ? ' header-nav-active' : ''}`}
-          onClick={onEscalaGeralClick}
-        >
-          <svg viewBox="0 0 16 16" fill="none" width="14" height="14">
-            <rect x="2" y="2" width="12" height="12" rx="1.5" stroke="currentColor" strokeWidth="1.4"/>
-            <path d="M5 5.5h6M5 8h6M5 10.5h3.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
-          </svg>
-          Escala Geral
-        </button>
+        {/* Modo expandido: todos os botões na barra (comportamento antigo) */}
+        {expandido && ITENS.map(botaoNav)}
 
-        <button
-          className={`header-nav-btn${activeView === 'fornecedores' ? ' header-nav-active' : ''}`}
-          onClick={onFornecedoresClick}
-        >
-          <svg viewBox="0 0 16 16" fill="none" width="14" height="14">
-            <rect x="2" y="4" width="12" height="9" rx="1.5" stroke="currentColor" strokeWidth="1.4"/>
-            <path d="M5 4V3a1 1 0 011-1h4a1 1 0 011 1v1" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"/>
-            <path d="M5 8h6M5 10.5h4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
-          </svg>
-          Fornecedores
-        </button>
-
-        {onLinksClick && (
-          <button
-            className={`header-nav-btn${activeView === 'links' ? ' header-nav-active' : ''}`}
-            onClick={onLinksClick}
-            title="Links externos de prestadores"
-          >
-            <svg viewBox="0 0 16 16" fill="none" width="14" height="14">
-              <path d="M6.5 9.5a3 3 0 004.2.3l2-2a3 3 0 00-4.2-4.2l-1 1M9.5 6.5a3 3 0 00-4.2-.3l-2 2a3 3 0 004.2 4.2l1-1" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
-            </svg>
-            Links
-          </button>
-        )}
-
-        {onUsuariosClick && (
-          <button
-            className={`header-nav-btn${activeView === 'usuarios' ? ' header-nav-active' : ''}`}
-            onClick={onUsuariosClick}
-            title="Usuários do Portal"
-          >
-            <svg viewBox="0 0 16 16" fill="none" width="14" height="14">
-              <circle cx="8" cy="5.5" r="2.6" stroke="currentColor" strokeWidth="1.4"/>
-              <path d="M2.8 13.5c.7-2.4 2.8-3.7 5.2-3.7s4.5 1.3 5.2 3.7" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
-            </svg>
-            Usuários
-          </button>
-        )}
-
-        {/* Dentro de um campeonato o botão do header cria JOGO; na Home cria campeonato. */}
+        {/* Ação principal sempre visível */}
         {onNewJogo ? (
           <button className="header-new-btn" onClick={onNewJogo} title="Novo jogo"
             style={accentColor ? { background: accentColor, borderColor: accentColor, color: '#fff' } : undefined}>
@@ -93,14 +109,36 @@ export default function Header({ activeView, onHomeClick, onFornecedoresClick, o
           </button>
         )}
 
-        {onSair && (
-          <button className="header-nav-btn" onClick={onSair} title="Sair">
-            <svg viewBox="0 0 16 16" fill="none" width="14" height="14">
-              <path d="M6 2H3.5A1.5 1.5 0 002 3.5v9A1.5 1.5 0 003.5 14H6M10.5 11l3-3-3-3M13.5 8H6" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-            Sair
+        {/* Menu ☰ (modo compacto) / recolher (modo expandido) */}
+        <div className="hd-menu-wrap" ref={menuRef}>
+          <button className={`header-nav-btn${menuAberto ? ' header-nav-active' : ''}`}
+            title={expandido ? 'Recolher botões no menu' : 'Menu'}
+            onClick={() => (expandido ? alternarExpandido() : setMenuAberto(a => !a))}>
+            {expandido ? (
+              <svg viewBox="0 0 16 16" fill="none" width="14" height="14">
+                <path d="M10 3L5 8l5 5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            ) : (
+              <svg viewBox="0 0 16 16" fill="none" width="14" height="14">
+                <path d="M2.5 4.5h11M2.5 8h11M2.5 11.5h11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+              </svg>
+            )}
+            {expandido ? 'Recolher' : 'Menu'}
           </button>
-        )}
+
+          {menuAberto && !expandido && (
+            <div className="hd-menu">
+              {ITENS.map(botaoNav)}
+              <div className="hd-menu-sep" />
+              <button className="header-nav-btn" onClick={alternarExpandido} title="Mostra todos os botões na barra">
+                <svg viewBox="0 0 16 16" fill="none" width="14" height="14">
+                  <path d="M6 3l5 5-5 5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                Fixar botões na barra
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </header>
   )
