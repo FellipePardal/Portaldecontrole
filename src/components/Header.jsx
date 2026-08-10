@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import PresencaBar from './PresencaBar'
+import HistoricoAlteracoes from './HistoricoAlteracoes'
 
 // Header enxuto: presença + ação principal (Novo Jogo) sempre visíveis; a
 // navegação (Início, Escala Geral, Fornecedores, Links, Usuários, Sair) vive
@@ -9,6 +10,7 @@ export default function Header({ activeView, onHomeClick, onFornecedoresClick, o
     try { return localStorage.getItem('header_expandido') === '1' } catch { return false }
   })
   const [menuAberto, setMenuAberto] = useState(false)
+  const [historicoAberto, setHistoricoAberto] = useState(false)
   const menuRef = useRef(null)
 
   const alternarExpandido = () => {
@@ -56,6 +58,11 @@ export default function Header({ activeView, onHomeClick, onFornecedoresClick, o
       <svg viewBox="0 0 16 16" fill="none" width="14" height="14">
         <circle cx="8" cy="5.5" r="2.6" stroke="currentColor" strokeWidth="1.4"/>
         <path d="M2.8 13.5c.7-2.4 2.8-3.7 5.2-3.7s4.5 1.3 5.2 3.7" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+      </svg>
+    ) },
+    user && { key: 'historico', label: 'Histórico de alterações', onClick: () => setHistoricoAberto(true), icon: (
+      <svg viewBox="0 0 16 16" fill="none" width="14" height="14">
+        <path d="M8 4.5V8l2.5 1.5M14 8A6 6 0 112.6 5.5M2.5 2v3.5H6" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
       </svg>
     ) },
     onSair && { key: 'sair', label: 'Sair', onClick: onSair, icon: (
@@ -139,6 +146,8 @@ export default function Header({ activeView, onHomeClick, onFornecedoresClick, o
             </div>
           )}
         </div>
+
+        {historicoAberto && <HistoricoAlteracoes onClose={() => setHistoricoAberto(false)} />}
       </div>
     </header>
   )
