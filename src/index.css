@@ -3750,3 +3750,56 @@ body {
 .pb-dif-para { color: #3F7619; font-weight: 600; }
 .pb-dif-rev { color: var(--text-dim); font-style: italic; }
 .hd-historico { position: fixed; top: 60px; right: 16px; width: 400px; max-height: 70vh; }
+
+/* ============================================================
+   FornecedorPicker — campo único de fornecedor (base compartilhada)
+   ============================================================ */
+.fp-wrap { position: relative; flex: 1; min-width: 0; }
+.fp-input {
+  width: 100%; box-sizing: border-box; padding: 8px 10px;
+  border: 1px solid var(--border); border-radius: 7px;
+  font-size: 12.5px; font-family: inherit; color: var(--text);
+  background: var(--bg-input); outline: none;
+}
+.fp-compact .fp-input { padding: 6px 8px; font-size: 12px; }
+.fp-input:focus { border-color: var(--text-dim); }
+.fp-input.fp-livre { border-color: #E8D89A; background: #FDFAF0; }
+.fp-badge {
+  position: absolute; right: 7px; top: 50%; transform: translateY(-50%);
+  width: 15px; height: 15px; border-radius: 50%; background: #D97706; color: #fff;
+  font-size: 10px; font-weight: 800; display: inline-flex; align-items: center;
+  justify-content: center; pointer-events: none;
+}
+.fp-menu {
+  position: absolute; top: calc(100% + 4px); left: 0; right: 0; z-index: 120;
+  max-height: 260px; overflow-y: auto; background: var(--bg-card);
+  border: 1px solid var(--border); border-radius: 9px;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.14); padding: 4px; min-width: 230px;
+}
+.fp-opcao {
+  display: flex; justify-content: space-between; align-items: baseline; gap: 8px;
+  width: 100%; text-align: left; padding: 7px 10px; border: none; border-radius: 6px;
+  background: none; cursor: pointer; font-family: inherit;
+}
+.fp-opcao:hover { background: var(--bg-hover); }
+.fp-nome { font-size: 12.5px; font-weight: 600; color: var(--text); }
+.fp-funcao { font-size: 10.5px; color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 45%; }
+.fp-sep {
+  font-size: 9.5px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.07em;
+  color: var(--text-dim); padding: 6px 10px 3px; border-top: 1px solid var(--border); margin-top: 3px;
+}
+.fp-add {
+  display: block; width: 100%; text-align: left; padding: 8px 10px; margin-top: 3px;
+  border: none; border-top: 1px solid var(--border); background: none;
+  color: #3F7619; font-size: 12px; font-weight: 700; cursor: pointer; font-family: inherit;
+}
+.fp-add:hover { background: var(--lm-green-bg, #EAF5E2); }
+.fp-confirm {
+  display: flex; align-items: center; gap: 8px; padding: 8px 10px;
+  border-top: 1px solid var(--border); font-size: 12px; color: var(--text-muted);
+}
+.fp-confirm button {
+  margin-left: auto; padding: 5px 12px; border: none; border-radius: 6px;
+  background: #65B32E; color: #fff; font-size: 11.5px; font-weight: 700;
+  cursor: pointer; font-family: inherit;
+}
