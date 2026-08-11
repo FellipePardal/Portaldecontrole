@@ -48,14 +48,14 @@ BEGIN
         SELECT string_agg(
           CASE
             WHEN btrim(seg) = $1 THEN $2
-            WHEN btrim(seg) LIKE $1 || ' %%' THEN $2 || substr(btrim(seg), length($1) + 1)
+            WHEN btrim(seg) LIKE $1 || ' %%' AND substr(btrim(seg), length($1) + 2) ~ '^(\(|-|cobre\M)' THEN $2 || substr(btrim(seg), length($1) + 1)
             ELSE btrim(seg)
           END, ' / ')
         FROM unnest(string_to_array(%I, '/')) seg
       ), updated_at = NOW()
       WHERE EXISTS (
         SELECT 1 FROM unnest(string_to_array(%I, '/')) s
-        WHERE btrim(s) = $1 OR btrim(s) LIKE $1 || ' %%'
+        WHERE btrim(s) = $1 OR (btrim(s) LIKE $1 || ' %%' AND substr(btrim(s), length($1) + 2) ~ '^(\(|-|cobre\M)')
       )
     $sql$, par[1], par[2], par[2], par[2]) USING btrim(antigo), btrim(novo);
     GET DIAGNOSTICS afetadas = ROW_COUNT;
