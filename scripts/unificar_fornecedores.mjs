@@ -149,6 +149,7 @@ const ALIASES = new Map([
   ['cavalheiro', 'Thiago Cavalheiro'], ['scuotto', 'Paulo Scuotto'],
   ['carlos alberto carlao', 'Carlão'],
   ['adalberto junior', 'Adalberto Godoy'],
+  ['jana', 'Janaina Tupan'],
 ])
 
 // Separadores de dupla além de "/": "+" e o caso literal "Fabricio e Cavalheiro"
