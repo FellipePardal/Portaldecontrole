@@ -117,7 +117,8 @@ const ALIASES = new Map([
   ['hadassa', 'Hadassa Gonçalves'],
   ['dermival', 'Dermival Balbino'],
   ['dermi', 'Dermival Balbino'],
-  ['kelvin', 'Kelvin Luiz'],
+  ['kelvin', 'Kelvin Luiz Pereira'],
+  ['kelvin luiz', 'Kelvin Luiz Pereira'],
   ['russo', 'Leo Russo'],
   ['sarti', 'Léo Sarti'],
   ['janaina', 'Janaina Tupan'],
@@ -141,6 +142,12 @@ const ALIASES = new Map([
   ['carol', 'Carol Cardoso'],
   ['carol leone', 'Carol Leonel'],
   ['leo', 'Léo Sarti'],
+  // Mesclas de 11/08 (duplicatas contra o cadastro original do Hub)
+  ['denadai', 'De Nadai'], ['d nadai', 'De Nadai'], ['nadai', 'De Nadai'],
+  ['locline', 'Loc-Line'], ['cromamix', 'Croma Mix'], ['tvclube', 'TV Clube'],
+  ['julio fornazari', 'Julio Cesar Fornazari'], ['fabricio', 'Fabrício Ruggiero'],
+  ['cavalheiro', 'Thiago Cavalheiro'], ['scuotto', 'Paulo Scuotto'],
+  ['carlos alberto carlao', 'Carlão'],
 ])
 
 // Separadores de dupla além de "/": "+" e o caso literal "Fabricio e Cavalheiro"
