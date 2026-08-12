@@ -3472,11 +3472,14 @@ body {
 .esc-slot-opcao:hover { background: var(--bg-hover); }
 .esc-slot-opcao.is-atual { background: var(--bg-surface2); font-weight: 700; }
 .esc-slot-livre { display: flex; gap: 4px; padding: 6px 6px 4px; border-top: 1px solid var(--border); margin-top: 4px; }
-.esc-slot-livre input {
+/* SÓ filhos diretos (>): o FornecedorPicker aninhado tem os próprios inputs e
+   botões de sugestão — o seletor descendente pintava as sugestões de preto
+   (fundo var(--text)) com o nome invisível, legível só no hover. */
+.esc-slot-livre > input {
   flex: 1; min-width: 0; padding: 6px 8px; border-radius: 6px;
   border: 1px solid var(--border); font-size: 12px; font-family: inherit; outline: none;
 }
-.esc-slot-livre button {
+.esc-slot-livre > button {
   padding: 6px 10px; border: none; border-radius: 6px; background: var(--text);
   color: var(--bg-card); font-size: 11px; font-weight: 700; cursor: pointer; font-family: inherit;
 }
