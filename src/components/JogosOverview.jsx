@@ -1,9 +1,90 @@
 import { useState, useMemo } from 'react'
 import { useTableData } from '../hooks/useTableData'
 import { useCompetitionEvents } from '../hooks/useCompetitionEvents'
+import { useEscalaGeral } from '../hooks/useEscalaGeral'
 import { getEscudoUrl } from '../lib/escudos'
 import { getStatusClass } from '../config/tables'
+import { FUNCOES_ESCALA, naoTemFuncao, semEscala, acharEscala } from '../lib/escalaLink'
 import GameModal from './GameModal'
+
+const GRUPO_ESCALA = 'Escala Geral'
+
+// Coluna só-leitura com a escala do jogo (planilha de planejamento, outra
+// responsável). Edição fica na aba Escala Geral — aqui é consulta.
+function EscalaCol({ escalaInfo, confirmacoes, accentColor }) {
+  const eg = escalaInfo?.escala
+  const mudo = eg && semEscala(eg)
+  const ativas = eg ? FUNCOES_ESCALA.filter(fn => !naoTemFuncao(eg[fn.key])) : []
+  const preenchidas = ativas.filter(fn => eg[fn.key] && String(eg[fn.key]).trim())
+
+  return (
+    <div className="overview-col">
+      <div className="overview-col-head">
+        <span className="overview-col-label">{GRUPO_ESCALA}</span>
+        {eg && !mudo && (
+          <span className="overview-col-count" style={{ color: preenchidas.length > 0 ? accentColor : undefined }}>
+            {preenchidas.length}/{ativas.length}
+          </span>
+        )}
+      </div>
+      <div className="overview-col-body">
+        {!eg ? (
+          <div className="overview-row empty">
+            <span className="overview-row-label">Vínculo</span>
+            <span className="overview-row-value"><span className="overview-field-empty">sem jogo correspondente na Escala Geral</span></span>
+          </div>
+        ) : (
+          <>
+            {FUNCOES_ESCALA.map(fn => {
+              const v = eg[fn.key]
+              const off = naoTemFuncao(v)
+              const vazio = !off && (!v || !String(v).trim())
+              const conf = confirmacoes?.get(`${eg.id}|${fn.label}`)
+              return (
+                <div key={fn.key} className={`overview-row${vazio ? ' empty' : ''}`}>
+                  <span className="overview-row-label">{fn.label}</span>
+                  <span className="overview-row-value">
+                    {off ? <span className="overview-field-empty">não terá</span>
+                      : vazio ? <span className="overview-field-empty">{mudo ? '—' : 'a definir'}</span>
+                      : (<>
+                          {String(v)}
+                          {conf && (
+                            <span className={`eg-conf ${conf.status === 'confirmado' ? 'eg-conf-ok' : 'eg-conf-nao'}`}
+                              title={conf.status === 'confirmado' ? 'Presença confirmada' : `Recusou${conf.obs ? ` ("${conf.obs}")` : ''}`}>
+                              {' '}{conf.status === 'confirmado' ? '✓' : '✗'}
+                            </span>
+                          )}
+                        </>)}
+                  </span>
+                </div>
+              )
+            })}
+            {eg.obs && (
+              <div className="overview-row">
+                <span className="overview-row-label">Obs</span>
+                <span className="overview-row-value" style={{ fontStyle: 'italic' }}>{eg.obs}</span>
+              </div>
+            )}
+            {mudo && (
+              <div className="overview-row empty">
+                <span className="overview-row-label">Escala</span>
+                <span className="overview-row-value"><span className="overview-field-empty">sem equipe escalada (YT)</span></span>
+              </div>
+            )}
+            {escalaInfo.dataDivergente && (
+              <div className="overview-row">
+                <span className="overview-row-label">⚠ Data</span>
+                <span className="overview-row-value" style={{ color: '#B45309' }}>
+                  na Escala Geral consta {eg.data}
+                </span>
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    </div>
+  )
+}
 
 const HUB_FIELDS = new Set(['eu', 'rod', 'dia', 'data', 'hora_brt', 'mandante', 'visitante', 'cidade', 'padrao', 'detentor', 'estadio', 'hub_jogo_id'])
 
@@ -27,7 +108,7 @@ function fieldDisplay(col, value) {
   return String(value)
 }
 
-function GameCard({ row, config, onEdit, accentColor, defaultOpen }) {
+function GameCard({ row, config, onEdit, accentColor, defaultOpen, temEscala, escalaInfo, confirmacoes }) {
   const [open, setOpen] = useState(!!defaultOpen)
   const [hiddenGroups, setHiddenGroups] = useState(() => new Set())
 
@@ -100,6 +181,26 @@ function GameCard({ row, config, onEdit, accentColor, defaultOpen }) {
       {open && (
         <>
           <div className="overview-group-tabs" onClick={e => e.stopPropagation()}>
+            {temEscala && (() => {
+              const eg = escalaInfo?.escala
+              const isHidden = hiddenGroups.has(GRUPO_ESCALA)
+              const ativas = eg ? FUNCOES_ESCALA.filter(fn => !naoTemFuncao(eg[fn.key])) : []
+              const cheias = ativas.filter(fn => eg[fn.key] && String(eg[fn.key]).trim())
+              return (
+                <button
+                  type="button"
+                  className={`overview-tab-toggle${isHidden ? ' hidden' : ' active'}`}
+                  onClick={() => toggleGroup(GRUPO_ESCALA)}
+                  title={isHidden ? 'Mostrar' : 'Esconder'}
+                  style={!isHidden ? { borderColor: accentColor, color: accentColor } : {}}
+                >
+                  <span>{GRUPO_ESCALA}</span>
+                  <span className="tab-toggle-count">
+                    {eg ? (<><span className="filled">{cheias.length}</span>/<span>{ativas.length}</span></>) : '—'}
+                  </span>
+                </button>
+              )
+            })()}
             {groups.map(group => {
               const cols = config.columns.filter(c => c.group === group && !HUB_FIELDS.has(c.key))
               if (!cols.length) return null
@@ -124,6 +225,9 @@ function GameCard({ row, config, onEdit, accentColor, defaultOpen }) {
           </div>
 
           <div className="overview-body" onClick={e => e.stopPropagation()}>
+            {temEscala && !hiddenGroups.has(GRUPO_ESCALA) && (
+              <EscalaCol escalaInfo={escalaInfo} confirmacoes={confirmacoes} accentColor={accentColor} />
+            )}
             {groups.map(group => {
               const cols = config.columns.filter(c => c.group === group && !HUB_FIELDS.has(c.key))
               if (!cols.length) return null
@@ -172,6 +276,7 @@ export default function JogosOverview({ config, accentColor }) {
   const legacy = useTableData(config.isLegacy ? config.tableName : null)
   const dynamic = useCompetitionEvents(config.isLegacy ? null : config.competitionId)
   const { data, loading, addRow, updateRow } = config.isLegacy ? legacy : dynamic
+  const { indice: indiceEscala, confirmacoes, temEscala } = useEscalaGeral(config.label)
   const [search, setSearch] = useState('')
   const [filtroRod, setFiltroRod] = useState('')
   const [filtroStatus, setFiltroStatus] = useState('')
@@ -247,6 +352,9 @@ export default function JogosOverview({ config, accentColor }) {
               row={row}
               config={config}
               accentColor={accentColor}
+              temEscala={temEscala}
+              escalaInfo={acharEscala(row, indiceEscala)}
+              confirmacoes={confirmacoes}
               onEdit={r => setModal({ mode: 'edit', row: r })}
             />
           ))}
