@@ -53,11 +53,22 @@ function parseCsv(texto) {
 const norm = s => String(s || '').trim().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/\s+/g, ' ')
 const chave = r => [r.campeonato, r.data, r.mandante, r.visitante].map(norm).join('|')
 
+// A planilha usa etiquetas variadas para o mesmo campeonato; o banco foi
+// padronizado em 12/08/2026. Normaliza na entrada para casar com o existente
+// em vez de duplicar (chave de match inclui o campeonato).
+const CAMP_PADRAO = {
+  'br26': 'Brasileirão 26',
+  'pfem 26': 'Paulistão F 26',
+  'serie b': 'Série B 26',
+}
+const padronizaCamp = c => CAMP_PADRAO[norm(c)] || c
+
 const linhas = parseCsv(readFileSync(arquivo, 'utf8'))
 const registros = []
 for (const l of linhas.slice(1)) {
   const reg = {}
   Object.entries(IDX).forEach(([col, i]) => { reg[col] = String(l[i] ?? '').trim() })
+  reg.campeonato = padronizaCamp(reg.campeonato)
   if (!reg.campeonato || !reg.mandante) continue
   if (/legenda/i.test(l.join(','))) continue
   registros.push(reg)

@@ -43,8 +43,9 @@ const normCamp = s => String(s || '')
 
 // Campeonato do Portal → nomes usados na coluna `campeonato` da escala_geral.
 // O Paulistão Fem aparece com DOIS nomes na planilha de planejamento.
-// "BR26" é outra seção da mesma planilha com jogos do Brasileirão (ex.:
-// Mirassol × Flamengo 16/8) — sem sobreposição com "Brasileirão 26".
+// O banco foi padronizado em 12/08/2026 (BR26→Brasileirão 26, PFem 26→
+// Paulistão F 26), mas os nomes antigos ficam como proteção caso uma
+// reimportação da planilha os reintroduza.
 const CAMP_ALIAS = {
   brasileirao26: ['Brasileirão 26', 'BR26'],
   paulistaofem26: ['Paulistão F 26', 'PFem 26'],
