@@ -3460,10 +3460,13 @@ body {
 }
 .esc-slot-menu {
   position: absolute; top: calc(100% + 4px); left: 0; z-index: 50;
-  min-width: 200px; max-height: 260px; overflow-y: auto;
+  min-width: 240px; max-height: 300px; overflow-y: auto;
   background: var(--bg-card); border: 1px solid var(--border); border-radius: 9px;
   box-shadow: 0 8px 28px rgba(0,0,0,0.14); padding: 4px;
 }
+/* Popup que hospeda FornecedorPicker: sem clip/scroll — o dropdown de
+   sugestões (absoluto, mais alto que o popup) precisa escapar dele. */
+.esc-slot-menu-picker { overflow: visible; max-height: none; }
 .esc-slot-opcao {
   display: flex; align-items: center; gap: 7px; width: 100%; text-align: left;
   padding: 7px 10px; border: none; border-radius: 6px; background: none;
@@ -3783,6 +3786,12 @@ body {
   border: 1px solid var(--border); border-radius: 9px;
   box-shadow: 0 8px 28px rgba(0,0,0,0.14); padding: 4px; min-width: 230px;
 }
+/* No modo compacto (slots da escala) o campo é estreito — o menu cresce até
+   o conteúdo em vez de espremer os nomes na largura do input. */
+.fp-compact .fp-menu {
+  right: auto; width: max-content; min-width: 100%; max-width: 340px;
+}
+.fp-compact .fp-nome { white-space: nowrap; }
 .fp-opcao {
   display: flex; justify-content: space-between; align-items: baseline; gap: 8px;
   width: 100%; text-align: left; padding: 7px 10px; border: none; border-radius: 6px;

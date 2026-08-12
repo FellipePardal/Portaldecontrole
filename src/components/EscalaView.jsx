@@ -36,7 +36,9 @@ function SlotFuncao({ jogo, col, valor, destaque, fornecedores, onSave }) {
 
   useEffect(() => {
     if (!aberto) return
-    const fechar = e => { if (ref.current && !ref.current.contains(e.target)) setAberto(false) }
+    // isConnected: sugestão clicada some do DOM no mousedown; sem o guard o
+    // clique era lido como externo e o popup fechava antes do OK.
+    const fechar = e => { if (ref.current && e.target.isConnected && !ref.current.contains(e.target)) setAberto(false) }
     document.addEventListener('mousedown', fechar)
     return () => document.removeEventListener('mousedown', fechar)
   }, [aberto])
@@ -53,7 +55,7 @@ function SlotFuncao({ jogo, col, valor, destaque, fornecedores, onSave }) {
         <span className="esc-slot-valor">{vazio ? 'Definir' : valor}</span>
       </button>
       {aberto && (
-        <div className="esc-slot-menu">
+        <div className={`esc-slot-menu${ehFornecedor ? ' esc-slot-menu-picker' : ''}`}>
           {ehFornecedor ? (
             // Coluna de fornecedor: picker da base compartilhada com o Hub
             <div className="esc-slot-livre" style={{ borderTop: 'none', marginTop: 0 }}>

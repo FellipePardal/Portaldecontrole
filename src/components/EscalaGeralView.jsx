@@ -153,7 +153,10 @@ function SlotPessoa({ row, fn, fornecedores, destaque, mudo, conf, onSave }) {
 
   useEffect(() => {
     if (!aberto) return
-    const fechar = e => { if (ref.current && !ref.current.contains(e.target)) setAberto(false) }
+    // e.target.isConnected: clicar numa sugestão do picker desmonta o menu de
+    // sugestões no próprio mousedown — sem o guard, este listener via o alvo
+    // já fora do DOM, tratava como clique externo e fechava o popup inteiro.
+    const fechar = e => { if (ref.current && e.target.isConnected && !ref.current.contains(e.target)) setAberto(false) }
     document.addEventListener('mousedown', fechar)
     return () => document.removeEventListener('mousedown', fechar)
   }, [aberto])
@@ -197,7 +200,7 @@ function SlotPessoa({ row, fn, fornecedores, destaque, mudo, conf, onSave }) {
         <span className="esc-slot-valor">{texto}</span>
       </button>
       {aberto && (
-        <div className="esc-slot-menu">
+        <div className="esc-slot-menu esc-slot-menu-picker">
           <div className="esc-slot-livre" style={{ borderTop: 'none', marginTop: 0 }}>
             <FornecedorPicker value={nome1} onChange={setNome1} colKey={fn.key}
               fornecedores={fornecedores} placeholder="1ª pessoa..." autoFocus compact

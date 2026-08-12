@@ -25,7 +25,7 @@ export default function FornecedorPicker({
 
   useEffect(() => {
     if (!aberto) return
-    const fechar = e => { if (ref.current && !ref.current.contains(e.target)) { setAberto(false); setCadastrando(false) } }
+    const fechar = e => { if (ref.current && e.target.isConnected && !ref.current.contains(e.target)) { setAberto(false); setCadastrando(false) } }
     document.addEventListener('mousedown', fechar)
     return () => document.removeEventListener('mousedown', fechar)
   }, [aberto])
