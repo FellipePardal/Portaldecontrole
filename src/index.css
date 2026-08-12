@@ -3410,6 +3410,9 @@ body {
   transition: box-shadow 0.2s, transform 0.2s;
 }
 .esc-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); transform: translateY(-1px); }
+/* Com popup de slot aberto o lift do hover é desligado: transform cria
+   stacking context e prendia o dropdown ATRÁS do header do dia seguinte. */
+.esc-card:has(.esc-slot-menu) { transform: none; }
 
 .esc-card-header {
   display: flex; justify-content: space-between; align-items: flex-start;
