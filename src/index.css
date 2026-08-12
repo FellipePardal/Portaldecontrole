@@ -11,6 +11,10 @@
    #585455  cinza escuro
    ============================================================ */
 :root {
+  /* O app é todo claro. Sem esta declaração, Windows/Chrome em modo escuro
+     renderiza os popups NATIVOS (datalist de fornecedores, selects) com fundo
+     preto mas texto escuro herdado da página — ilegível fora do hover. */
+  color-scheme: light;
   /* Tema claro — paleta LiveMode (verde, branco, preto, cinza #585455) */
   --bg-app:      #FAFAFA;
   --bg-card:     #FFFFFF;

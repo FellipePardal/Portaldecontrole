@@ -43,8 +43,10 @@ const normCamp = s => String(s || '')
 
 // Campeonato do Portal → nomes usados na coluna `campeonato` da escala_geral.
 // O Paulistão Fem aparece com DOIS nomes na planilha de planejamento.
+// "BR26" é outra seção da mesma planilha com jogos do Brasileirão (ex.:
+// Mirassol × Flamengo 16/8) — sem sobreposição com "Brasileirão 26".
 const CAMP_ALIAS = {
-  brasileirao26: ['Brasileirão 26'],
+  brasileirao26: ['Brasileirão 26', 'BR26'],
   paulistaofem26: ['Paulistão F 26', 'PFem 26'],
 }
 
