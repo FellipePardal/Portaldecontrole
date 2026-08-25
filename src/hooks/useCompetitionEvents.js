@@ -1,7 +1,9 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase, isConfigured } from '../lib/supabase'
 
-const RESERVED_TOP_LEVEL = new Set(['id', 'created_at', 'updated_at', 'competition_id', 'data', 'status'])
+// 'data' (a data do jogo) NÃO entra aqui: é um campo do formulário e precisa
+// ser persistido dentro do JSONB — a coluna JSONB homônima é montada pelo split.
+const RESERVED_TOP_LEVEL = new Set(['id', 'created_at', 'updated_at', 'competition_id', 'status'])
 
 // Achata { id, status, created_at, updated_at, ...data } -> { id, status, created_at, updated_at, ...campos }
 // para que TablePage/DataTable consigam ler `row.mandante`, `row.detentor` etc. sem mudar.
@@ -84,7 +86,18 @@ export function useCompetitionEvents(competitionId) {
 
   async function updateRow(id, rowData) {
     const split = splitForUpsert(rowData)
-    const patch = { data: split.data, updated_at: new Date().toISOString() }
+    // Merge com o JSONB atual: um update parcial (status inline, um campo só)
+    // não pode substituir o objeto inteiro e apagar os demais campos do jogo.
+    const { data: cur, error: curErr } = await supabase
+      .from('competition_events')
+      .select('data')
+      .eq('id', id)
+      .single()
+    if (curErr) throw curErr
+    const patch = {
+      data: { ...(cur?.data && typeof cur.data === 'object' ? cur.data : {}), ...split.data },
+      updated_at: new Date().toISOString(),
+    }
     if (split.status !== undefined) patch.status = split.status
     const { error: err } = await supabase
       .from('competition_events')

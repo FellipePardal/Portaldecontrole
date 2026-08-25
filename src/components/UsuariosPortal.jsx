@@ -66,14 +66,21 @@ export default function UsuariosPortal({ meuId }) {
                 <td style={{ padding: '10px 14px', color: 'var(--text-muted)' }}>{u.email || '—'}</td>
                 <td style={{ padding: '10px 14px' }}>
                   <div style={{ display: 'flex', gap: 4 }}>
-                    {PAPEIS.map(p => (
-                      <button key={p}
-                        className={`status-badge ${u.role === p ? PAPEL_CLASSE[p] : 'status-default'}`}
-                        style={{ cursor: 'pointer', border: u.role === p ? undefined : '1px solid var(--border)', opacity: u.role === p ? 1 : 0.6 }}
-                        onClick={() => u.role !== p && mudarPapel(u, p)}>
-                        {p}
-                      </button>
-                    ))}
+                    {PAPEIS.map(p => {
+                      // Ninguém rebaixa a si próprio: um clique errado do único
+                      // admin deixaria o Portal sem quem aprove/reverta.
+                      const bloqueado = u.id === meuId && u.role !== p
+                      return (
+                        <button key={p}
+                          className={`status-badge ${u.role === p ? PAPEL_CLASSE[p] : 'status-default'}`}
+                          style={{ cursor: bloqueado ? 'not-allowed' : 'pointer', border: u.role === p ? undefined : '1px solid var(--border)', opacity: u.role === p ? 1 : bloqueado ? 0.3 : 0.6 }}
+                          title={bloqueado ? 'Você não pode alterar o próprio papel' : undefined}
+                          disabled={bloqueado}
+                          onClick={() => !bloqueado && u.role !== p && mudarPapel(u, p)}>
+                          {p}
+                        </button>
+                      )
+                    })}
                   </div>
                 </td>
                 <td style={{ padding: '10px 14px', color: 'var(--text-dim)', fontSize: 12 }}>

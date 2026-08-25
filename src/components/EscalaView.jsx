@@ -184,14 +184,27 @@ export default function EscalaView({ data, config, onEdit, onDelete, onStatusCha
   }, [parPerif?.tabela])
 
   async function salvarCred(perifRow, valor) {
-    await supabase.from(parPerif.tabela)
-      .update({ credenciamento: valor, updated_at: new Date().toISOString() })
-      .eq('id', perifRow.id)
+    const chave = String(perifRow.hub_jogo_id)
+    const anterior = credPorHub.get(chave)
+    // Otimista com rollback: sem checar o erro, a UI mostraria "salvo" para
+    // uma gravação que não persistiu.
     setCredPorHub(prev => {
       const next = new Map(prev)
-      next.set(String(perifRow.hub_jogo_id), { ...perifRow, credenciamento: valor })
+      next.set(chave, { ...perifRow, credenciamento: valor })
       return next
     })
+    const { error } = await supabase.from(parPerif.tabela)
+      .update({ credenciamento: valor, updated_at: new Date().toISOString() })
+      .eq('id', perifRow.id)
+    if (error) {
+      alert('Falha ao salvar credenciamento: ' + error.message)
+      setCredPorHub(prev => {
+        const next = new Map(prev)
+        if (anterior) next.set(chave, anterior)
+        else next.delete(chave)
+        return next
+      })
+    }
   }
 
   const rodadas = useMemo(() =>

@@ -72,9 +72,20 @@ function LiveClock() {
 }
 
 export default function HomeView({ competitions, onCompSelect }) {
-  const today = useMemo(() => {
+  // "Hoje" como estado que acompanha a virada do dia — memoizar uma vez
+  // deixaria KPIs, célula HOJE e próximos jogos presos no dia da montagem.
+  const [today, setToday] = useState(() => {
     const d = new Date()
     return { year: d.getFullYear(), month: d.getMonth(), day: d.getDate() }
+  })
+  useEffect(() => {
+    const t = setInterval(() => {
+      const d = new Date()
+      setToday(prev => (prev.day === d.getDate() && prev.month === d.getMonth() && prev.year === d.getFullYear())
+        ? prev
+        : { year: d.getFullYear(), month: d.getMonth(), day: d.getDate() })
+    }, 60000)
+    return () => clearInterval(t)
   }, [])
 
   const [viewMonth,      setViewMonth]      = useState({ year: today.year, month: today.month })

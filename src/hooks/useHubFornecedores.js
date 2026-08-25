@@ -122,17 +122,14 @@ export function estaCadastrado(valor, fornecedores) {
   })
 }
 
-// Cadastro rápido na base COMPARTILHADA (app_state.fornecedores do Hub).
-// Releitura antes de gravar (mesma técnica do createPersistedSetter do Hub);
-// se o apelido já existir (normalizado), retorna o existente sem duplicar.
+// Cadastro rápido na base COMPARTILHADA (app_state.fornecedores do Hub) via
+// RPC atômico portal_cadastrar_fornecedor: o append acontece no banco com lock
+// de linha, sem read-modify-write do array inteiro (que perdia edições
+// concorrentes do Hub). Se o apelido já existir (normalizado), o RPC devolve
+// o existente sem duplicar.
 export async function cadastrarFornecedor({ apelido, funcao, tipo }) {
   const nome = String(apelido || '').trim()
   if (!nome) throw new Error('Apelido vazio')
-  const { data, error } = await supabase.from('app_state').select('value').eq('key', 'fornecedores').single()
-  if (error) throw error
-  const base = Array.isArray(data?.value) ? data.value : []
-  const existente = base.find(f => normNome(f.apelido) === normNome(nome))
-  if (existente) return existente
   const novo = {
     id: Date.now(), apelido: nome, razaoSocial: '', cnpj: '',
     funcao: String(funcao || '').trim(), area: 'Operações',
@@ -140,9 +137,7 @@ export async function cadastrarFornecedor({ apelido, funcao, tipo }) {
     nome: '', telefone: '', email: '', cpf: '', rg: '',
     origem: 'portal-quick-add',
   }
-  const { error: e2 } = await supabase.from('app_state')
-    .update({ value: [...base, novo], updated_at: new Date().toISOString() })
-    .eq('key', 'fornecedores')
-  if (e2) throw e2
-  return novo
+  const { data, error } = await supabase.rpc('portal_cadastrar_fornecedor', { novo })
+  if (error) throw error
+  return data || novo
 }

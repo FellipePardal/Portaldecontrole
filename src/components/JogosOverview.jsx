@@ -142,10 +142,14 @@ function GameCard({ row, config, onEdit, accentColor, defaultOpen, temEscala, es
 
   return (
     <div className={`overview-card${open ? ' open' : ''}`} style={{ '--accent': accentColor }}>
-      <button
-        type="button"
+      {/* div (não button): o ✎ interno é um button e button dentro de button é
+          HTML inválido — navegadores podem normalizar a árvore e quebrar o clique */}
+      <div
+        role="button"
+        tabIndex={0}
         className="overview-head"
         onClick={() => setOpen(o => !o)}
+        onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setOpen(o => !o) } }}
       >
         {rod && <span className="overview-rod" style={{ background: accentColor }}>R{rod}</span>}
 
@@ -176,7 +180,7 @@ function GameCard({ row, config, onEdit, accentColor, defaultOpen, temEscala, es
         >✎</button>
 
         <span className="overview-arrow">{open ? '▴' : '▾'}</span>
-      </button>
+      </div>
 
       {open && (
         <>

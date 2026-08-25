@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { supabase, isConfigured } from '../lib/supabase'
 import { MOCK_DATA } from '../data/mockData'
 
@@ -10,7 +10,7 @@ function parseDate(str) {
   m = s.match(/^(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?/)
   if (m) {
     const day = +m[1], month = +m[2] - 1
-    const yrRaw = m[3] ? +m[3] : 2026
+    const yrRaw = m[3] ? +m[3] : new Date().getFullYear()
     return { day, month, year: yrRaw < 100 ? 2000 + yrRaw : yrRaw }
   }
   return null
@@ -31,9 +31,13 @@ export function useHomeData(competitions) {
   const [matchesByDate, setMatchesByDate] = useState(new Map())
   const [totalsByComp, setTotalsByComp]   = useState({})
   const [loading, setLoading] = useState(false)
+  // Guarda de ordem: loads concorrentes (competitions mudou no meio) não podem
+  // deixar o calendário com o resultado do load mais antigo.
+  const loadSeq = useRef(0)
 
   const load = useCallback(async () => {
     if (!competitions.length) return
+    const seq = ++loadSeq.current
     setLoading(true)
 
     const allMatches = []
@@ -93,6 +97,8 @@ export function useHomeData(competitions) {
         console.warn(`[useHomeData] ${comp.label}:`, e.message)
       }
     }))
+
+    if (seq !== loadSeq.current) return
 
     const map = new Map()
     for (const m of allMatches) {

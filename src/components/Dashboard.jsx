@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import GameModal from './GameModal'
 import ConfirmDialog from './ConfirmDialog'
 import { getEscudoUrl } from '../lib/escudos'
@@ -15,7 +15,7 @@ function parseDataMatch(str) {
   if (m) {
     const day = parseInt(m[1])
     const month = parseInt(m[2]) - 1
-    const yrRaw = m[3] ? parseInt(m[3]) : 2026
+    const yrRaw = m[3] ? parseInt(m[3]) : new Date().getFullYear()
     const year = yrRaw < 100 ? 2000 + yrRaw : yrRaw
     return { day, month, year }
   }
@@ -45,9 +45,20 @@ function TeamLogo({ name, size = 26 }) {
 }
 
 function CalendarView({ data, accentColor, onMatchClick }) {
-  const today = useMemo(() => {
+  // "Hoje" como estado que acompanha a virada do dia — memoizar uma vez
+  // deixaria a célula HOJE e o próximo jogo presos no dia da montagem.
+  const [today, setToday] = useState(() => {
     const d = new Date()
     return { year: d.getFullYear(), month: d.getMonth(), day: d.getDate() }
+  })
+  useEffect(() => {
+    const t = setInterval(() => {
+      const d = new Date()
+      setToday(prev => (prev.day === d.getDate() && prev.month === d.getMonth() && prev.year === d.getFullYear())
+        ? prev
+        : { year: d.getFullYear(), month: d.getMonth(), day: d.getDate() })
+    }, 60000)
+    return () => clearInterval(t)
   }, [])
 
   const byDate = useMemo(() => {

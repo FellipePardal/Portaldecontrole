@@ -21,12 +21,18 @@ export default function LinksExternosView() {
   const [aberto, setAberto] = useState(null) // link_id expandido
   const [excluir, setExcluir] = useState(null)
   const [copiado, setCopiado] = useState(null)
+  const [erro, setErro] = useState('')
 
   async function carregar() {
-    const [{ data: l }, { data: c }] = await Promise.all([
+    const [{ data: l, error: el }, { data: c, error: ec }] = await Promise.all([
       supabase.from('prestador_links').select('*').order('created_at', { ascending: false }),
       supabase.from('escala_confirmacoes').select('*').order('updated_at', { ascending: false }),
     ])
+    // Erro engolido viraria "Nenhum link ainda" — e o operador recriaria
+    // links duplicados achando que a lista está vazia.
+    const err = el || ec
+    if (err) { setErro(err.message); setLoading(false); return }
+    setErro('')
     setLinks(l || []); setConfs(c || []); setLoading(false)
   }
 
@@ -77,6 +83,7 @@ export default function LinksExternosView() {
   }
 
   if (loading) return <div className="esc-vazio">Carregando links...</div>
+  if (erro) return <div className="esc-vazio">Erro ao carregar os links: {erro}</div>
 
   return (
     <div>

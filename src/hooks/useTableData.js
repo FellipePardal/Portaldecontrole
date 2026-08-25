@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { supabase, isConfigured } from '../lib/supabase'
 import { MOCK_DATA } from '../data/mockData'
 
@@ -11,6 +11,9 @@ export function useTableData(tableName) {
   const [rows, setRows] = useState(isConfigured ? [] : (MOCK_DATA[tableName] || []))
   const [loading, setLoading] = useState(isConfigured && !!tableName)
   const [error, setError] = useState(null)
+  // Eventos realtime em rajada disparam loads concorrentes; sem o número de
+  // sequência, uma resposta antiga pode resolver por último e reger dados velhos.
+  const loadSeq = useRef(0)
 
   useEffect(() => {
     if (!isConfigured || !tableName) return
@@ -24,12 +27,14 @@ export function useTableData(tableName) {
 
   async function loadData() {
     if (!tableName) { setLoading(false); return }
+    const seq = ++loadSeq.current
     setLoading(true)
     const { data: result, error: err } = await supabase
       .from(tableName)
       .select('*')
       .order('created_at', { ascending: true })
-    if (!err) setRows(result || [])
+    if (seq !== loadSeq.current) return
+    if (!err) { setRows(result || []); setError(null) }
     else setError(err.message)
     setLoading(false)
   }

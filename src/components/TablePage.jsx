@@ -10,6 +10,7 @@ import ConfirmDialog from './ConfirmDialog'
 import PerifericosCards from './PerifericosCards'
 import EscalaView, { funcoesDaConfig } from './EscalaView'
 import { PAR_PERIFERICO } from '../config/tables'
+import { parseData } from '../lib/datas'
 
 const DEFAULT_FILTERS = { search: '', status: '', dateFrom: '', dateTo: '', rodada: '', detentor: '', estadio: '', um: '' }
 
@@ -28,6 +29,9 @@ async function replicarParaPerifericos(config, formData) {
   try {
     const desc = { [par.rodadaPara]: formData[par.rodadaDe] || '', updated_at: new Date().toISOString() }
     CAMPOS_JOGO.forEach(c => { if (formData[c] != null) desc[c] = formData[c] })
+    // Sem o hub_jogo_id a irmã vira órfã: a exclusão do jogo (que filtra por
+    // hub_jogo_id) não a alcança e ela sobra como jogo fantasma nos Periféricos.
+    if (formData.hub_jogo_id) desc.hub_jogo_id = String(formData.hub_jogo_id)
     const { error } = await supabase.from(par.tabela).insert([desc])
     if (error) console.warn('[TablePage] Jogo criado, mas falhou a réplica em periféricos:', error.message)
   } catch (err) {
@@ -46,6 +50,7 @@ async function replicarParaPerifericos(config, formData) {
       transmissao: formData.detentor || '',
       updated_at: new Date().toISOString(),
     }
+    if (formData.hub_jogo_id) eg.hub_jogo_id = String(formData.hub_jogo_id)
     const { error } = await supabase.from('escala_geral').insert([eg])
     if (error) console.warn('[TablePage] Jogo criado, mas falhou a réplica na Escala Geral:', error.message)
   } catch (err) {
@@ -115,12 +120,16 @@ export default function TablePage({ config, novoJogoPedido = false, onNovoJogoCo
       result = result.filter(r => r.um === filters.um)
     }
 
+    // Datas são texto livre ("22/08", "06/05/2026"): comparação cronológica
+    // via parseData — comparar as strings direto ordenaria por dia, não por data.
     if (filters.dateFrom) {
-      result = result.filter(r => (r.data || '') >= filters.dateFrom)
+      const de = parseData(filters.dateFrom)
+      if (de) result = result.filter(r => { const d = parseData(r.data); return d && d >= de })
     }
 
     if (filters.dateTo) {
-      result = result.filter(r => (r.data || '') <= filters.dateTo)
+      const ate = parseData(filters.dateTo)
+      if (ate) result = result.filter(r => { const d = parseData(r.data); return d && d <= ate })
     }
 
     if (filters.rodada) {
@@ -151,7 +160,14 @@ export default function TablePage({ config, novoJogoPedido = false, onNovoJogoCo
       await addRow(formData)
       await replicarParaPerifericos(config, formData)
     } else {
-      await updateRow(modal.row.id, formData)
+      // Grava só o que mudou em relação ao snapshot da abertura do modal:
+      // mandar a linha inteira sobrescreveria edições concorrentes (outro
+      // usuário, ou a visão Escala) feitas enquanto o modal estava aberto.
+      const patch = {}
+      for (const [k, v] of Object.entries(formData)) {
+        if (v !== modal.row[k]) patch[k] = v
+      }
+      if (Object.keys(patch).length > 0) await updateRow(modal.row.id, patch)
     }
   }
 
@@ -167,9 +183,18 @@ export default function TablePage({ config, novoJogoPedido = false, onNovoJogoCo
     // Apaga também a linha irmã nos Periféricos (mesma partida) — sem isso o
     // jogo excluído do Controle continuaria aparecendo na outra aba.
     const par = config.isLegacy && PAR_PERIFERICO[config.tableName]
-    if (par && confirmDelete.hub_jogo_id && isConfigured) {
+    if (par && isConfigured) {
       try {
-        await supabase.from(par.tabela).delete().eq('hub_jogo_id', String(confirmDelete.hub_jogo_id))
+        if (confirmDelete.hub_jogo_id) {
+          await supabase.from(par.tabela).delete().eq('hub_jogo_id', String(confirmDelete.hub_jogo_id))
+        } else if (confirmDelete.mandante && confirmDelete.visitante && confirmDelete.data) {
+          // Irmã criada sem hub_jogo_id (réplicas antigas): casa pela partida
+          await supabase.from(par.tabela).delete()
+            .is('hub_jogo_id', null)
+            .eq('mandante', confirmDelete.mandante)
+            .eq('visitante', confirmDelete.visitante)
+            .eq('data', confirmDelete.data)
+        }
       } catch (err) {
         console.warn('[TablePage] Jogo excluído, mas falhou ao excluir a linha de periféricos:', err)
       }

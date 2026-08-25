@@ -20,13 +20,22 @@ function FichaFuncoes({ row, cor, fornecedores, onClose, onSave }) {
   const set = (k, patch) => setForm(prev => ({ ...prev, [k]: { ...prev[k], ...patch } }))
 
   const salvar = async () => {
-    const payload = { obs: obs.trim() }
+    // Grava só o que mudou em relação ao snapshot da abertura da ficha:
+    // mandar as 4 funções inteiras sobrescreveria edição concorrente feita
+    // (por outro usuário ou pelo realtime) enquanto a ficha estava aberta.
+    const payload = {}
+    const obsTrim = obs.trim()
+    if (obsTrim !== String(row.obs || '')) payload.obs = obsTrim
     FUNCOES.forEach(fn => {
       const f = form[fn.key]
-      payload[fn.key] = f.tem ? f.nome.trim() : 'Não'
-      if (fn.valor) payload[fn.valor] = f.tem ? f.valor.trim() : ''
+      const nome = f.tem ? f.nome.trim() : 'Não'
+      if (nome !== String(row[fn.key] || '')) payload[fn.key] = nome
+      if (fn.valor) {
+        const valor = f.tem ? f.valor.trim() : ''
+        if (valor !== String(row[fn.valor] || '')) payload[fn.valor] = valor
+      }
     })
-    await onSave(payload)
+    if (Object.keys(payload).length > 0) await onSave(payload)
     onClose()
   }
 
@@ -260,12 +269,17 @@ export default function EscalaGeralView() {
   }, [])
 
   async function salvar(id, payload) {
-    // Otimista + persistência; realtime confirma na sequência
+    // Otimista + persistência; realtime confirma na sequência.
+    // Em erro, desfaz — senão o card fica dessincronizado do banco.
+    const anterior = rows.find(r => r.id === id)
     setRows(prev => prev.map(r => (r.id === id ? { ...r, ...payload } : r)))
     const { error } = await supabase.from('escala_geral')
       .update({ ...payload, updated_at: new Date().toISOString() })
       .eq('id', id)
-    if (error) alert('Falha ao salvar: ' + error.message)
+    if (error) {
+      alert('Falha ao salvar: ' + error.message)
+      if (anterior) setRows(prev => prev.map(r => (r.id === id ? anterior : r)))
+    }
   }
 
   // Confirmações de presença dos links externos → ✓/✗ nos slots, ao vivo

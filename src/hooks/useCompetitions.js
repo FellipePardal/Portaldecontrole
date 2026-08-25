@@ -122,8 +122,9 @@ export function useCompetitions() {
       supabase.from('competitions').select('*').eq('archived', false).order('sort_order'),
       supabase.from('competition_columns').select('*').order('sort_order'),
     ])
-    if (compRes.error) {
-      setError(compRes.error.message)
+    const firstError = compRes.error || colsRes.error
+    if (firstError) {
+      setError(firstError.message)
       setLoading(false)
       return
     }
@@ -157,6 +158,7 @@ export function useCompetitions() {
     })
 
     setCompetitions(list)
+    setError(null)
     setLoading(false)
   }, [])
 

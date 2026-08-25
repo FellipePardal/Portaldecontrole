@@ -92,8 +92,10 @@ export default function App() {
         setUser(u)
         setAuthLoading(false)
         setTimeout(async () => {
-          const role = await ensurePortalProfile(u).catch(() => 'pendente')
-          if (mounted) setPortalRole(role)
+          // Falha transitória de rede não pode rebaixar quem já estava aprovado:
+          // mantém o papel anterior; só cai em 'pendente' se nunca houve papel.
+          const role = await ensurePortalProfile(u).catch(() => null)
+          if (mounted) setPortalRole(prev => role ?? prev ?? 'pendente')
         }, 0)
       } else {
         setUser(null); setPortalRole(null); setAuthLoading(false)
@@ -177,7 +179,9 @@ export default function App() {
     )
   }
 
-  if (compsError) {
+  // Só derruba para a tela de erro se nada carregou; com campeonatos em tela,
+  // uma falha transitória do reload (realtime) não pode apagar o app inteiro.
+  if (compsError && competitions.length === 0) {
     return (
       <div className="bootstrap-error">
         <div className="bootstrap-error-title">Erro ao carregar campeonatos</div>

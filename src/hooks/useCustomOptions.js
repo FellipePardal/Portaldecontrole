@@ -9,7 +9,9 @@ function loadAll() {
 }
 
 function saveAll(data) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
+  } catch { /* modo privado/cota cheia: opção vive só no estado desta sessão */ }
 }
 
 export function useCustomOptions(columnKey) {
