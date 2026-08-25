@@ -23,9 +23,36 @@ const CAMP_ESCALA_GERAL = {
   paulistao_feminino_jogos: 'Paulistão F 26',
 }
 
+// Campeonato dinâmico: a irmã do jogo vai para os competition_events do filho
+// periférico (mesma paridade que o legacy tem via PAR_PERIFERICO).
+async function acharFilhoPeriferico(config) {
+  const { data } = await supabase
+    .from('competitions')
+    .select('id')
+    .eq('parent_competition_id', config.competitionId)
+    .eq('section_kind', 'periferico')
+    .maybeSingle()
+  return data?.id || null
+}
+
 async function replicarParaPerifericos(config, formData) {
-  const par = config.isLegacy && PAR_PERIFERICO[config.tableName]
-  if (!par || !isConfigured || !formData?.mandante) return
+  if (!isConfigured || !formData?.mandante) return
+  if (!config.isLegacy) {
+    try {
+      const filhoId = await acharFilhoPeriferico(config)
+      if (!filhoId) return
+      const desc = { rod: formData.eu || formData.rod || '' }
+      CAMPOS_JOGO.forEach(c => { if (formData[c] != null) desc[c] = formData[c] })
+      const { error } = await supabase.from('competition_events')
+        .insert([{ competition_id: filhoId, data: desc, status: 'Pendente' }])
+      if (error) console.warn('[TablePage] Jogo criado, mas falhou a réplica em periféricos (dinâmico):', error.message)
+    } catch (err) {
+      console.warn('[TablePage] Jogo criado, mas falhou a réplica em periféricos (dinâmico):', err)
+    }
+    return
+  }
+  const par = PAR_PERIFERICO[config.tableName]
+  if (!par) return
   try {
     const desc = { [par.rodadaPara]: formData[par.rodadaDe] || '', updated_at: new Date().toISOString() }
     CAMPOS_JOGO.forEach(c => { if (formData[c] != null) desc[c] = formData[c] })
@@ -59,7 +86,9 @@ async function replicarParaPerifericos(config, formData) {
 }
 
 export default function TablePage({ config, novoJogoPedido = false, onNovoJogoConsumido = () => {} }) {
-  if (config.id?.startsWith('periferico')) {
+  // section_kind cobre os campeonatos dinâmicos (slug filho é "<x>-periferico",
+  // que não passa no startsWith); o startsWith fica pelo fallback hardcoded.
+  if (config.sectionKind === 'periferico' || config.id?.startsWith('periferico')) {
     return <PerifericosCards config={config} novoJogoPedido={novoJogoPedido} onNovoJogoConsumido={onNovoJogoConsumido} />
   }
 
@@ -197,6 +226,20 @@ export default function TablePage({ config, novoJogoPedido = false, onNovoJogoCo
         }
       } catch (err) {
         console.warn('[TablePage] Jogo excluído, mas falhou ao excluir a linha de periféricos:', err)
+      }
+    } else if (!config.isLegacy && isConfigured && confirmDelete.mandante && confirmDelete.visitante) {
+      // Dinâmico: apaga a irmã nos events do filho periférico, casando a partida
+      try {
+        const filhoId = await acharFilhoPeriferico(config)
+        if (filhoId) {
+          await supabase.from('competition_events').delete()
+            .eq('competition_id', filhoId)
+            .eq('data->>mandante', confirmDelete.mandante)
+            .eq('data->>visitante', confirmDelete.visitante)
+            .eq('data->>data', confirmDelete.data || '')
+        }
+      } catch (err) {
+        console.warn('[TablePage] Jogo excluído, mas falhou ao excluir a irmã de periféricos (dinâmico):', err)
       }
     }
     setConfirmDelete(null)

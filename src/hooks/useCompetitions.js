@@ -75,6 +75,7 @@ function configForRow(row, columnsByCompId) {
       accentBg: row.accent_bg,
       competitionId: row.id,
       isLegacy: true,
+      sectionKind: row.section_kind || null,
       tableName: row.legacy_table || baseConfig.tableName,
     }
   }
@@ -106,6 +107,7 @@ function configForRow(row, columnsByCompId) {
     accentBg: row.accent_bg,
     competitionId: row.id,
     isLegacy: false,
+    sectionKind: row.section_kind || null,
     columns: cols,
   }
 }

@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect, useRef } from 'react'
 import { useTableData } from '../hooks/useTableData'
+import { useCompetitionEvents } from '../hooks/useCompetitionEvents'
 import PerifericoModal from './PerifericoModal'
 import ConfirmDialog from './ConfirmDialog'
 import { getEscudoUrl } from '../lib/escudos'
@@ -104,7 +105,12 @@ function SlotEquip({ row, eq, destaque, fornecedores, onSave }) {
 }
 
 export default function PerifericosCards({ config, novoJogoPedido = false, onNovoJogoConsumido = () => {} }) {
-  const { data, loading, error, addRow, updateRow, deleteRow } = useTableData(config.tableName)
+  // Legacy lê da tabela própria; campeonato dinâmico lê de competition_events
+  // (linhas achatadas pelo hook — mesmas chaves de equipamento, copiadas do
+  // template no NewCompetitionDialog).
+  const legacy = useTableData(config.isLegacy === false ? null : config.tableName)
+  const dynamic = useCompetitionEvents(config.isLegacy === false ? config.competitionId : null)
+  const { data, loading, error, addRow, updateRow, deleteRow } = config.isLegacy === false ? dynamic : legacy
   const { fornecedores: hubFornecedores } = useHubFornecedores()
   const accent = config.accentColor
 
@@ -176,8 +182,17 @@ export default function PerifericosCards({ config, novoJogoPedido = false, onNov
     if (novoJogoPedido) { setModal({ open: true, mode: 'add', row: null }); onNovoJogoConsumido() }
   }, [novoJogoPedido]) // eslint-disable-line react-hooks/exhaustive-deps
   async function handleSave(formData) {
-    if (modal.mode === 'add') await addRow(formData)
-    else await updateRow(modal.row.id, formData)
+    if (modal.mode === 'add') {
+      await addRow(formData)
+    } else {
+      // Só o diff do snapshot: a ficha aberta não pode sobrescrever edições
+      // concorrentes feitas nos slots enquanto ela estava na tela.
+      const patch = {}
+      for (const [k, v] of Object.entries(formData)) {
+        if (v !== modal.row[k]) patch[k] = v
+      }
+      if (Object.keys(patch).length > 0) await updateRow(modal.row.id, patch)
+    }
   }
 
   const ativosDe = r => EQUIPAMENTOS.filter(eq => r[eq.key] === 'Sim')
