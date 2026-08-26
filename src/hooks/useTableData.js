@@ -14,6 +14,10 @@ export function useTableData(tableName) {
   // Eventos realtime em rajada disparam loads concorrentes; sem o número de
   // sequência, uma resposta antiga pode resolver por último e reger dados velhos.
   const loadSeq = useRef(0)
+  // Refetch silencioso: `loading` só na PRIMEIRA carga. Religar o loading a
+  // cada eco de realtime trocava a tela por skeleton, colapsava a altura e
+  // jogava o scroll para o topo a cada edição.
+  const jaCarregou = useRef(false)
 
   useEffect(() => {
     if (!isConfigured || !tableName) return
@@ -28,13 +32,13 @@ export function useTableData(tableName) {
   async function loadData() {
     if (!tableName) { setLoading(false); return }
     const seq = ++loadSeq.current
-    setLoading(true)
+    if (!jaCarregou.current) setLoading(true)
     const { data: result, error: err } = await supabase
       .from(tableName)
       .select('*')
       .order('created_at', { ascending: true })
     if (seq !== loadSeq.current) return
-    if (!err) { setRows(result || []); setError(null) }
+    if (!err) { setRows(result || []); setError(null); jaCarregou.current = true }
     else setError(err.message)
     setLoading(false)
   }

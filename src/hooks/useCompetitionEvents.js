@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { supabase, isConfigured } from '../lib/supabase'
 
 // 'data' (a data do jogo) NÃO entra aqui: é um campo do formulário e precisa
@@ -37,13 +37,16 @@ export function useCompetitionEvents(competitionId) {
   const [data, setData] = useState([])
   const [loading, setLoading] = useState(!!competitionId && isConfigured)
   const [error, setError] = useState(null)
+  // Refetch silencioso: `loading` só na primeira carga (ver useTableData) —
+  // religar a cada realtime jogava o scroll para o topo trocando tudo por skeleton.
+  const jaCarregou = useRef(false)
 
   const load = useCallback(async () => {
     if (!competitionId || !isConfigured) {
       setLoading(false)
       return
     }
-    setLoading(true)
+    if (!jaCarregou.current) setLoading(true)
     const { data: rows, error: err } = await supabase
       .from('competition_events')
       .select('*')
@@ -55,6 +58,7 @@ export function useCompetitionEvents(competitionId) {
     } else {
       setData((rows || []).map(flattenRow))
       setError(null)
+      jaCarregou.current = true
     }
     setLoading(false)
   }, [competitionId])
