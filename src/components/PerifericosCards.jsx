@@ -40,7 +40,10 @@ function SlotEquip({ row, eq, destaque, fornecedores, onSave }) {
 
   useEffect(() => {
     if (!aberto) return
-    const fechar = e => { if (ref.current && !ref.current.contains(e.target)) setAberto(false) }
+    // isConnected: a sugestão clicada no FornecedorPicker some do DOM no
+    // mousedown; sem o guard o clique era lido como externo e o popup fechava
+    // antes do OK — o fornecedor escolhido nunca era salvo (mesmo fix do Controle).
+    const fechar = e => { if (ref.current && e.target.isConnected && !ref.current.contains(e.target)) setAberto(false) }
     document.addEventListener('mousedown', fechar)
     return () => document.removeEventListener('mousedown', fechar)
   }, [aberto])
