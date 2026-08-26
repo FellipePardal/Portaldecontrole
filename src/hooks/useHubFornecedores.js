@@ -42,36 +42,52 @@ const MATCH = {
   monitoracao:             f => /monitora/i.test(f.funcao),
 }
 
+// ── Assinatura ÚNICA compartilhada ────────────────────────────────────────
+// O supabase-js novo (≥2.4x) reutiliza canais pelo topic: dois
+// useHubFornecedores montados ao mesmo tempo (ex.: EscalaView + GameModal
+// aberto por cima) chamavam .on() num canal JÁ inscrito e derrubavam o app
+// ("cannot add postgres_changes callbacks after subscribe()"). Um único
+// canal em nível de módulo alimenta todos os consumidores; o canal vive
+// pela sessão inteira (dado usado em todo o app, não vale desligar).
+let fornCache = []
+let fornCarregado = false
+let fornCanal = null
+const fornOuvintes = new Set()
+
+async function carregarFornecedores() {
+  const { data } = await supabase
+    .from('app_state')
+    .select('value')
+    .eq('key', 'fornecedores')
+    .single()
+  fornCache = Array.isArray(data?.value) ? data.value : []
+  fornCarregado = true
+  fornOuvintes.forEach(fn => fn())
+}
+
+function garantirCanalFornecedores() {
+  if (fornCanal || !isConfigured) return
+  fornCanal = supabase
+    .channel('hub_fornecedores')
+    .on('postgres_changes',
+      { event: '*', schema: 'public', table: 'app_state', filter: 'key=eq.fornecedores' },
+      carregarFornecedores,
+    )
+    .subscribe()
+  carregarFornecedores()
+}
+
 export function useHubFornecedores() {
-  const [fornecedores, setFornecedores] = useState([])
-  const [loading, setLoading] = useState(isConfigured)
+  const [fornecedores, setFornecedores] = useState(fornCache)
+  const [loading, setLoading] = useState(isConfigured && !fornCarregado)
 
   useEffect(() => {
     if (!isConfigured) { setLoading(false); return }
-    let cancelled = false
-
-    async function load() {
-      const { data } = await supabase
-        .from('app_state')
-        .select('value')
-        .eq('key', 'fornecedores')
-        .single()
-      if (cancelled) return
-      const arr = Array.isArray(data?.value) ? data.value : []
-      setFornecedores(arr)
-      setLoading(false)
-    }
-
-    load()
-    const channel = supabase
-      .channel('hub_fornecedores')
-      .on('postgres_changes',
-        { event: '*', schema: 'public', table: 'app_state', filter: 'key=eq.fornecedores' },
-        load,
-      )
-      .subscribe()
-
-    return () => { cancelled = true; supabase.removeChannel(channel) }
+    const ouvinte = () => { setFornecedores(fornCache); setLoading(false) }
+    fornOuvintes.add(ouvinte)
+    garantirCanalFornecedores()
+    if (fornCarregado) ouvinte()
+    return () => { fornOuvintes.delete(ouvinte) }
   }, [])
 
   return { fornecedores, loading }
