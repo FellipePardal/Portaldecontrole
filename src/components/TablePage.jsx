@@ -85,13 +85,23 @@ async function replicarParaPerifericos(config, formData) {
   }
 }
 
+// Só escolhe a tela — sem hooks nenhum, para que a escolha possa mudar sem
+// quebrar a ordem dos hooks. Cada tela abaixo tem os seus e monta/desmonta
+// inteira quando a seção troca.
 export default function TablePage({ config, novoJogoPedido = false, onNovoJogoConsumido = () => {} }) {
   // section_kind cobre os campeonatos dinâmicos (slug filho é "<x>-periferico",
   // que não passa no startsWith); o startsWith fica pelo fallback hardcoded.
   if (config.sectionKind === 'periferico' || config.id?.startsWith('periferico')) {
     return <PerifericosCards config={config} novoJogoPedido={novoJogoPedido} onNovoJogoConsumido={onNovoJogoConsumido} />
   }
+  return <ControlePage config={config} novoJogoPedido={novoJogoPedido} onNovoJogoConsumido={onNovoJogoConsumido} />
+}
 
+// Isto era o corpo do próprio TablePage, logo DEPOIS do return condicional
+// acima — ou seja, os hooks ficavam abaixo de um return, o que o React proíbe.
+// Não quebrava porque o App passa key={section.id} e remonta o componente a
+// cada troca de aba; bastava mexer nessa key para virar tela branca.
+function ControlePage({ config, novoJogoPedido, onNovoJogoConsumido }) {
   const legacy = useTableData(config.isLegacy ? config.tableName : null)
   const dynamic = useCompetitionEvents(config.isLegacy ? null : config.competitionId)
   const { data, loading, error, addRow, updateRow, deleteRow } = config.isLegacy ? legacy : dynamic
