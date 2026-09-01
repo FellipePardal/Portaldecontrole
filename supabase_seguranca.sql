@@ -86,7 +86,21 @@ BEGIN
   END LOOP;
 END $$;
 
--- ─── ROLLBACK (volta ao estado aberto — NÃO recomendado) ─────
+-- ─────────────────────────────────────────────────────────────
+-- ⚠⚠ ROLLBACK — NÃO DESCOMENTE ⚠⚠
+--
+-- Isto DESLIGA a segurança de todas as tabelas de uma vez. Sem
+-- RLS, a chave anon (pública no bundle do site, visível em
+-- qualquer navegador) lê, edita e APAGA a escala inteira —
+-- nomes, telefones dos supervisores e valores $ da Escala Geral,
+-- para qualquer pessoa na internet.
+--
+-- Está aqui só como registro do estado anterior. Não existe
+-- motivo operacional para rodar isto. Se o Portal parou de
+-- carregar dados, o problema é outro: confira em ORDEM_DE_
+-- EXECUCAO.md e rode `node scripts/verificar_rls_portal.mjs`
+-- antes de encostar nesta seção.
+-- ─────────────────────────────────────────────────────────────
 -- DO $$
 -- DECLARE t TEXT;
 -- BEGIN

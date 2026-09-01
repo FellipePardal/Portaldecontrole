@@ -2,6 +2,20 @@
 -- Portal de Controle - FFU Transmissões
 -- Supabase Setup SQL
 -- ============================================================
+-- ⚠ ORDEM OBRIGATÓRIA: este arquivo cria as tabelas, mas quem
+-- define QUEM PODE VER E EDITAR é o supabase_seguranca.sql.
+-- Rode SEMPRE nesta ordem (ver ORDEM_DE_EXECUCAO.md):
+--   1) supabase_setup.sql   2) supabase_phase1.sql
+--   3) supabase_seguranca.sql  ← sem este, o banco fica fechado
+--
+-- Até 09/2026 este arquivo terminava cada tabela com
+-- "DISABLE ROW LEVEL SECURITY" — herança de quando o Portal não
+-- tinha login. Re-rodá-lo em produção DESTRANCAVA o banco inteiro
+-- e expunha a escala a qualquer pessoa com a chave anon (pública
+-- no site). Agora as tabelas nascem TRANCADAS: se este arquivo
+-- rodar por engano, o pior caso é o acesso ficar fechado demais
+-- (some com nada, resolve-se rodando o supabase_seguranca.sql).
+-- ============================================================
 
 -- ============================================================
 -- Table 1: brasileirao_jogos
@@ -62,7 +76,7 @@ CREATE TABLE IF NOT EXISTS brasileirao_jogos (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
-ALTER TABLE brasileirao_jogos DISABLE ROW LEVEL SECURITY;
+ALTER TABLE brasileirao_jogos ENABLE ROW LEVEL SECURITY;
 ALTER TABLE brasileirao_jogos REPLICA IDENTITY FULL;
 ALTER PUBLICATION supabase_realtime ADD TABLE brasileirao_jogos;
 
@@ -103,7 +117,7 @@ CREATE TABLE IF NOT EXISTS perifericos_brasileirao (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
-ALTER TABLE perifericos_brasileirao DISABLE ROW LEVEL SECURITY;
+ALTER TABLE perifericos_brasileirao ENABLE ROW LEVEL SECURITY;
 ALTER TABLE perifericos_brasileirao REPLICA IDENTITY FULL;
 ALTER PUBLICATION supabase_realtime ADD TABLE perifericos_brasileirao;
 
@@ -159,7 +173,7 @@ CREATE TABLE IF NOT EXISTS paulistao_feminino_jogos (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
-ALTER TABLE paulistao_feminino_jogos DISABLE ROW LEVEL SECURITY;
+ALTER TABLE paulistao_feminino_jogos ENABLE ROW LEVEL SECURITY;
 ALTER TABLE paulistao_feminino_jogos REPLICA IDENTITY FULL;
 ALTER PUBLICATION supabase_realtime ADD TABLE paulistao_feminino_jogos;
 
@@ -200,7 +214,7 @@ CREATE TABLE IF NOT EXISTS perifericos_paulistao (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
-ALTER TABLE perifericos_paulistao DISABLE ROW LEVEL SECURITY;
+ALTER TABLE perifericos_paulistao ENABLE ROW LEVEL SECURITY;
 ALTER TABLE perifericos_paulistao REPLICA IDENTITY FULL;
 ALTER PUBLICATION supabase_realtime ADD TABLE perifericos_paulistao;
 
@@ -255,6 +269,6 @@ CREATE TABLE IF NOT EXISTS nba_prime_video (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
-ALTER TABLE nba_prime_video DISABLE ROW LEVEL SECURITY;
+ALTER TABLE nba_prime_video ENABLE ROW LEVEL SECURITY;
 ALTER TABLE nba_prime_video REPLICA IDENTITY FULL;
 ALTER PUBLICATION supabase_realtime ADD TABLE nba_prime_video;

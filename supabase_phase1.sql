@@ -7,6 +7,16 @@
 -- perifericos_paulistao, nba_prime_video). Elas continuam funcionando
 -- como "legacy" e ficam acessíveis pelo código antigo.
 -- ============================================================
+-- ⚠ ORDEM OBRIGATÓRIA: rode o supabase_seguranca.sql DEPOIS deste
+-- arquivo — é ele que define quem pode ver e editar cada tabela.
+-- Ver ORDEM_DE_EXECUCAO.md.
+--
+-- Até 09/2026 este arquivo terminava cada tabela com
+-- "DISABLE ROW LEVEL SECURITY": re-rodá-lo em produção DESTRANCAVA
+-- o banco para qualquer pessoa com a chave anon (pública no site).
+-- Agora as tabelas nascem TRANCADAS — rodar por engano fecha demais,
+-- nunca abre.
+-- ============================================================
 
 -- ============================================================
 -- 1) competitions
@@ -32,7 +42,7 @@ CREATE TABLE IF NOT EXISTS competitions (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
-ALTER TABLE competitions DISABLE ROW LEVEL SECURITY;
+ALTER TABLE competitions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE competitions REPLICA IDENTITY FULL;
 ALTER PUBLICATION supabase_realtime ADD TABLE competitions;
 
@@ -60,7 +70,7 @@ CREATE TABLE IF NOT EXISTS competition_columns (
   UNIQUE (competition_id, key)
 );
 
-ALTER TABLE competition_columns DISABLE ROW LEVEL SECURITY;
+ALTER TABLE competition_columns ENABLE ROW LEVEL SECURITY;
 ALTER TABLE competition_columns REPLICA IDENTITY FULL;
 ALTER PUBLICATION supabase_realtime ADD TABLE competition_columns;
 
@@ -79,7 +89,7 @@ CREATE TABLE IF NOT EXISTS competition_events (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
-ALTER TABLE competition_events DISABLE ROW LEVEL SECURITY;
+ALTER TABLE competition_events ENABLE ROW LEVEL SECURITY;
 ALTER TABLE competition_events REPLICA IDENTITY FULL;
 ALTER PUBLICATION supabase_realtime ADD TABLE competition_events;
 
@@ -101,7 +111,7 @@ CREATE TABLE IF NOT EXISTS dropdown_options (
   UNIQUE (category, value)
 );
 
-ALTER TABLE dropdown_options DISABLE ROW LEVEL SECURITY;
+ALTER TABLE dropdown_options ENABLE ROW LEVEL SECURITY;
 ALTER TABLE dropdown_options REPLICA IDENTITY FULL;
 ALTER PUBLICATION supabase_realtime ADD TABLE dropdown_options;
 
