@@ -1,9 +1,10 @@
 import { useState, useMemo, useEffect, useRef } from 'react'
 import { supabase, isConfigured } from '../lib/supabase'
-import { getEscudoUrl } from '../lib/escudos'
 import { parseData } from '../lib/datas'
 import { useHubFornecedores } from '../hooks/useHubFornecedores'
 import FornecedorPicker from './FornecedorPicker'
+import EscalaGeralLista from './EscalaGeralLista'
+import { BadgeCamp, Escudo, estiloCampeonato } from './campeonatoVisual'
 // "Não" gravado na coluna da função = o jogo NÃO terá essa função (não é
 // pendência). Vazio = pendente. Qualquer outro texto = prestador definido.
 const naoTem = v => /^n[aã]o$/i.test(String(v || '').trim())
@@ -109,45 +110,9 @@ const FUNCOES = [
 // pendência nem entram nos contadores (os slots seguem editáveis, mas neutros).
 const semEscala = r => /^yt\s*paulist/i.test(String(r?.transmissao || '').trim())
 
-// Identidade visual por campeonato: sigla + cor FIXAS para os conhecidos
-// (cores estáveis = memória visual; o hash é só fallback para nomes novos).
-const CAMP_ESTILO = {
-  'copinha 26':        { sigla: 'COP', cor: '#EA580C' },
-  'paulistão 26':      { sigla: 'PAU', cor: '#DC2626' },
-  'brasileirão 26':    { sigla: 'BRA', cor: '#16A34A' },
-  'br26':              { sigla: 'BR26', cor: '#0D9488' },
-  'mm br26':           { sigla: 'MM', cor: '#7C3AED' },
-  'série b 26':        { sigla: 'SÉB', cor: '#2563EB' },
-  'série b':           { sigla: 'SÉB', cor: '#2563EB' },
-  'paulistão f 26':    { sigla: 'PAF', cor: '#DB2777' },
-  'pfem 26':           { sigla: 'PFE', cor: '#9333EA' },
-  'media day':         { sigla: 'MD', cor: '#475569' },
-  'host broadcast':    { sigla: 'HB', cor: '#B45309' },
-}
-const PALETA = ['#65B32E', '#2563EB', '#D97706', '#DC2626', '#7C3AED', '#0D9488', '#DB2777', '#4D7C0F', '#B45309', '#475569']
-function estiloCampeonato(nome) {
-  const conhecido = CAMP_ESTILO[String(nome || '').trim().toLowerCase()]
-  if (conhecido) return conhecido
-  let h = 0
-  for (const c of String(nome || '')) h = (h * 31 + c.charCodeAt(0)) >>> 0
-  const sigla = String(nome || '?').split(/\s+/).map(p => p[0]).join('').slice(0, 3).toUpperCase()
-  return { sigla, cor: PALETA[h % PALETA.length] }
-}
-
-function BadgeCamp({ nome, size = 26 }) {
-  const { sigla, cor } = estiloCampeonato(nome)
-  return (
-    <span className="eg-badge" style={{ background: cor, width: 'auto', minWidth: size, height: size, fontSize: sigla.length > 3 ? 9 : 10 }} title={nome}>
-      {sigla}
-    </span>
-  )
-}
-
-function Escudo({ nome, size = 24 }) {
-  const url = getEscudoUrl(nome)
-  if (!url) return <span className="esc-escudo esc-escudo-fallback" style={{ width: size, height: size }}>{(nome || '?').slice(0, 1)}</span>
-  return <img className="esc-escudo" src={url} alt={nome} style={{ width: size, height: size }} loading="lazy" />
-}
+// estiloCampeonato, BadgeCamp e Escudo vivem em ./campeonatoVisual — a visão
+// lista usa os mesmos, e duas cópias da tabela de cores divergiriam na
+// primeira mudança.
 
 // Slot de função com até DUAS pessoas ("Fulano / Ciclano") + valor $ quando a
 // função tem. O separador " / " é o mesmo da planilha original.
@@ -249,6 +214,13 @@ export default function EscalaGeralView() {
   const [soFuturos, setSoFuturos] = useState(true)
   const [ficha, setFicha] = useState(null) // linha aberta na ficha completa
   const [legendaAberta, setLegendaAberta] = useState(false) // campeonatos ocultos por padrão
+
+  // Cards (trabalhar um jogo) x Lista (enxergar todos). A escolha fica salva —
+  // quem prefere a lista não quer reescolher a cada visita.
+  const [visao, setVisaoRaw] = useState(() => {
+    try { return localStorage.getItem('eg_visao') || 'cards' } catch { return 'cards' }
+  })
+  const setVisao = v => { setVisaoRaw(v); try { localStorage.setItem('eg_visao', v) } catch { /* sem storage */ } }
 
   useEffect(() => {
     if (!isConfigured) { setLoading(false); return }
@@ -405,6 +377,25 @@ export default function EscalaGeralView() {
 
   return (
     <div className="esc-wrap">
+      {/* Alternador de visão em linha própria e no topo: enfiado no fim da
+          barra de filtros ele passava despercebido — foi o que aconteceu com o
+          toggle Escala/Planilha do Controle, que ninguém achava. */}
+      <div className="eg-visao-barra">
+        <span className="eg-visao-rotulo">Visualização</span>
+        <div className="eg-visao-switch">
+          {[['lista', '▤', 'Lista', 'Uma linha por jogo — para bater o olho em muitos jogos de uma vez'],
+            ['cards', '🗂', 'Cards', 'Um card por jogo — mais espaço para preencher a escala']].map(([v, icone, rotulo, dica]) => (
+            <button key={v} className={`eg-visao-btn${visao === v ? ' is-active' : ''}`}
+              title={dica} onClick={() => setVisao(v)}>
+              <span className="eg-visao-icone">{icone}</span>{rotulo}
+            </button>
+          ))}
+        </div>
+        {visao === 'lista' && (
+          <span className="eg-visao-dica">Clique no nome de alguém para ver só os jogos dessa pessoa</span>
+        )}
+      </div>
+
       {/* Campeonatos ocultos por padrão; o botão abre a legenda clicável */}
       <div className="eg-legend">
         <button className={`eg-legend-chip ${legendaAberta ? 'is-on' : ''}`} onClick={() => setLegendaAberta(a => !a)}>
@@ -467,6 +458,22 @@ export default function EscalaGeralView() {
           <strong style={{ color: totalSlots && slotsOk === totalSlots ? 'var(--green, #16a34a)' : undefined }}>{slotsOk}/{totalSlots}</strong>{' '}slots
         </div>
       </div>
+
+      {visao === 'lista' ? (
+        <EscalaGeralLista
+          grupos={porData}
+          funcoes={funcoesVisiveis}
+          confirmacoes={confirmacoes}
+          fPessoa={fPessoa}
+          // Clicar no nome filtra por ele; clicar de novo no mesmo nome limpa.
+          // O trim casa com o da célula, onde o nome já vem sem espaços — sem
+          // ele, um nome digitado à mão no campo "Pessoa" não desligaria.
+          onPessoa={p => setFPessoa(atual => (norm(atual).trim() === norm(p).trim() ? '' : p))}
+          onFicha={setFicha}
+          onPublicarDia={lista => lista.forEach(r => salvar(r.id, { escala_publicada: true }))}
+          onTogglePub={r => salvar(r.id, { escala_publicada: !r.escala_publicada })}
+        />
+      ) : (<>
 
       {porData.length === 0 && <div className="esc-vazio">Nenhum jogo com esses filtros.</div>}
 
@@ -557,6 +564,8 @@ export default function EscalaGeralView() {
           </div>
         </section>
       ))}
+
+      </>)}
 
       {ficha && (
         <FichaFuncoes

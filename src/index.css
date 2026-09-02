@@ -3822,3 +3822,154 @@ body {
   background: #65B32E; color: #fff; font-size: 11.5px; font-weight: 700;
   cursor: pointer; font-family: inherit;
 }
+
+/* ─── ESCALA GERAL · ALTERNADOR DE VISÃO ──────────────────────────────────── */
+.eg-visao-switch {
+  display: flex; gap: 4px; padding: 3px; border-radius: 8px;
+  background: var(--bg-surface2); border: 1px solid var(--border);
+}
+.eg-visao-btn {
+  padding: 5px 12px; border: none; border-radius: 6px; cursor: pointer;
+  background: transparent; color: var(--text-muted);
+  font-family: inherit; font-size: 12.5px; font-weight: 600;
+  transition: background 0.15s, color 0.15s;
+}
+.eg-visao-btn:hover { color: var(--text); }
+.eg-visao-btn.is-active {
+  background: var(--bg-card); color: var(--text);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+
+/* ─── ESCALA GERAL · VISÃO LISTA ──────────────────────────────────────────── */
+/* Densidade é o ponto desta visão: linha de ~32px para caber um dia inteiro
+   na tela sem rolar. Os cards ficam para trabalhar um jogo de cada vez. */
+.eg-lst-wrap {
+  overflow-x: auto; border: 1px solid var(--border); border-radius: 8px;
+  background: var(--bg-card); box-shadow: var(--shadow);
+}
+.eg-lst {
+  width: 100%; border-collapse: collapse;
+  font-size: 12.5px; white-space: nowrap;
+}
+
+.eg-lst thead th {
+  position: sticky; top: 56px; z-index: 20;
+  background: var(--bg-surface); color: var(--text-muted);
+  text-align: left; font-weight: 700; font-size: 10.5px;
+  letter-spacing: 0.04em; text-transform: uppercase;
+  padding: 8px 10px; border-bottom: 1px solid var(--border-light);
+}
+.eg-lst-c-camp  { width: 52px; }
+.eg-lst-c-hora  { width: 58px; }
+.eg-lst-c-jogo  { min-width: 250px; }
+.eg-lst-c-local { min-width: 150px; }
+.eg-lst-c-fn    { min-width: 150px; }
+.eg-lst-c-prog  { width: 48px; text-align: center !important; }
+.eg-lst-c-pub   { width: 46px; text-align: center !important; }
+
+/* Cabeçalho de dia — separa os blocos sem gastar altura */
+.eg-lst-dia td {
+  padding: 7px 10px; background: var(--bg-surface2);
+  border-top: 1px solid var(--border-light);
+  border-bottom: 1px solid var(--border-light);
+}
+.eg-lst-dia-data   { font-weight: 800; font-size: 13px; color: var(--text); }
+.eg-lst-dia-semana { margin-left: 8px; color: var(--text-muted); font-size: 12px; }
+.eg-lst-dia-qtd    { margin-left: 8px; color: var(--text-dim); font-size: 11.5px; }
+.eg-lst-dia-pub {
+  margin-left: 12px; padding: 3px 10px; border-radius: 999px; cursor: pointer;
+  background: var(--lm-green-bg); border: 1px solid var(--lm-green);
+  color: var(--lm-green-dim); font-family: inherit; font-size: 11px; font-weight: 700;
+}
+.eg-lst-dia-pub:hover { background: var(--lm-green); color: #fff; }
+
+/* Linha de jogo */
+.eg-lst-linha {
+  cursor: pointer; border-bottom: 1px solid var(--border);
+  transition: background 0.1s;
+}
+.eg-lst-linha:hover { background: var(--bg-hover); }
+.eg-lst-linha > td {
+  padding: 5px 10px; vertical-align: middle;
+  border-left: 1px solid var(--border);
+}
+.eg-lst-linha > td:first-child {
+  border-left: 3px solid var(--camp, var(--border));
+}
+
+.eg-lst-camp { text-align: center; }
+.eg-lst-hora { color: var(--text-muted); font-variant-numeric: tabular-nums; }
+
+.eg-lst-jogo { display: flex; align-items: center; gap: 5px; }
+.eg-lst-time { font-weight: 600; color: var(--text); }
+.eg-lst-x    { color: var(--text-dim); font-size: 11px; }
+.eg-lst-obs  { margin-left: 2px; cursor: help; }
+
+.eg-lst-local {
+  color: var(--text-muted); max-width: 220px;
+  overflow: hidden; text-overflow: ellipsis;
+}
+
+/* Células de função */
+.eg-lst-fn { max-width: 220px; overflow: hidden; text-overflow: ellipsis; }
+.eg-lst-fn-na    { color: var(--text-dim); font-style: italic; }
+.eg-lst-fn-mudo  { color: var(--text-dim); }
+.eg-lst-fn-vazio { color: var(--amber); font-weight: 600; font-size: 11.5px; }
+
+.eg-lst-nomes { display: inline-flex; align-items: center; gap: 4px; }
+.eg-lst-nome {
+  padding: 2px 7px; border-radius: 5px; cursor: pointer;
+  background: var(--bg-surface); border: 1px solid var(--border);
+  color: var(--text); font-family: inherit; font-size: 12px; font-weight: 500;
+  max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  transition: all 0.12s;
+}
+.eg-lst-nome:hover {
+  background: var(--lm-green-bg); border-color: var(--lm-green); color: var(--lm-green-dim);
+}
+.eg-lst-nome.is-filtrado {
+  background: var(--lm-green); border-color: var(--lm-green); color: #fff; font-weight: 700;
+}
+.eg-lst-conf { font-weight: 800; font-size: 12px; cursor: help; }
+.eg-lst-conf.ok  { color: var(--lm-green-dim); }
+.eg-lst-conf.nao { color: var(--red); }
+.eg-lst-valor {
+  padding: 1px 5px; border-radius: 4px; background: var(--bg-surface2);
+  color: var(--text-muted); font-size: 11px; font-variant-numeric: tabular-nums;
+}
+
+/* Progresso e publicação */
+.eg-lst-prog {
+  text-align: center; color: var(--text-muted);
+  font-weight: 700; font-size: 11.5px; font-variant-numeric: tabular-nums;
+}
+.eg-lst-prog.is-ok { color: var(--lm-green-dim); }
+.eg-lst-pub { text-align: center; }
+.eg-lst-pub-btn {
+  width: 24px; height: 24px; border-radius: 50%; cursor: pointer;
+  background: var(--bg-surface); border: 1px solid var(--border-gray);
+  color: var(--text-dim); font-family: inherit; font-size: 12px; font-weight: 700;
+  transition: all 0.12s;
+}
+.eg-lst-pub-btn:hover { border-color: var(--lm-green); color: var(--lm-green-dim); }
+.eg-lst-pub-btn.is-on {
+  background: var(--lm-green); border-color: var(--lm-green); color: #fff;
+}
+
+/* Barra própria para o alternador — no fim da barra de filtros ele não era
+   encontrado. Fica na primeira linha da tela, antes de tudo. */
+.eg-visao-barra {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  padding: 0 0 10px;
+}
+.eg-visao-rotulo {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.05em;
+  text-transform: uppercase; color: var(--text-dim);
+}
+.eg-visao-icone { margin-right: 5px; }
+.eg-visao-dica {
+  font-size: 12px; color: var(--text-muted);
+  padding: 3px 10px; border-radius: 999px;
+  background: var(--lm-green-bg); border: 1px solid var(--lm-green);
+  color: var(--lm-green-dim);
+}
