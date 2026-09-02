@@ -3843,8 +3843,15 @@ body {
 /* ─── ESCALA GERAL · VISÃO LISTA ──────────────────────────────────────────── */
 /* Densidade é o ponto desta visão: linha de ~32px para caber um dia inteiro
    na tela sem rolar. Os cards ficam para trabalhar um jogo de cada vez. */
+/* Rolagem PRÓPRIA da tabela: o cabeçalho gruda no topo dela, não no da
+   página. Grudado na página ele dependia de adivinhar a altura da barra de
+   filtros (que é fixa e muda de altura ao quebrar linha) e acabava cobrindo
+   a faixa do dia e a primeira linha. */
 .eg-lst-wrap {
-  overflow-x: auto; border: 1px solid var(--border); border-radius: 8px;
+  overflow: auto;
+  max-height: calc(100vh - 250px); min-height: 300px;
+  overscroll-behavior: contain;
+  border: 1px solid var(--border); border-radius: 8px;
   background: var(--bg-card); box-shadow: var(--shadow);
 }
 .eg-lst {
@@ -3853,11 +3860,16 @@ body {
 }
 
 .eg-lst thead th {
-  position: sticky; top: 56px; z-index: 20;
+  position: sticky; top: 0; z-index: 20;
   background: var(--bg-surface); color: var(--text-muted);
+  /* border-bottom em th sticky não acompanha o scroll no Chrome — a sombra
+     é o que mantém a separação visível ao rolar. */
+  box-shadow: 0 1px 0 var(--border-light), 0 2px 6px rgba(0,0,0,0.04);
   text-align: left; font-weight: 700; font-size: 10.5px;
   letter-spacing: 0.04em; text-transform: uppercase;
-  padding: 8px 10px; border-bottom: 1px solid var(--border-light);
+  /* Altura FIXA (box-sizing: border-box é global) para a faixa do dia poder
+     grudar exatamente embaixo, sem fresta nem sobreposição. */
+  height: 32px; padding: 0 10px;
 }
 .eg-lst-c-camp  { width: 52px; }
 .eg-lst-c-hora  { width: 58px; }
@@ -3867,8 +3879,11 @@ body {
 .eg-lst-c-prog  { width: 48px; text-align: center !important; }
 .eg-lst-c-pub   { width: 46px; text-align: center !important; }
 
-/* Cabeçalho de dia — separa os blocos sem gastar altura */
+/* Cabeçalho de dia — separa os blocos sem gastar altura. Gruda logo abaixo
+   do cabeçalho de colunas (32px), para você sempre saber que dia está vendo
+   ao rolar uma lista longa. */
 .eg-lst-dia td {
+  position: sticky; top: 32px; z-index: 15;
   padding: 7px 10px; background: var(--bg-surface2);
   border-top: 1px solid var(--border-light);
   border-bottom: 1px solid var(--border-light);
